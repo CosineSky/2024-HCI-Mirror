@@ -509,10 +509,6 @@ footer {
 	z-index: 10;
 }
 
-.bottom-component {
-
-}
-
 .transparent-btn {
 	background-color: transparent !important;
 	border-color: transparent !important;
