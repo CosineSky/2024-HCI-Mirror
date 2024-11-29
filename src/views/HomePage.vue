@@ -409,6 +409,10 @@ onMounted(() => {
 						<i class="fa-solid fa-play" id="controlIcon"></i>
 						<img src="../assets/icons/controller/play.png" alt="" style="width: 60%">
 					</button>
+<!--                    <button class="play-pause-btn" style="margin: 0 10px 0 10px">-->
+<!--                        <i class="fa-solid fa-play" id="controlIcon"></i>-->
+<!--                        <img src="../assets/icons/controller/pause.png" alt="" style="width: 60%">-->
+<!--                    </button>-->
 					<button class="forward" style="margin: 0 10px 0 10px">
 						<i class="fa-solid fa-forward"></i>
 						<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
