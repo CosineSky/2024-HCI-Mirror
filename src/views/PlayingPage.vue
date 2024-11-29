@@ -2,7 +2,7 @@
 import {computed, onMounted, ref, watch} from "vue";
 import {parseLrc} from "../utils/parseLyrics"
 import ColorThief from "colorthief";
-import {PLAY, PAUSE} from "../assets/base64";
+import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
 
 
 
@@ -103,6 +103,7 @@ const songs = [
     }
 ];
 const isPaused = ref(false);
+const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
 const currentSongIndex = ref(0);
 
 
@@ -110,14 +111,22 @@ const currentSongIndex = ref(0);
 /*
     ORIGINAL DESIGNS
  */
-let progress;
+// main-elements
 let song;
-let controlIcon;
+let progress;
+let songName;
+let artistName;
+
+// buttons
 let playPauseButton;
 let forwardButton;
 let backwardButton;
-let songName;
-let artistName;
+let playModeButton;
+let shareButton;
+
+// icons
+let controlIcon;
+let playModeIcon;
 
 
 
@@ -214,10 +223,12 @@ onMounted(() => {
     song = document.getElementById("song");
     progress = document.getElementById("progress");
     controlIcon = document.getElementById("controlIcon");
-    console.log(controlIcon)
+    playModeIcon = document.getElementById("playModeIcon");
 	playPauseButton = document.querySelector(".play-pause-btn");
 	forwardButton = document.querySelector(".controls button.forward");
 	backwardButton = document.querySelector(".controls button.backward");
+    playModeButton = document.querySelector(".play-mode-btn");
+    shareButton = document.querySelector(".share-btn");
 	songName = document.querySelector(".music-info p");
     artistName = document.querySelector(".music-info span");
 
@@ -246,6 +257,10 @@ onMounted(() => {
 			progress.value = song.currentTime;
 		}
 	});
+    
+    function shareSong() {
+        console.log("Hello!");
+    }
 
 	function playPause() {
         isPaused.value = !isPaused.value;
@@ -257,8 +272,26 @@ onMounted(() => {
             controlIcon.src = PAUSE;
 		}
 	}
+    function switchPlayMode() {
+        playingMode.value = (playingMode.value + 1) % 3
+        switch (playingMode.value) {
+            case 0:
+                playModeIcon.src = NORMAL_MODE;
+                break;
+            case 1:
+                playModeIcon.src = LOOP_MODE;
+                break;
+            case 2:
+                playModeIcon.src = RANDOM_MODE;
+                break;
+            default:
+                break;
+        }
+    }
 
-	playPauseButton.addEventListener("click", playPause);
+	shareButton.addEventListener("click", shareSong);
+    playPauseButton.addEventListener("click", playPause);
+    playModeButton.addEventListener("click", switchPlayMode);
 
 	progress.addEventListener("input", function () {
 		song.currentTime = progress.value;
@@ -342,7 +375,7 @@ onMounted(() => {
                         transform: translateX(-50%);
                     ">
                         <div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
-                            <button class="play-settings" style="margin: 0">
+                            <button class="share-btn" style="margin: 0">
                                 <img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
                             </button>
                             <button class="backward" style="margin: 0 10px 0 10px">
@@ -354,8 +387,8 @@ onMounted(() => {
                             <button class="forward" style="margin: 0 10px 0 10px">
                                 <img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
                             </button>
-                            <button class="play-settings" style="margin: 0">
-                                <img src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+                            <button class="play-mode-btn" style="margin: 0">
+                                <img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
                             </button>
                         </div>
                         <div style="display: flex; flex-direction: row;">
