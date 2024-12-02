@@ -5,6 +5,7 @@ import {onMounted} from "vue";
 import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
 import {ElLoading} from "element-plus";
 import {parseLrc} from "../utils/parseLyrics";
+import Header from "../components/Header.vue";
 
 const current_view = ref();
 const album_selected = ref(false);
@@ -211,6 +212,7 @@ onMounted(() => {
 
 <template>
 	<body>
+    <Header />
 		<main @click="unSelectAlbum">
 			<nav class="main-menu">
 				<div>
