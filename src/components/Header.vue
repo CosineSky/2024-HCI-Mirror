@@ -1,7 +1,14 @@
 <script setup>
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
+import {ref} from "vue";
 
-const router = useRouter()
+const router = useRouter();
+
+const showDropdown = ref(false);
+function toggleDropdown() {
+  showDropdown.value =!showDropdown.value;
+}
+
 </script>
 
 <template>
@@ -12,8 +19,24 @@ const router = useRouter()
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
     </router-link>
-    <input type="text" placeholder="想播放什么？" />
-    <button class="login-btn" >登录</button>
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" placeholder="想播放什么？" />
+    </div>
+    <div class="role-btn" @click="toggleDropdown">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+    <div class="dropdown" v-show="showDropdown">
+      <button >个人资料</button>
+      <button >设置</button>
+      <button >退出</button>
+    </div>
   </div>
 </template>
 
@@ -46,26 +69,42 @@ const router = useRouter()
 }
 
 .home-btn svg {
-  width: 24px;
-  height: 24px;
-  margin-right: 5px;
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.search-box svg {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
 }
 
 input[type="text"] {
   padding: 5px;
   border-radius: 5px;
   margin: auto;
-  width: 50%;
-  height: 50%;
+  width: 150%;
+  height: 150%;
   background-color: rgba(200, 187, 255, 0.6);
   border: 2px solid rgba(222, 215, 255, 0.9);
   box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
+  color: #fff;
+  font-size: 18px;
 }
 
 input[type="text"]::placeholder {
   color: #fff;
   opacity: 0.7;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 input[type="text"]:focus {
@@ -73,13 +112,49 @@ input[type="text"]:focus {
   border-color: #fff;
 }
 
-.login-btn {
-  background-color: rgb(77, 58, 162);
-  border: 4px solid rgb(234, 229, 255);
-  box-shadow: 0 6px 10px rgba(200, 187, 255, 0.4);
+.role-btn {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
   color: #fff;
-  padding: 5px 10px;
-  border-radius: 5px;
+  text-decoration: none;
   cursor: pointer;
+}
+
+.role-btn svg {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: rgba(17, 6, 58, 0.7);
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 120px;
+}
+
+.dropdown button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: rgba(17, 6, 58, 0.7);
+  color: #fff;
+  text-align: left;
+  font-size: 18px;
+}
+
+.dropdown button:last-child {
+  margin-top: 1px;
+  border-top: 1px solid #fff;
 }
 </style>
