@@ -59,11 +59,11 @@ const currentSongIndex = ref(0);
 
 
 onMounted(() => {
-    ElLoading.service({
-        lock: true,
-        text: 'Loading',
-        background: 'rgba(0, 0, 0, 0.7)',
-    })
+    // ElLoading.service({
+    //     lock: true,
+    //     text: 'Loading',
+    //     background: 'rgba(0, 0, 0, 0.7)',
+    // })
     const navItems = document.querySelectorAll(".nav-item");
     
     navItems.forEach((navItem) => {

@@ -1,37 +1,31 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {userInfo, userLogin, userRegister} from "../api/user.js";
-import {ElMessage} from "element-plus";
+import {userLogin, userRegister} from "../api/user.js";
 import {router} from "../router";
 
 const login_email = ref("cossky@outlook.com")
 const login_password = ref("1145141919810")
+const login_prompt = ref("")
+
 const register_name = ref("CosSky")
 const register_email = ref("cossky@outlook.com")
 const register_password = ref("1145141919810")
+const register_prompt = ref("")
 
 function handleLogin() {
 	userLogin({
 		email: login_email.value,
 		password: login_password.value,
 	}).then(res => {
-        console.log("Hi")
 		if (res.data.code === '000' || res.data.code === '200') {
-			ElMessage({
-				message: "Login successfully！",
-				type: 'success',
-				center: true,
-			})
 			sessionStorage.setItem('token', res.data.result)
             router.push({path: "/home"})
 		} else if (res.data.code === '400') {
-			ElMessage({
-				message: res.data.msg,
-				type: 'error',
-				center: true,
-			})
+  
 		}
-	})
+	}).catch(() => {
+        login_prompt.value = "Wrong email or password! :(";
+    })
 }
 function handleRegister() {
 	userRegister({
@@ -40,22 +34,16 @@ function handleRegister() {
 		password: register_password.value,
 	}).then(res => {
 		if (res.data.code === '000' || res.data.code === '200') {
-			ElMessage({
-				message: "Register successfully!",
-				type: 'success',
-				center: true,
-			})
+
             let userForms = document.getElementById('user_options-forms')
             userForms.classList.remove('bounceLeft')
             userForms.classList.add('bounceRight')
 		} else if (res.data.code === '400') {
-			ElMessage({
-				message: res.data.msg,
-				type: 'error',
-				center: true,
-			})
+
 		}
-	})
+	}).catch(() => {
+        register_prompt.value = "Email already taken! :(";
+    })
 }
 
 onMounted(() => {
@@ -72,6 +60,7 @@ onMounted(() => {
 	signupButton.addEventListener('click', () => {
 		userForms.classList.remove('bounceRight')
 		userForms.classList.add('bounceLeft')
+        register_prompt.value = "";
 	}, false)
 
 	/**
@@ -80,6 +69,7 @@ onMounted(() => {
 	loginButton.addEventListener('click', () => {
 		userForms.classList.remove('bounceLeft')
 		userForms.classList.add('bounceRight')
+        login_prompt.value = "";
 	}, false)
 })
 
@@ -109,12 +99,13 @@ onMounted(() => {
 						<form class="forms_form">
 							<fieldset class="forms_fieldset">
 								<div class="forms_field">
-									<input type="email" :value="login_email" placeholder="Email" class="forms_field-input" required autofocus />
+									<input type="email" v-model="login_email" placeholder="Email" class="forms_field-input" required autofocus />
 								</div>
 								<div class="forms_field">
-									<input type="password" :value="login_password" placeholder="Password" class="forms_field-input" required />
+									<input type="password" v-model="login_password" placeholder="Password" class="forms_field-input" required />
 								</div>
 							</fieldset>
+                            <p style="font-family: 'Comic Sans MS', serif; color: red">{{ login_prompt }}</p>
 							<div class="forms_buttons">
 								<button type="button" class="forms_buttons-forgot">Forgot password?</button>
 								<input @click="handleLogin" type="submit" value="Log In" class="forms_buttons-action">
@@ -126,15 +117,16 @@ onMounted(() => {
 						<form class="forms_form">
 							<fieldset class="forms_fieldset">
 								<div class="forms_field">
-									<input type="text" :value="register_name" placeholder="Username" class="forms_field-input" required />
+									<input type="text" v-model="register_name" placeholder="Username" class="forms_field-input" required />
 								</div>
 								<div class="forms_field">
-									<input type="email" :value="register_email" placeholder="Email" class="forms_field-input" required />
+									<input type="email" v-model="register_email" placeholder="Email" class="forms_field-input" required />
 								</div>
 								<div class="forms_field">
-									<input type="password" :value="register_password" placeholder="Password" class="forms_field-input" required />
+									<input type="password" v-model="register_password" placeholder="Password" class="forms_field-input" required />
 								</div>
 							</fieldset>
+                            <p style="font-family: 'Comic Sans MS', serif; color: red">{{ register_prompt }}</p>
 							<div class="forms_buttons">
 								<input @click="handleRegister" type="submit" value="Sign up" class="forms_buttons-action">
 							</div>
@@ -162,11 +154,13 @@ onMounted(() => {
 }
 
 body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
 	font-family: "Nunito", sans-serif;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 100vh;
 	background-image: url("../assets/pictures/bg2.jpg");
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -485,4 +479,6 @@ input::placeholder {
 		padding: 50px 45px;
 	}
 }
+
+
 </style>
