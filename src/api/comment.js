@@ -8,7 +8,8 @@ import { COMMENT_MODULE } from './_prefix';
     song_name: string
  */
 export const commentSong = (commentSongInfo) => {
-    return axios.post(`${COMMENT_MODULE}/song`, null, { params: commentSongInfo })
+    return axios.post(`${COMMENT_MODULE}/song`, commentSongInfo,
+        { headers: { 'Content-Type': 'application/json' } })
         .then(res => {
             return res;
         });

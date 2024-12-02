@@ -7,6 +7,7 @@ import { USER_MODULE } from './_prefix';
     password: string
  */
 export const userLogin = (loginInfo) => {
+    console.log(loginInfo)
     return axios.post(`${USER_MODULE}/login`, loginInfo,
         { headers: { 'Content-Type': 'application/json' } })
         .then(res => {
@@ -20,6 +21,7 @@ export const userLogin = (loginInfo) => {
     password: string
  */
 export const userRegister = (registerInfo) => {
+    console.log(registerInfo)
     return axios.post(`${USER_MODULE}/register`, registerInfo,
         { headers: { 'Content-Type': 'application/json' } })
         .then(res => {

@@ -3,6 +3,7 @@ import {computed, onMounted, ref, watch} from "vue";
 import {parseLrc} from "../utils/parseLyrics"
 import ColorThief from "colorthief";
 import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
+import {router} from "../router";
 
 
 
@@ -412,6 +413,9 @@ onMounted(() => {
                 <button @click="toggleFullScreen" class="corner-button">
                     <span v-if="isFullScreen">↖</span>
                     <span v-else>⛶</span>
+                </button>
+                <button @click="router.push('/home')" class="corner-button">
+                    <span>◀</span>
                 </button>
             </div>
         </div>

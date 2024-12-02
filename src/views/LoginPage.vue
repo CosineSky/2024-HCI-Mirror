@@ -2,6 +2,7 @@
 import {onMounted, ref} from "vue";
 import {userInfo, userLogin, userRegister} from "../api/user.js";
 import {ElMessage} from "element-plus";
+import {router} from "../router";
 
 const login_email = ref("cossky@outlook.com")
 const login_password = ref("1145141919810")
@@ -14,35 +15,27 @@ function handleLogin() {
 		email: login_email.value,
 		password: login_password.value,
 	}).then(res => {
+        console.log("Hi")
 		if (res.data.code === '000' || res.data.code === '200') {
 			ElMessage({
 				message: "Login successfully！",
 				type: 'success',
 				center: true,
 			})
-			const token = res.data.result
-			sessionStorage.setItem('token', token)
-
-			userInfo().then(res => {
-				sessionStorage.setItem('userId', res.data.result.uid)
-				sessionStorage.setItem('name', res.data.result.name)
-				sessionStorage.setItem('role', res.data.result.role)
-				sessionStorage.setItem('storeId', res.data.result.shopId)
-				router.push({path: "/home"})
-			})
+			sessionStorage.setItem('token', res.data.result)
+            router.push({path: "/home"})
 		} else if (res.data.code === '400') {
 			ElMessage({
 				message: res.data.msg,
 				type: 'error',
 				center: true,
 			})
-			password.value = ''
 		}
 	})
 }
 function handleRegister() {
 	userRegister({
-		name: register_name.value,
+		username: register_name.value,
 		email: register_email.value,
 		password: register_password.value,
 	}).then(res => {
@@ -52,6 +45,9 @@ function handleRegister() {
 				type: 'success',
 				center: true,
 			})
+            let userForms = document.getElementById('user_options-forms')
+            userForms.classList.remove('bounceLeft')
+            userForms.classList.add('bounceRight')
 		} else if (res.data.code === '400') {
 			ElMessage({
 				message: res.data.msg,
@@ -74,7 +70,6 @@ onMounted(() => {
 	 * Add event listener to the "Sign Up" button
 	 */
 	signupButton.addEventListener('click', () => {
-		handleRegister();
 		userForms.classList.remove('bounceRight')
 		userForms.classList.add('bounceLeft')
 	}, false)
@@ -83,7 +78,6 @@ onMounted(() => {
 	 * Add event listener to the "Login" button
 	 */
 	loginButton.addEventListener('click', () => {
-		handleLogin();
 		userForms.classList.remove('bounceLeft')
 		userForms.classList.add('bounceRight')
 	}, false)
@@ -115,15 +109,15 @@ onMounted(() => {
 						<form class="forms_form">
 							<fieldset class="forms_fieldset">
 								<div class="forms_field">
-									<input type="email" placeholder="Email" class="forms_field-input" required autofocus />
+									<input type="email" :value="login_email" placeholder="Email" class="forms_field-input" required autofocus />
 								</div>
 								<div class="forms_field">
-									<input type="password" placeholder="Password" class="forms_field-input" required />
+									<input type="password" :value="login_password" placeholder="Password" class="forms_field-input" required />
 								</div>
 							</fieldset>
 							<div class="forms_buttons">
 								<button type="button" class="forms_buttons-forgot">Forgot password?</button>
-								<input type="submit" value="Log In" class="forms_buttons-action">
+								<input @click="handleLogin" type="submit" value="Log In" class="forms_buttons-action">
 							</div>
 						</form>
 					</div>
@@ -132,17 +126,17 @@ onMounted(() => {
 						<form class="forms_form">
 							<fieldset class="forms_fieldset">
 								<div class="forms_field">
-									<input type="text" placeholder="Username" class="forms_field-input" required />
+									<input type="text" :value="register_name" placeholder="Username" class="forms_field-input" required />
 								</div>
 								<div class="forms_field">
-									<input type="email" placeholder="Email" class="forms_field-input" required />
+									<input type="email" :value="register_email" placeholder="Email" class="forms_field-input" required />
 								</div>
 								<div class="forms_field">
-									<input type="password" placeholder="Password" class="forms_field-input" required />
+									<input type="password" :value="register_password" placeholder="Password" class="forms_field-input" required />
 								</div>
 							</fieldset>
 							<div class="forms_buttons">
-								<input type="submit" value="Sign up" class="forms_buttons-action">
+								<input @click="handleRegister" type="submit" value="Sign up" class="forms_buttons-action">
 							</div>
 						</form>
 					</div>
