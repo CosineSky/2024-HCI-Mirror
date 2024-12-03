@@ -3,12 +3,30 @@ import { useRouter } from "vue-router";
 import {ref} from "vue";
 
 const router = useRouter();
+const searchInput = ref('');
 
 const showDropdown = ref(false);
 function toggleDropdown() {
   showDropdown.value =!showDropdown.value;
 }
 
+function exit() {
+  router.push('/login');
+}
+
+function callPersonalData() {
+
+}
+
+function callSetting() {
+
+}
+
+function search() {
+  search(searchInput).then(res => {
+
+  })
+}
 </script>
 
 <template>
@@ -24,7 +42,7 @@ function toggleDropdown() {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" placeholder="想播放什么？" />
+      <input type="text" v-model="searchInput" placeholder="想播放什么？" @keyup.enter="search" />
     </div>
     <div class="role-btn" @click="toggleDropdown">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
@@ -33,9 +51,9 @@ function toggleDropdown() {
       </svg>
     </div>
     <div class="dropdown" v-show="showDropdown">
-      <button >个人资料</button>
-      <button >设置</button>
-      <button >退出</button>
+      <button @click="callPersonalData">个人资料</button>
+      <button @click="callSetting">设置</button>
+      <button @click="exit">退出</button>
     </div>
   </div>
 </template>
