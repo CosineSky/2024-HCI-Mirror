@@ -9,7 +9,7 @@ import Header from "../components/Header.vue";
 import Comment from "../components/Comment.vue";
 import LeftSideBar from "../components/LeftSideBar.vue";
 import {useTheme} from "@/store/theme";
-import defaultBg from '@/assets/pictures/jj.png'
+import defaultBg from '@/assets/pictures/Eason.png'
 
 
 const current_view = ref();

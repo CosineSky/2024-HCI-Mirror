@@ -108,27 +108,29 @@ function callSearch() {
 }
 
 input[type="text"] {
-  padding: 5px;
-  border-radius: 5px;
+  padding: 8px 12px;
+  border-radius: 20px;
   margin: auto;
   width: 150%;
-  height: 150%;
-  background-color: rgba(200, 187, 255, 0.6);
-  border: 2px solid rgba(222, 215, 255, 0.9);
-  box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 input[type="text"]::placeholder {
-  color: #fff;
-  opacity: 0.7;
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
 }
 
 input[type="text"]:focus {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+  outline: none;
 }
 
 .role-btn {
