@@ -8,6 +8,9 @@ import {parseLrc} from "../utils/parseLyrics";
 import Header from "../components/Header.vue";
 import Comment from "../components/Comment.vue";
 import LeftSideBar from "../components/LeftSideBar.vue";
+import {useTheme} from "@/store/theme";
+import defaultBg from '@/assets/pictures/jj.png'
+
 
 const current_view = ref();
 const album_selected = ref(false);
@@ -69,7 +72,9 @@ function toggleComment(){
   show_comment.value = !show_comment.value
 }
 
+const theme = useTheme()
 onMounted(() => {
+  theme.change(defaultBg)
     // ElLoading.service({
     //     lock: true,
     //     text: 'Loading',
