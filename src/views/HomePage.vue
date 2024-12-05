@@ -4,6 +4,10 @@ import {ref} from "vue"
 import {onMounted} from "vue";
 import {fullScreenLoadingShort} from "@/utils/visuals.js";
 import {ElLoading} from "element-plus";
+import LeftSideBar from "../components/LeftSideBar.vue";
+
+import 'overlayscrollbars/overlayscrollbars.css';
+import { OverlayScrollbarsComponent } from "overlayscrollbars-vue";
 
 const current_view = ref();
 const album_selected = ref(false);
@@ -29,7 +33,7 @@ onMounted(() => {
 	navItems.forEach((navItem) => {
 		navItem.addEventListener("click", () => {
 			navItems.forEach((item) => {
-				item.className = "nav-item";
+				item.className = "nav-item";  // 😍😍
 			});
 			navItem.className = "nav-item active";
 		});
@@ -111,7 +115,7 @@ onMounted(() => {
 	}
 
 	function rotateImage() {
-		currentRotation += 1;
+    currentRotation += 1;
 		rotatingImage.style.transform = `rotate(${currentRotation}deg)`;
 	}
 
@@ -183,53 +187,16 @@ onMounted(() => {
 	});
 
 	updateSongInfo();
-})
+}) // mount 结束
+
 </script>
 
 <template>
 	<body>
 		<main @click="unSelectAlbum">
-			<nav class="main-menu">
-				<div>
-					<div class="user-info">
-						<router-link to="/profile">
-							<img src="../assets/pictures/avatar.png" alt="user"/>
-						</router-link>
-						<p>CosSky</p>
-					</div>
-					<ul>
+      <left-side-bar>
 
-						<li class="nav-item">
-							<a href="#" @click="current_view = 'discover'">
-								<i class="fa fa-compact-disc nav-icon"></i>
-								<span class="nav-text">Discover</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a href="#" @click="current_view = 'playlist'">
-								<i class="fa fa-circle-play nav-icon"></i>
-								<span class="nav-text">Playlist</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a href="#settings">
-								<i class="fa fa-gear nav-icon"></i>
-								<span class="nav-text">Settings</span>
-							</a>
-						</li>
-
-					</ul>
-				</div>
-
-				<ul>
-					<li class="nav-item">
-						<a href="#/login">
-							<i class="fa fa-right-from-bracket nav-icon"></i>
-							<span class="nav-text">Logout</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
+      </left-side-bar>
 
 			<section class="content">
 				<div class="left-content">
@@ -339,31 +306,33 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 256px">
-							<div v-for="_ in 10" class="playlist-item" style="display: flex; flex-direction: row">
-								<div>
-									<img src="../assets/pictures/bg1.jpg" alt=""/>
-								</div>
-								<div style="display: flex; flex-direction: column; margin-left: 10px">
-									<p class="playlist-container-desc" style="
-										color: white;
-										font-size: 16px;
-										text-align: left;
-										overflow: auto;
-										width: 240px;
-										height: 24px
-									">Unknown Song</p>
-									<p class="playlist-container-desc" style="
-										color: white;
-										font-size: 12px;
-										text-align: left;
-										overflow: auto;
-										width: 240px;
-										height: 18px
-									">testtesttesttesttesttesttesttesttesttest</p>
-								</div>
-							</div>
-						</el-container>
+            <OverlayScrollbarsComponent>
+              <el-container class="playlist-container" style="overflow: auto; height: 256px">
+                <div v-for="_ in 10" class="playlist-item" style="display: flex; flex-direction: row">
+                  <div>
+                    <img src="../assets/pictures/bg1.jpg" alt=""/>
+                  </div>
+                  <div style="display: flex; flex-direction: column; margin-left: 10px">
+                    <p class="playlist-container-desc" style="
+                      color: white;
+                      font-size: 16px;
+                      text-align: left;
+                      overflow: auto;
+                      width: 240px;
+                      height: 24px
+                    ">Unknown Song</p>
+                    <p class="playlist-container-desc" style="
+                      color: white;
+                      font-size: 12px;
+                      text-align: left;
+                      overflow: auto;
+                      width: 240px;
+                      height: 18px
+                    ">testtesttesttesttesttesttesttesttesttest</p>
+                  </div>
+                </div>
+              </el-container>
+            </OverlayScrollbarsComponent>
 					</div>
 
 				</div>
@@ -429,6 +398,7 @@ onMounted(() => {
 
 <style scoped>
 
+
 *,
 *::before,
 *::after {
@@ -437,26 +407,6 @@ onMounted(() => {
 	margin: 0;
 }
 
-nav {
-	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-o-user-select: none;
-}
-
-nav ul,
-nav ul li {
-	outline: 0;
-}
-
-nav ul li a {
-	text-decoration: none;
-}
-
-img {
-	width: 100%;
-}
 
 h1 {
 	font-size: clamp(1.2rem, 3vw, 1.5rem);
@@ -477,8 +427,8 @@ body {
 /* MAIN MENU */
 
 main {
-	display: grid;
-	grid-template-columns: 11% 89%;
+	display: grid; /*子元素使用grid排列*/
+  position:relative;
 	height: 600px;
 	width: 95%;
 	margin: 20px 0 0 0;
@@ -515,57 +465,6 @@ footer {
 	color: #333;
 }
 
-.main-menu {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	border-radius: 15px 0 0 15px;
-	border-right: 1px solid rgba(255, 255, 255, 0.5);
-	padding: 12px 0 20px;
-	overflow: hidden;
-	font-family: inherit;
-}
-
-.user-info img {
-	padding: 12px 24px 6px;
-	border-radius: 50%;
-}
-
-.user-info p {
-	color: #fff;
-	font-size: clamp(0.8rem, 3vw, 1rem);
-	font-weight: 500;
-	text-align: center;
-	line-height: 1;
-	padding: 0 6px 32px;
-}
-
-.nav-item {
-	display: block;
-}
-
-.nav-item a {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #fff;
-	font-size: 1rem;
-	padding: 12px 0;
-	margin: 0 8px;
-	border-radius: 5px;
-}
-
-.nav-item.active a {
-	background: rgba(106, 109, 155, 0.5);
-	text-decoration: none;
-}
-
-.nav-icon {
-	width: 40px;
-	height: 20px;
-	font-size: 1.1rem;
-}
-
 
 /* CONTENT */
 
@@ -578,6 +477,7 @@ footer {
 
 .left-content {
 	display: flex;
+  width:100%;
 	flex-direction: column;
 	justify-content: center;
 	padding: 30px 20px;
