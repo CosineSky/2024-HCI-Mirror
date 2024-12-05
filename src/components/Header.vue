@@ -1,6 +1,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import {ref} from "vue";
+import {search} from "@/api/search";
+import {userInfo} from "@/api/user";
 
 const router = useRouter();
 const searchInput = ref('');
@@ -23,7 +25,7 @@ function callSetting() {
 }
 
 function search() {
-  search(searchInput).then(res => {
+  search(searchInput.value).then(res => {
 
   })
 }
