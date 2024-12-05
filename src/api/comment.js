@@ -1,9 +1,14 @@
 import { axios } from '../utils/request';
 import { COMMENT_MODULE } from './_prefix';
+
+
 /*
-    songId: number
+    // TODO - modified
+    - commenter_user_name: string
+    - song_name: string
     comment: string
-    userId: number
+    + commenter_user_id: number
+    + song_id: number
  */
 export const commentSong = (commentSongInfo) => {
     return axios.post(`${COMMENT_MODULE}/song`, commentSongInfo,
@@ -14,9 +19,13 @@ export const commentSong = (commentSongInfo) => {
 }
 
 /*
-    playlistId: number
+    // TODO - modified
+    - commenter_user_name: string
+    - playlist_owner_name: string
+    - playlist_name: string
     comment: string
-    userId: number
+    + commenter_user_id: number
+    + playlist_id: number
  */
 export const commentPlaylist = (commentPlaylistInfo) => {
     return axios.post(`${COMMENT_MODULE}/playlist`, commentPlaylistInfo,
@@ -25,16 +34,3 @@ export const commentPlaylist = (commentPlaylistInfo) => {
             return res;
         });
 }
-
-/*
-    songId: number
-    page: number
- */
-export const commentInfo = (commentInfo) => {
-    console.log(commentInfo)
-    return axios.get(`${COMMENT_MODULE}/${commentInfo.songId}`)
-        .then((res) => {
-            return res
-        })
-}
-
