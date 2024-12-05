@@ -24,7 +24,7 @@ function callSetting() {
 
 }
 
-function search() {
+function callSearch() {
   search(searchInput.value).then(res => {
 
   })
