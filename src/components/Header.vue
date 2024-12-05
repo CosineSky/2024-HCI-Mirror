@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import {ref} from "vue";
-import {search} from "@/api/search";
+import {searchByKeyword} from "../api/search";
 import {userInfo} from "@/api/user";
 
 const router = useRouter();
@@ -17,18 +17,21 @@ function exit() {
 }
 
 function callPersonalData() {
-
+    router.push('/profile');
 }
 
 function callSetting() {
   router.push('/settings');
-
 }
 
 function callSearch() {
-  search(searchInput.value).then(res => {
-
-  })
+    searchByKeyword({keyword: searchInput.value})
+    .then(res => {
+        console.log("true")
+    })
+    .catch(() => {
+        console.log("false")
+    })
 }
 </script>
 
@@ -53,7 +56,7 @@ function callSearch() {
         <circle cx="12" cy="7" r="4"></circle>
       </svg>
     </div>
-    <div class="dropdown" v-show="showDropdown">
+    <div class="dropdown" v-show="showDropdown" style="z-index: 2147483647">
       <button @click="callPersonalData">个人资料</button>
       <button @click="callSetting">设置</button>
       <button @click="exit">退出</button>
@@ -68,12 +71,7 @@ function callSearch() {
   align-items: center;
   padding: 10px 20px;
   width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  height: 100px;
+  height: 60px;
   background-color: rgba(17, 6, 58, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -155,7 +153,7 @@ input[type="text"]:focus {
   background-color: rgba(17, 6, 58, 0.7);
   border: 1px solid #ccc;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  z-index: 2147483647;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -169,12 +167,14 @@ input[type="text"]:focus {
   cursor: pointer;
   transition: background-color 0.3s ease;
   background-color: rgba(17, 6, 58, 0.7);
+    z-index: 2147483647;
   color: #fff;
   text-align: left;
   font-size: 18px;
 }
 
 .dropdown button:last-child {
+    z-index: 2147483647;
   margin-top: 1px;
   border-top: 1px solid #fff;
 }

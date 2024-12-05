@@ -29,7 +29,7 @@ const showDetail = ref(false)
 onMounted(() => {
   watch(bg, (val) => {
     toggleImg(val).then((img) => {
-      imgEl.value!.style.backgroundImage = `url(${img.src})`
+      imgEl.value.style.backgroundImage = `url(${img.src})`
     })
   })
 })
@@ -109,13 +109,13 @@ function adjustHeight(event) {
       <div class="info">
         <div ref="imgEl" class="bg-img"></div>
         <div class="song-info">
-          <div class="song-name">{{ (state.song as GetMusicDetailData).song.name }}</div>
+          <div class="song-name">{{ (state.song).song.name }}</div>
           <div class="singers">
             <div class="singer-info">
               <span v-for="(item, index) in state.song.singer"
               >歌手:
                 {{
-                  item.name + (index < (state.song as GetMusicDetailData).singer.length - 1 ? '/' : '')
+                  item.name + (index < (state.song).singer.length - 1 ? '/' : '')
                 }}</span
               >
             </div>
@@ -274,7 +274,7 @@ function adjustHeight(event) {
         width: 130px;
         height: 130px;
         border-radius: 10px;
-        .bgSetting();
+        //.bgSetting();
         margin-right: 20px;
       }
     }
@@ -392,7 +392,7 @@ function adjustHeight(event) {
               border-radius: 50%;
               background-color: #42b983;
               margin-right: 20px;
-              .bgSetting();
+              //.bgSetting();
             }
 
             .right-box {

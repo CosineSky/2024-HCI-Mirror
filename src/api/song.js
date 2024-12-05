@@ -3,8 +3,10 @@ import { SONG_MODULE } from './_prefix';
 
 
 /*
-    playlist_name: string
-    user_name: string
+    // TODO - modified
+    - playlist_name: string
+    - user_name: string
+    + playlist_id: number
  */
 export const getSongsByPlaylist = (playlistInfo) => {
     return axios.get(`${SONG_MODULE}/fetch`, { params: playlistInfo })

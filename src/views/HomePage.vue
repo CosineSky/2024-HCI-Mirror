@@ -6,6 +6,7 @@ import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64
 import {ElLoading} from "element-plus";
 import {parseLrc} from "../utils/parseLyrics";
 import Header from "../components/Header.vue";
+import LeftSideBar from "../components/LeftSideBar.vue";
 
 const current_view = ref();
 const album_selected = ref(false);
@@ -57,6 +58,10 @@ const isPaused = ref(false);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
 const currentSongIndex = ref(0);
 
+
+setInterval(() => {
+    console.log(sessionStorage.getItem('token'))
+}, 500)
 
 
 onMounted(() => {
@@ -212,50 +217,50 @@ onMounted(() => {
 
 <template>
 	<body>
-    <Header />
+        <Header/>
 		<main @click="unSelectAlbum">
-			<nav class="main-menu">
-				<div>
-					<div class="user-info">
-						<router-link to="/profile">
-							<img src="../assets/pictures/avatar.png" alt="user"/>
-						</router-link>
-						<p>CosSky</p>
-					</div>
-					<ul>
+<!--			<nav class="main-menu">-->
+<!--				<div>-->
+<!--					<div class="user-info">-->
+<!--						<router-link to="/profile">-->
+<!--							<img src="../assets/pictures/avatar.png" alt="user"/>-->
+<!--						</router-link>-->
+<!--						<p>CosSky</p>-->
+<!--					</div>-->
+<!--					<ul>-->
 
-						<li class="nav-item">
-							<a href="#" @click="current_view = 'discover'">
-								<i class="fa fa-compact-disc nav-icon"></i>
-								<span class="nav-text">Discover</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a href="#" @click="current_view = 'playlist'">
-								<i class="fa fa-circle-play nav-icon"></i>
-								<span class="nav-text">Playlist</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a href="#settings">
-								<i class="fa fa-gear nav-icon"></i>
-								<span class="nav-text">Settings</span>
-							</a>
-						</li>
+<!--						<li class="nav-item">-->
+<!--							<a href="#" @click="current_view = 'discover'">-->
+<!--								<i class="fa fa-compact-disc nav-icon"></i>-->
+<!--								<span class="nav-text">Discover</span>-->
+<!--							</a>-->
+<!--						</li>-->
+<!--						<li class="nav-item">-->
+<!--							<a href="#" @click="current_view = 'playlist'">-->
+<!--								<i class="fa fa-circle-play nav-icon"></i>-->
+<!--								<span class="nav-text">Playlist</span>-->
+<!--							</a>-->
+<!--						</li>-->
+<!--						<li class="nav-item">-->
+<!--							<a href="#settings">-->
+<!--								<i class="fa fa-gear nav-icon"></i>-->
+<!--								<span class="nav-text">Settings</span>-->
+<!--							</a>-->
+<!--						</li>-->
 
-					</ul>
-				</div>
+<!--					</ul>-->
+<!--				</div>-->
 
-				<ul>
-					<li class="nav-item">
-						<a href="#/login">
-							<i class="fa fa-right-from-bracket nav-icon"></i>
-							<span class="nav-text">Logout</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
-
+<!--				<ul>-->
+<!--					<li class="nav-item">-->
+<!--						<a href="#/login">-->
+<!--							<i class="fa fa-right-from-bracket nav-icon"></i>-->
+<!--							<span class="nav-text">Logout</span>-->
+<!--						</a>-->
+<!--					</li>-->
+<!--				</ul>-->
+<!--			</nav>-->
+            <left-side-bar/>
 			<section class="content">
 				<div class="left-content">
 					<div class="albums" v-if="!album_selected">
@@ -332,9 +337,7 @@ onMounted(() => {
 				            <p style="text-align: left; margin-left: 20px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eius ipsa, praesentium. Aliquid blanditiis excepturi, expedita fugiat illum iure labore nulla placeat quasi quidem ratione rem reprehenderit tempore temporibus voluptate voluptatum?</p>
 				        </div>
 				    </div>
-
 				</div>
-
 				<div class="right-content">
 					<div class="music-player music-info">
 						<a href="#play" style="margin: 10px 0 0 0;">
@@ -920,7 +923,7 @@ footer {
 /* MEDIA QUERIES */
 @media (max-width: 1500px) {
 	main {
-		grid-template-columns: 12% 88%;
+		grid-template-columns: 15% 85%;
 	}
 
 	.user-info img {
