@@ -1,14 +1,14 @@
 <script setup>
 import {reactive, ref, onMounted, watch, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {toggleImg} from '@/utils'
-import {commentInfo, commentSong, commentPlaylist} from "@/api/comment"
-import {getUserById} from "@/api/user"
+import {toggleImg} from '../utils'
+import {commentInfo, commentSong, commentPlaylist} from "../api/comment"
+import {getUserById} from "../api/user"
 import {ElMessage} from "element-plus"
-import defaultBg from '@/assets/pictures/jj.png'
-import likeIcon from '@/assets/icons/comment/点赞.png'
-import {useTheme} from "@/store/theme";
-import Pagination from "@/components/Pagination.vue";
+import defaultBg from '../assets/pictures/jj.png'
+import likeIcon from '../assets/icons/comment/点赞.png'
+import {useTheme} from "../store/theme";
+import Pagination from "../components/Pagination.vue";
 
 const theme = useTheme()
 const state = reactive({

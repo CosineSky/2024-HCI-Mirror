@@ -25,7 +25,7 @@
 
 # semgrep-sast:
 #   tags: [ docker ]
-  
+
 # gemnasium-dependency_scanning:
 #   tags: [ docker ]
 
@@ -140,13 +140,28 @@ lint-test-job:   # This job also runs in the test stage.
 sync_with_github:
   stage: sync
   script:
-    - git remote add github https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/2024-HCI-Mirror.git
-    - git push -u github --all
-    - git push -u github --tags
+    - echo "syncing"
+    # - git remote add github https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/2024-HCI-Mirror.git
+    # - git push -u github --all
+    # - git push -u github --tags
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
   environment: production
   script:
     - sshpass -p "1qaz" scp -o StrictHostKeyChecking=no demo.tar cloudsky@172.29.4.13:~
-    - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'docker container rm -f demo; docker load -i demo.tar; docker run -d --name demo -p 80:80 demo/front /bin/bash -c "nginx; tail -f /dev/null"'
+    - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'docker container rm -f demo; docker load -i demo.tar; docker run -d --name demo -e app_server_ip=172.29.4.13 -p 8080:8080 demo/front /bin/bash -c "nginx; tail -f /dev/null"'
+
+    # 1. 上传前端打包文件到云主机
+    # - sshpass -p "1qaz" scp -o StrictHostKeyChecking=no demo.tar cloudsky@172.29.4.13:~
+    # 2. 解压前端文件到 /var/www/html/demo 目录
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'tar -xf demo.tar -C /tmp'
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'tar -xvf demo.tar -C /var/www/html/demo'
+    # 3. 安装 nginx（如果尚未安装）
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'sudo apt update && sudo apt install -y nginx'
+    # 4. 配置 nginx：修改 default 配置文件，将 root 指向解压后的 demo 目录
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'sudo sed -i "s|root /var/www/html|root /var/www/html/demo;|g" /etc/nginx/sites-available/default'
+    # 5. 重启 nginx 使配置生效
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'sudo systemctl restart nginx'
+    # 6. 可选步骤：检查 nginx 状态
+    # - sshpass -p "1qaz" ssh -o StrictHostKeyChecking=no cloudsky@172.29.4.13 'sudo systemctl status nginx'

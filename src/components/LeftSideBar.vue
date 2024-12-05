@@ -75,6 +75,10 @@ onMounted(()=>{
 
     })
 })
+
+defineProps({
+    callParentFunction: Function
+})
 </script>
 
 <template>
@@ -98,6 +102,7 @@ onMounted(()=>{
              @mouseenter="()=>{hoverOnAlbum=true}"
              @mouseleave="()=>{hoverOnAlbum=false}"
              :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}">
+<!--            <button @click="callParentFunction('子组件传参')">调用父组件函数</button>-->
 
             <div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
                  :key="album.id"
@@ -112,9 +117,9 @@ onMounted(()=>{
                     class="musicAlbum-image"
                     :style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"
                 />
-                <play-button v-if="albumHoveredIndex === album.id" class="play-button"/>
+                <play-button @click="callParentFunction(album.id)" v-if="albumHoveredIndex === album.id" class="play-button"/>
                 
-                <div  class="musicAlbum-description">
+                <div class="musicAlbum-description">
                     <p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>
                     <p style="color: #b2b2b2;font-size: 13px">歌单 • {{user}}</p>
                 </div>

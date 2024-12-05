@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {userLogin, userRegister} from "../api/user.js";
+import {userInfo, userLogin, userRegister} from "../api/user.js";
 import {router} from "../router";
 
 const login_email = ref("cossky@outlook.com")
@@ -19,6 +19,10 @@ function handleLogin() {
 	}).then(res => {
 		if (res.data.code === '000' || res.data.code === '200') {
 			sessionStorage.setItem('token', res.data.result)
+            // userInfo().then(res => {
+            //     console.log("hi ", res.data.result)
+            //     sessionStorage.setItem('user', res.data.result)
+            // })
             router.push({path: "/home"})
 		} else if (res.data.code === '400') {
   
