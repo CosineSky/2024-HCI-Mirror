@@ -38,3 +38,12 @@ export const userInfo = () => {
             return res;
         });
 }
+/*
+    user_id: number
+ */
+export const getUserById = (userId) => {
+    return axios.get(`${USER_MODULE}/getUser`, {params: userId})
+        .then((res) => {
+            return res
+        })
+}
