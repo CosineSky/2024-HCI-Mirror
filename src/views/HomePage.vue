@@ -65,6 +65,9 @@ setInterval(() => {
     console.log(sessionStorage.getItem('token'))
 }, 500)
 
+function toggleComment(){
+  show_comment.value = !show_comment.value
+}
 
 onMounted(() => {
     // ElLoading.service({
@@ -188,7 +191,6 @@ onMounted(() => {
                 break;
         }
     }
-    
     shareButton.addEventListener("click", shareSong);
     playPauseButton.addEventListener("click", playPause);
     playModeButton.addEventListener("click", switchPlayMode);
@@ -268,7 +270,7 @@ onMounted(() => {
           <el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 600px">
             <Comment songId = "1" userId = "1"/>
           </el-container>
-          <div class="albums" v-if="!album_selected">
+          <div class="albums" v-if="!album_selected && !show_comment">
 						<h1 style="margin: 20px 0 14px 0;" v-if="!album_selected">Playlists</h1>
 						<div style="display: flex; flex-direction: row">
 							<el-container class="album-container"  style="margin-right: 20px">
@@ -433,7 +435,7 @@ onMounted(() => {
 				cursor: pointer;
 			">
         <img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-             @click="toggleComment">
+             @click="toggleComment()">
       </div>
 			<el-card class="bottom-controller bottom-component" style="
 				position: absolute;

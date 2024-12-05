@@ -72,7 +72,7 @@ function callSearch() {
   padding: 10px 20px;
   width: 100%;
   height: 60px;
-  background-color: rgba(17, 6, 58, 0.7);
+  /*background-color: rgba(17, 6, 58, 0.7);*/
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
