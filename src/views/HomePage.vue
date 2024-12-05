@@ -276,7 +276,7 @@ onMounted(() => {
     <left-side-bar/>
     <section class="content" :class="{ 'full-width': !showRightContent }">
       <div class="left-content" :class="{ 'expanded': !showRightContent }">
-        <el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 600px">
+        <el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 520px">
           <Comment songId="1" userId="1"/>
         </el-container>
         <div class="albums" v-if="!album_selected && !show_comment">
