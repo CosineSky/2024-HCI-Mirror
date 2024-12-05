@@ -30,3 +30,10 @@ export const userUpdate = (updateInfo) => {
             return res;
         });
 }
+
+export const getUserById = (userId) => {
+    return axios.get(`${USER_MODULE}/getUser`, {params: userId})
+        .then(res => {
+            return res
+        });
+}
