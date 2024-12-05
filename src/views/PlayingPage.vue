@@ -2,6 +2,10 @@
 import {computed, onMounted, ref, watch} from "vue";
 import {parseLrc} from "../utils/parseLyrics"
 import ColorThief from "colorthief";
+import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
+import {router} from "../router";
+
+
 
 /*
     BACKGROUND
@@ -18,6 +22,40 @@ function toggleFullScreen() {
         document.exitFullscreen();
     }
 }
+function isDarkColor(rgb) {
+    const [r, g, b] = rgb.match(/\d+/g).map(Number);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness < 128;
+}
+function getDominantColor(imageSrc, callback, alpha = 0.2) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imageSrc;
+    img.onload = () => {
+        const colorThief = new ColorThief();
+        const dominantColor = colorThief.getColor(img);
+        if (dominantColor) {
+            let [r, g, b] = dominantColor;
+            const whiteR = 255, whiteG = 255, whiteB = 255;
+            r = Math.floor(r + alpha * (whiteR - r));
+            g = Math.floor(g + alpha * (whiteG - g));
+            b = Math.floor(b + alpha * (whiteB - b));
+            callback(`rgb(${r}, ${g}, ${b})`);
+        } else {
+            console.error("Failed to extract dominant color.");
+            callback("rgb(200, 200, 200)");
+        }
+    };
+}
+function updateBackground (event) {
+    const imageSrc = event.target.src;
+    getDominantColor(imageSrc, (color) => {
+        backgroundColor.value = color;
+        textColor.value = isDarkColor(color) ? "#fff" : "#000";
+    });
+}
+
+
 
 /*
     LYRICS
@@ -25,22 +63,16 @@ function toggleFullScreen() {
 const lyrics = ref([]); // 歌词数组
 const currentTime = ref(0); // 当前播放时间
 const currentLineIndex = ref(0); // 当前歌词行的索引
+const isLyricsDisplaying = ref(true);
 
-/*
-    SONGS
- */
-const songs = [
-    {
-        title: "ウミユリ海底譚",
-        name: "n-buna",
-        source: "../assets/audio/2.mp3",
-        cover: "../assets/pictures/2.jpg"
-    }
-];
-const currentSongIndex = ref(0);
-
-
-
+function toggleLyrics() {
+    isLyricsDisplaying.value = !isLyricsDisplaying.value;
+}
+function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
 function updateCurrentTime(event) {
     currentTime.value = event.target.currentTime;
     updateCurrentLine();
@@ -58,38 +90,50 @@ function updateCurrentLine() {
     }
 }
 
-function isDarkColor(rgb) {
-  const [r, g, b] = rgb.match(/\d+/g).map(Number);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness < 128;
-}
-function getDominantColor(imageSrc, callback, alpha = 0.2) {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = imageSrc;
-    img.onload = () => {
-	    const colorThief = new ColorThief();
-	    const dominantColor = colorThief.getColor(img);
-	    if (dominantColor) {
-	        let [r, g, b] = dominantColor;
-	        const whiteR = 255, whiteG = 255, whiteB = 255;
-	        r = Math.floor(r + alpha * (whiteR - r));
-	        g = Math.floor(g + alpha * (whiteG - g));
-	        b = Math.floor(b + alpha * (whiteB - b));
-	        callback(`rgb(${r}, ${g}, ${b})`);
-	    } else {
-	      console.error("Failed to extract dominant color.");
-	      callback("rgb(200, 200, 200)");
-	    }
-    };
-}
-function updateBackground (event) {
-    const imageSrc = event.target.src;
-    getDominantColor(imageSrc, (color) => {
-        backgroundColor.value = color;
-		textColor.value = isDarkColor(color) ? "#fff" : "#000";
-    });
-}
+
+
+/*
+    SONGS
+ */
+const songs = [
+    {
+        title: "ウミユリ海底譚",
+        name: "n-buna",
+        source: "../assets/audio/2.mp3",
+        cover: "../assets/pictures/2.jpg"
+    }
+];
+const isPaused = ref(false);
+const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
+const currentSongIndex = ref(0);
+
+
+
+/*
+    ORIGINAL DESIGNS
+ */
+// main-elements
+let song;
+let progress;
+let songName;
+let artistName;
+
+// buttons
+let playPauseButton;
+let forwardButton;
+let backwardButton;
+let playModeButton;
+let shareButton;
+
+// icons
+let controlIcon;
+let playModeIcon;
+
+
+
+
+
+
 
 function readLrc(filePath) {
     return "[ti:ウミユリ海底譚]\n" +
@@ -177,20 +221,23 @@ function readLrc(filePath) {
 onMounted(() => {
     lyrics.value = parseLrc(readLrc("../assets/lyrics/test.lrc"));
     
-	const progress = document.getElementById("progress");
-	const song = document.getElementById("song");
-	const controlIcon = document.getElementById("controlIcon");
-	const playPauseButton = document.querySelector(".play-pause-btn");
-	const forwardButton = document.querySelector(".controls button.forward");
-	const backwardButton = document.querySelector(".controls button.backward");
-	const songName = document.querySelector(".music-info p");
-	const artistName = document.querySelector(".music-info span");
+    song = document.getElementById("song");
+    progress = document.getElementById("progress");
+    controlIcon = document.getElementById("controlIcon");
+    playModeIcon = document.getElementById("playModeIcon");
+	playPauseButton = document.querySelector(".play-pause-btn");
+	forwardButton = document.querySelector(".controls button.forward");
+	backwardButton = document.querySelector(".controls button.backward");
+    playModeButton = document.querySelector(".play-mode-btn");
+    shareButton = document.querySelector(".share-btn");
+	songName = document.querySelector(".music-info p");
+    artistName = document.querySelector(".music-info span");
 
 	function updateSongInfo() {
 		songName.textContent = songs[currentSongIndex.value].title;
 		artistName.textContent = songs[currentSongIndex.value].name;
 		// song.src = songs[currentSongIndex.value].source;
-		console.log(song.src)
+		// console.log(song.src)
 
 		song.addEventListener("loadeddata", function () {});
 	}
@@ -211,20 +258,41 @@ onMounted(() => {
 			progress.value = song.currentTime;
 		}
 	});
+    
+    function shareSong() {
+        console.log("Hello!");
+    }
 
 	function playPause() {
+        isPaused.value = !isPaused.value;
 		if (song.paused) {
 			song.play();
-			controlIcon.classList.add("fa-pause");
-			controlIcon.classList.remove("fa-play");
+            controlIcon.src = PLAY;
 		} else {
 			song.pause();
-			controlIcon.classList.remove("fa-pause");
-			controlIcon.classList.add("fa-play");
+            controlIcon.src = PAUSE;
 		}
 	}
+    function switchPlayMode() {
+        playingMode.value = (playingMode.value + 1) % 3
+        switch (playingMode.value) {
+            case 0:
+                playModeIcon.src = NORMAL_MODE;
+                break;
+            case 1:
+                playModeIcon.src = LOOP_MODE;
+                break;
+            case 2:
+                playModeIcon.src = RANDOM_MODE;
+                break;
+            default:
+                break;
+        }
+    }
 
-	playPauseButton.addEventListener("click", playPause);
+	shareButton.addEventListener("click", shareSong);
+    playPauseButton.addEventListener("click", playPause);
+    playModeButton.addEventListener("click", switchPlayMode);
 
 	progress.addEventListener("input", function () {
 		song.currentTime = progress.value;
@@ -232,8 +300,6 @@ onMounted(() => {
 
 	progress.addEventListener("change", function () {
 		song.play();
-		controlIcon.classList.add("fa-pause");
-		controlIcon.classList.remove("fa-play");
 	});
 
 	forwardButton.addEventListener("click", function () {
@@ -254,12 +320,11 @@ onMounted(() => {
 
 <template>
     <body>
-        <div class="lyrics-container">
+        <div v-if="isLyricsDisplaying" class="lyrics-container">
             <div
                 class="lyrics-lines"
                 :style="{ transform: `translateY(${-currentLineIndex * 40}px)` }"
             >
-                <!--        <div class="lyrics-lines">-->
                 <div
                     v-for="(line, index) in lyrics"
                     :key="index"
@@ -270,7 +335,6 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-<!--        <div class="player" :style="{ backgroundImage: backgroundColor }">-->
         <div class="player" :style="{ backgroundImage: gradientColor }">
             <!-- 背景 -->
             <div class="background"></div>
@@ -280,7 +344,6 @@ onMounted(() => {
                 <!-- 专辑封面容器 -->
                 <div class="album-cover-container">
                     <img src="../assets/pictures/songs/2.jpg" alt="Album Cover" class="album-cover" @load="updateBackground" />
-                    <!--                <img :src="albumCover" alt="Album Cover" class="album-cover" />-->
                 </div>
                 
                 <!-- 歌曲信息和控制条 -->
@@ -313,26 +376,27 @@ onMounted(() => {
                         transform: translateX(-50%);
                     ">
                         <div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
-                            <button class="play-settings" style="margin: 0">
+                            <button class="share-btn" style="margin: 0">
                                 <img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
                             </button>
                             <button class="backward" style="margin: 0 10px 0 10px">
-                                <i class="fa-solid fa-backward"></i>
                                 <img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
                             </button>
                             <button class="play-pause-btn" style="margin: 0 10px 0 10px">
-                                <i class="fa-solid fa-play" id="controlIcon"></i>
-                                <img src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+                                <img id="controlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
                             </button>
                             <button class="forward" style="margin: 0 10px 0 10px">
-                                <i class="fa-solid fa-forward"></i>
                                 <img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
                             </button>
-                            <button class="play-settings" style="margin: 0">
-                                <img src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+                            <button class="play-mode-btn" style="margin: 0">
+                                <img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
                             </button>
                         </div>
-                        <input type="range" value="0" id="progress" style="margin: 20px 0 10px 0; width: 800px"/>
+                        <div style="display: flex; flex-direction: row;">
+                            <p style="margin-right: 10px">{{formatTime(currentTime)}}</p>
+                            <input type="range" value="0" id="progress" style="margin: 20px 0 10px 0; width: 700px"/>
+                            <p style="margin-left: 10px">0:00</p>
+                        </div>
                     </div>
                 
                 </div>
@@ -341,10 +405,19 @@ onMounted(() => {
             </div>
             
             <!-- 全屏按钮 -->
-            <button @click="toggleFullScreen" class="fullscreen-btn">
-                <span v-if="isFullScreen">↗️</span>
-                <span v-else>⛶</span>
-            </button>
+            <div class="corner-buttons">
+                <button @click="toggleLyrics" class="corner-button">
+                    <span v-if="isLyricsDisplaying" style="text-decoration: underline">A</span>
+                    <span v-else>A</span>
+                </button>
+                <button @click="toggleFullScreen" class="corner-button">
+                    <span v-if="isFullScreen">↖</span>
+                    <span v-else>⛶</span>
+                </button>
+                <button @click="router.push('/home')" class="corner-button">
+                    <span>◀</span>
+                </button>
+            </div>
         </div>
     </body>
 </template>
@@ -440,17 +513,19 @@ html, body {
     font-size: 1rem;
 }
 
-.fullscreen-btn {
+.corner-buttons {
     position: absolute;
     bottom: 20px;
     right: 20px;
+}
+
+.corner-button {
     background: none;
     border: none;
     color: white;
     font-size: 2rem;
     cursor: pointer;
 }
-
 /* Music Player Controls */
 
 #progress {

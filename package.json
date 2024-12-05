@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
+    "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.7.7",
     "colorthief": "^2.6.0",
     "core-js": "^3.38.1",
@@ -16,7 +17,8 @@
     "overlayscrollbars-vue": "^0.5.9",
     "swiper": "^11.1.14",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "pinia": "^2.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

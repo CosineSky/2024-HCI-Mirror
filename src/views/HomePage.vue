@@ -2,12 +2,10 @@
 <script setup>
 import {ref} from "vue"
 import {onMounted} from "vue";
-import {fullScreenLoadingShort} from "@/utils/visuals.js";
+import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
 import {ElLoading} from "element-plus";
-import LeftSideBar from "../components/LeftSideBar.vue";
-
-import 'overlayscrollbars/overlayscrollbars.css';
-import { OverlayScrollbarsComponent } from "overlayscrollbars-vue";
+import {parseLrc} from "../utils/parseLyrics";
+import Header from "../components/Header.vue";
 
 const current_view = ref();
 const album_selected = ref(false);
@@ -21,182 +19,242 @@ const unSelectAlbum = () => {
 	album_selected.value = false;
 }
 
+
+/*
+    ORIGINAL DESIGNS
+ */
+// main-elements
+let song;
+let progress;
+let songName;
+let artistName;
+
+// buttons
+let playPauseButton;
+let forwardButton;
+let backwardButton;
+let playModeButton;
+let shareButton;
+
+// icons
+let controlIcon;
+let playModeIcon;
+
+
+
+/*
+    SONGS
+ */
+const songs = [
+    {
+        title: "ウミユリ海底譚",
+        name: "n-buna",
+        source: "../assets/audio/2.mp3",
+        cover: "../assets/pictures/2.jpg"
+    }
+];
+const isPaused = ref(false);
+const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
+const currentSongIndex = ref(0);
+
+
+
 onMounted(() => {
-	ElLoading.service({
-		lock: true,
-		text: 'Loading',
-		background: 'rgba(0, 0, 0, 0.7)',
-	})
-	fullScreenLoadingShort();
-	const navItems = document.querySelectorAll(".nav-item");
-
-	navItems.forEach((navItem) => {
-		navItem.addEventListener("click", () => {
-			navItems.forEach((item) => {
-				item.className = "nav-item";  // 😍😍
-			});
-			navItem.className = "nav-item active";
-		});
-	});
-
-	const containers = document.querySelectorAll(".containers");
-
-	containers.forEach((container) => {
-		let isDragging = false;
-		let startX;
-		let scrollLeft;
-
-		container.addEventListener("mousedown", (e) => {
-			isDragging = true;
-			startX = e.pageX - container.offsetLeft;
-			scrollLeft = container.scrollLeft;
-		});
-
-		container.addEventListener("mousemove", (e) => {
-			if (!isDragging) {
-				return;
-			}
-			e.preventDefault();
-
-			const x = e.pageX - container.offsetLeft;
-			const step = (x - startX) * 0.6;
-			container.scrollLeft = scrollLeft - step;
-		});
-
-		container.addEventListener("mouseup", () => {
-			isDragging = false;
-		});
-
-		container.addEventListener("mouseleave", () => {
-			isDragging = false;
-		});
-
-		container.addEventListener('wheel', (e) => {
-		    container.scrollLeft += e.deltaY / 2;
-		  });
-
-		});
-
-	const progress = document.getElementById("progress");
-	const song = document.getElementById("song");
-	const controlIcon = document.getElementById("controlIcon");
-	const playPauseButton = document.querySelector(".play-pause-btn");
-	const forwardButton = document.querySelector(".controls button.forward");
-	const backwardButton = document.querySelector(".controls button.backward");
-	const rotatingImage = document.getElementById("rotatingImage");
-	const songName = document.querySelector(".music-player h2");
-	const artistName = document.querySelector(".music-player p");
-
-	let rotating = false;
-	let currentRotation = 0;
-	let rotationInterval;
-
-	const songs = [
-		{
-			title: "ウミユリ海底譚",
-			name: "n-buna",
-			source: "../assets/audio/2.mp3",
-			cover: "../assets/pictures/2.jpg"
-		}
-	]
-
-	let currentSongIndex = 0;
-
-	function startRotation() {
-		if (!rotating) {
-			rotating = true;
-			rotationInterval = setInterval(rotateImage, 50);
-		}
-	}
-
-	function pauseRotation() {
-		clearInterval(rotationInterval);
-		rotating = false;
-	}
-
-	function rotateImage() {
-    currentRotation += 1;
-		rotatingImage.style.transform = `rotate(${currentRotation}deg)`;
-	}
-
-	function updateSongInfo() {
-		songName.textContent = songs[currentSongIndex].title;
-		artistName.textContent = songs[currentSongIndex].name;
-		// song.src = songs[currentSongIndex].source;
-		// rotatingImage.src = songs[currentSongIndex].cover;
-		console.log(song.src)
-		console.log(rotatingImage.src)
-
-		song.addEventListener("loadeddata", function () {});
-	}
-
-	song.addEventListener("loadedmetadata", function () {
-		progress.max = song.duration;
-		progress.value = song.currentTime;
-	});
-
-	song.addEventListener("ended", function () {
-		currentSongIndex = (currentSongIndex + 1) % songs.length;
-		updateSongInfo();
-		playPause();
-	});
-
-	song.addEventListener("timeupdate", function () {
-		if (!song.paused) {
-			progress.value = song.currentTime;
-		}
-	});
-
-	function playPause() {
-		if (song.paused) {
-			song.play();
-			controlIcon.classList.add("fa-pause");
-			controlIcon.classList.remove("fa-play");
-			startRotation();
-		} else {
-			song.pause();
-			controlIcon.classList.remove("fa-pause");
-			controlIcon.classList.add("fa-play");
-			pauseRotation();
-		}
-	}
-
-	playPauseButton.addEventListener("click", playPause);
-
-	progress.addEventListener("input", function () {
-		song.currentTime = progress.value;
-	});
-
-	progress.addEventListener("change", function () {
-		song.play();
-		controlIcon.classList.add("fa-pause");
-		controlIcon.classList.remove("fa-play");
-		startRotation();
-	});
-
-	forwardButton.addEventListener("click", function () {
-		currentSongIndex = (currentSongIndex + 1) % songs.length;
-		updateSongInfo();
-		playPause();
-	});
-
-	backwardButton.addEventListener("click", function () {
-		currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-		updateSongInfo();
-		playPause();
-	});
-
-	updateSongInfo();
-}) // mount 结束
-
+    // ElLoading.service({
+    //     lock: true,
+    //     text: 'Loading',
+    //     background: 'rgba(0, 0, 0, 0.7)',
+    // })
+    const navItems = document.querySelectorAll(".nav-item");
+    
+    navItems.forEach((navItem) => {
+        navItem.addEventListener("click", () => {
+            navItems.forEach((item) => {
+                item.className = "nav-item";
+            });
+            navItem.className = "nav-item active";
+        });
+    });
+    
+    const containers = document.querySelectorAll(".containers");
+    
+    containers.forEach((container) => {
+        let isDragging = false;
+        let startX;
+        let scrollLeft;
+        
+        container.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            startX = e.pageX - container.offsetLeft;
+            scrollLeft = container.scrollLeft;
+        });
+        
+        container.addEventListener("mousemove", (e) => {
+            if (!isDragging) {
+                return;
+            }
+            e.preventDefault();
+            
+            const x = e.pageX - container.offsetLeft;
+            const step = (x - startX) * 0.6;
+            container.scrollLeft = scrollLeft - step;
+        });
+        
+        container.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+        
+        container.addEventListener("mouseleave", () => {
+            isDragging = false;
+        });
+        
+        container.addEventListener('wheel', (e) => {
+            container.scrollLeft += e.deltaY / 2;
+        });
+    });
+    
+    song = document.getElementById("song");
+    progress = document.getElementById("progress");
+    controlIcon = document.getElementById("controlIcon");
+    playModeIcon = document.getElementById("playModeIcon");
+    playPauseButton = document.querySelector(".play-pause-btn");
+    forwardButton = document.querySelector(".controls button.forward");
+    backwardButton = document.querySelector(".controls button.backward");
+    playModeButton = document.querySelector(".play-mode-btn");
+    shareButton = document.querySelector(".share-btn");
+    songName = document.querySelector(".music-info h2");
+    artistName = document.querySelector(".music-info p");
+    
+    function updateSongInfo() {
+        songName.textContent = songs[currentSongIndex.value].title;
+        artistName.textContent = songs[currentSongIndex.value].name;
+        // song.src = songs[currentSongIndex.value].source;
+        // console.log(song.src)
+        
+        song.addEventListener("loadeddata", function () {});
+    }
+    
+    song.addEventListener("loadedmetadata", function () {
+        progress.max = song.duration;
+        progress.value = song.currentTime;
+    });
+    
+    song.addEventListener("ended", function () {
+        currentSongIndex.value = (currentSongIndex.value + 1) % songs.length;
+        updateSongInfo();
+        playPause();
+    });
+    
+    song.addEventListener("timeupdate", function () {
+        if (!song.paused) {
+            progress.value = song.currentTime;
+        }
+    });
+    
+    function shareSong() {
+        console.log("Hello!");
+    }
+    
+    function playPause() {
+        isPaused.value = !isPaused.value;
+        if (song.paused) {
+            song.play();
+            controlIcon.src = PLAY;
+        } else {
+            song.pause();
+            controlIcon.src = PAUSE;
+        }
+    }
+    function switchPlayMode() {
+        playingMode.value = (playingMode.value + 1) % 3
+        switch (playingMode.value) {
+            case 0:
+                playModeIcon.src = NORMAL_MODE;
+                break;
+            case 1:
+                playModeIcon.src = LOOP_MODE;
+                break;
+            case 2:
+                playModeIcon.src = RANDOM_MODE;
+                break;
+            default:
+                break;
+        }
+    }
+    
+    shareButton.addEventListener("click", shareSong);
+    playPauseButton.addEventListener("click", playPause);
+    playModeButton.addEventListener("click", switchPlayMode);
+    
+    progress.addEventListener("input", function () {
+        song.currentTime = progress.value;
+    });
+    
+    progress.addEventListener("change", function () {
+        song.play();
+    });
+    
+    forwardButton.addEventListener("click", function () {
+        currentSongIndex.value = (currentSongIndex.value + 1) % songs.length;
+        updateSongInfo();
+        playPause();
+    });
+    
+    backwardButton.addEventListener("click", function () {
+        currentSongIndex.value = (currentSongIndex.value - 1 + songs.length) % songs.length;
+        updateSongInfo();
+        playPause();
+    });
+    
+    updateSongInfo();
+})
 </script>
 
 <template>
 	<body>
+    <Header />
 		<main @click="unSelectAlbum">
-      <left-side-bar>
+			<nav class="main-menu">
+				<div>
+					<div class="user-info">
+						<router-link to="/profile">
+							<img src="../assets/pictures/avatar.png" alt="user"/>
+						</router-link>
+						<p>CosSky</p>
+					</div>
+					<ul>
 
-      </left-side-bar>
+						<li class="nav-item">
+							<a href="#" @click="current_view = 'discover'">
+								<i class="fa fa-compact-disc nav-icon"></i>
+								<span class="nav-text">Discover</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="#" @click="current_view = 'playlist'">
+								<i class="fa fa-circle-play nav-icon"></i>
+								<span class="nav-text">Playlist</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="#settings">
+								<i class="fa fa-gear nav-icon"></i>
+								<span class="nav-text">Settings</span>
+							</a>
+						</li>
+
+					</ul>
+				</div>
+
+				<ul>
+					<li class="nav-item">
+						<a href="#/login">
+							<i class="fa fa-right-from-bracket nav-icon"></i>
+							<span class="nav-text">Logout</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
 
 			<section class="content">
 				<div class="left-content">
@@ -278,7 +336,7 @@ onMounted(() => {
 				</div>
 
 				<div class="right-content">
-					<div class="music-player">
+					<div class="music-player music-info">
 						<a href="#play" style="margin: 10px 0 0 0;">
 							<div class="album-cover">
 								<img src="../assets/pictures/songs/2.jpg" id="rotatingImage" alt="" />
@@ -306,33 +364,31 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-            <OverlayScrollbarsComponent>
-              <el-container class="playlist-container" style="overflow: auto; height: 256px">
-                <div v-for="_ in 10" class="playlist-item" style="display: flex; flex-direction: row">
-                  <div>
-                    <img src="../assets/pictures/bg1.jpg" alt=""/>
-                  </div>
-                  <div style="display: flex; flex-direction: column; margin-left: 10px">
-                    <p class="playlist-container-desc" style="
-                      color: white;
-                      font-size: 16px;
-                      text-align: left;
-                      overflow: auto;
-                      width: 240px;
-                      height: 24px
-                    ">Unknown Song</p>
-                    <p class="playlist-container-desc" style="
-                      color: white;
-                      font-size: 12px;
-                      text-align: left;
-                      overflow: auto;
-                      width: 240px;
-                      height: 18px
-                    ">testtesttesttesttesttesttesttesttesttest</p>
-                  </div>
-                </div>
-              </el-container>
-            </OverlayScrollbarsComponent>
+						<el-container class="playlist-container" style="overflow: auto; height: 256px">
+							<div v-for="_ in 10" class="playlist-item" style="display: flex; flex-direction: row">
+								<div>
+									<img src="../assets/pictures/bg1.jpg" alt=""/>
+								</div>
+								<div style="display: flex; flex-direction: column; margin-left: 10px">
+									<p class="playlist-container-desc" style="
+										color: white;
+										font-size: 16px;
+										text-align: left;
+										overflow: auto;
+										width: 240px;
+										height: 24px
+									">Unknown Song</p>
+									<p class="playlist-container-desc" style="
+										color: white;
+										font-size: 12px;
+										text-align: left;
+										overflow: auto;
+										width: 240px;
+										height: 18px
+									">testtesttesttesttesttesttesttesttesttest</p>
+								</div>
+							</div>
+						</el-container>
 					</div>
 
 				</div>
@@ -366,38 +422,34 @@ onMounted(() => {
 			    left: 50%;
 			    transform: translateX(-50%);
 			">
-				<div class="controls" style="margin: 10px 0 0 0">
-					<button class="play-settings" style="margin: 0">
-						<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
-					</button>
-					<button class="backward" style="margin: 0 10px 0 10px">
-						<i class="fa-solid fa-backward"></i>
-						<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
-					</button>
-					<button class="play-pause-btn" style="margin: 0 10px 0 10px">
-						<i class="fa-solid fa-play" id="controlIcon"></i>
-						<img src="../assets/icons/controller/play.png" alt="" style="width: 60%">
-					</button>
-					<button class="forward" style="margin: 0 10px 0 10px">
-						<i class="fa-solid fa-forward"></i>
-						<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
-					</button>
-					<button class="play-settings" style="margin: 0">
-						<img src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
-					</button>
-				</div>
+                <div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
+                    <button class="share-btn" style="margin: 0">
+                        <img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
+                    </button>
+                    <button class="backward" style="margin: 0 10px 0 10px">
+                        <img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
+                    </button>
+                    <button class="play-pause-btn" style="margin: 0 10px 0 10px">
+                        <img id="controlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+                    </button>
+                    <button class="forward" style="margin: 0 10px 0 10px">
+                        <img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
+                    </button>
+                    <button class="play-mode-btn" style="margin: 0">
+                        <img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+                    </button>
+                </div>
 				<input type="range" value="0" id="progress" style="margin: 0 0 10px 0; width: 500px"/>
 			</el-card>
 
 			<el-card class="bottom-settings bottom-component">
-				<h1>// TODO</h1>
+				<h1></h1>
 			</el-card>
 		</footer>
 	</body>
 </template>
 
 <style scoped>
-
 
 *,
 *::before,
@@ -407,6 +459,26 @@ onMounted(() => {
 	margin: 0;
 }
 
+nav {
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+}
+
+nav ul,
+nav ul li {
+	outline: 0;
+}
+
+nav ul li a {
+	text-decoration: none;
+}
+
+img {
+	width: 100%;
+}
 
 h1 {
 	font-size: clamp(1.2rem, 3vw, 1.5rem);
@@ -427,8 +499,8 @@ body {
 /* MAIN MENU */
 
 main {
-	display: grid; /*子元素使用grid排列*/
-  position:relative;
+	display: grid;
+	grid-template-columns: 11% 89%;
 	height: 600px;
 	width: 95%;
 	margin: 20px 0 0 0;
@@ -465,6 +537,57 @@ footer {
 	color: #333;
 }
 
+.main-menu {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-radius: 15px 0 0 15px;
+	border-right: 1px solid rgba(255, 255, 255, 0.5);
+	padding: 12px 0 20px;
+	overflow: hidden;
+	font-family: inherit;
+}
+
+.user-info img {
+	padding: 12px 24px 6px;
+	border-radius: 50%;
+}
+
+.user-info p {
+	color: #fff;
+	font-size: clamp(0.8rem, 3vw, 1rem);
+	font-weight: 500;
+	text-align: center;
+	line-height: 1;
+	padding: 0 6px 32px;
+}
+
+.nav-item {
+	display: block;
+}
+
+.nav-item a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-size: 1rem;
+	padding: 12px 0;
+	margin: 0 8px;
+	border-radius: 5px;
+}
+
+.nav-item.active a {
+	background: rgba(106, 109, 155, 0.5);
+	text-decoration: none;
+}
+
+.nav-icon {
+	width: 40px;
+	height: 20px;
+	font-size: 1.1rem;
+}
+
 
 /* CONTENT */
 
@@ -477,7 +600,6 @@ footer {
 
 .left-content {
 	display: flex;
-  width:100%;
 	flex-direction: column;
 	justify-content: center;
 	padding: 30px 20px;
