@@ -21,10 +21,11 @@ function callPersonalData() {
 }
 
 function callSetting() {
+  router.push('/settings');
 
 }
 
-function search() {
+function callSearch() {
   search(searchInput.value).then(res => {
 
   })
@@ -44,7 +45,7 @@ function search() {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" v-model="searchInput" placeholder="想播放什么？" @keyup.enter="search" />
+      <input type="text" v-model="searchInput" placeholder="想播放什么？" @keyup.enter="callSearch" />
     </div>
     <div class="role-btn" @click="toggleDropdown">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
