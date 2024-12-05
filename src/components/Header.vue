@@ -21,7 +21,7 @@ function callPersonalData() {
 }
 
 function callSetting() {
-
+  router.push('/settings');
 }
 
 function callSearch() {
