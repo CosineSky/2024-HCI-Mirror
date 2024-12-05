@@ -2,18 +2,17 @@ import { defineStore } from 'pinia'
 import ColorThief from 'colorthief'
 import { toggleImg } from '../utils'
 
-// 一些主题颜色
 export const useTheme = defineStore('themeId', {
     state() {
         return {
-            bgColor: '' as string | number[],
+            bgColor: '',
             pointer: 1
         }
     },
     actions: {
-        change(src?: string) {
-            const app = document.querySelector('#opacity-bg1') as HTMLDivElement
-            const opacityBg = document.querySelector('#opacity-bg') as HTMLDivElement
+        change(src) {
+            const app = document.querySelector('#opacity-bg1')
+            const opacityBg = document.querySelector('#opacity-bg')
             if (src) {
                 toggleImg(src).then((img) => {
                     const colorThief = new ColorThief()
@@ -55,4 +54,4 @@ export const useTheme = defineStore('themeId', {
             }
         }
     }
-})
+}) 

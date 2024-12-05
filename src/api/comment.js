@@ -1,11 +1,9 @@
 import { axios } from '../utils/request';
 import { COMMENT_MODULE } from './_prefix';
-
-
 /*
-    commenter_user_name: string
+    songId: number
     comment: string
-    song_name: string
+    userId: number
  */
 export const commentSong = (commentSongInfo) => {
     return axios.post(`${COMMENT_MODULE}/song`, commentSongInfo,
@@ -16,10 +14,9 @@ export const commentSong = (commentSongInfo) => {
 }
 
 /*
-    commenter_user_name: string
+    playlistId: number
     comment: string
-    playlist_owner_name: string
-    playlist_name: string
+    userId: number
  */
 export const commentPlaylist = (commentPlaylistInfo) => {
     return axios.post(`${COMMENT_MODULE}/playlist`, commentPlaylistInfo,
@@ -28,3 +25,16 @@ export const commentPlaylist = (commentPlaylistInfo) => {
             return res;
         });
 }
+
+/*
+    songId: number
+    page: number
+ */
+export const commentInfo = (commentInfo) => {
+    console.log(commentInfo)
+    return axios.get(`${COMMENT_MODULE}/${commentInfo.songId}`)
+        .then((res) => {
+            return res
+        })
+}
+

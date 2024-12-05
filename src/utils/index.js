@@ -1,5 +1,10 @@
-// 切换图片过渡 (防止图片闪烁
-export function toggleImg(src: string, size?: string): Promise<HTMLImageElement> {
+/**
+ * 切换图片过渡 (防止图片闪烁)
+ * @param {string} src - 图片源地址
+ * @param {string} [size] - 可选的图片尺寸参数
+ * @returns {Promise<HTMLImageElement>}
+ */
+export function toggleImg(src, size) {
     if (!src) {
         return Promise.reject(`toggleImg：传递的src为空: ${src}`)
     }
@@ -17,4 +22,4 @@ export function toggleImg(src: string, size?: string): Promise<HTMLImageElement>
             console.error(`Failed to load image: ${src}`)
         }
     })
-}
+} 

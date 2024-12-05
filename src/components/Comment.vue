@@ -1,22 +1,12 @@
-<script setup lang="ts">
-import {reactive, ref, onMounted, watch, nextTick} from 'vue'
-import {GetMusicDetailData} from '../api/musicList.ts'
-import {useRoute, useRouter} from 'vue-router'
-import {toggleImg} from '../utils/index.ts'
-import {commentInfo, commentPost} from "../api/comment.ts"
-import {getUserById} from "../api/user"
-import {ElMessage} from "element-plus";
+<script setup>
+import { reactive, ref, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toggleImg } from '../utils'
+import { commentInfo, commentSong, commentPlaylist } from "@/api/comment"
+import { getUserById } from "@/api/user"
+import { ElMessage } from "element-plus"
 
-interface State {
-  comments: any[]
-  commenters: any[]
-  song: GetMusicDetailData | null
-  total: number
-  pageSize: number
-  currentPage: number
-}
-
-const state = reactive<State>({
+const state = reactive({
   comments: [],
   commenters: [],
   song: null,
@@ -24,16 +14,17 @@ const state = reactive<State>({
   pageSize: 20,
   currentPage: 1
 })
+
 const router = useRouter()
-const route = useRoute();
+const route = useRoute()
 const songId = route.params.songId.toString()
 const userId = route.params.userId.toString()
 const page = ref(1)
-const imgEl = ref<HTMLDivElement>()
-const bg = ref<string>('')
-const comment = ref<string>('')
-let showComment = ref<boolean>(true)
-let showDetail = ref<boolean>(false)
+const imgEl = ref()
+const bg = ref('')
+const comment = ref('')
+const showComment = ref(true)
+const showDetail = ref(false)
 
 onMounted(() => {
   watch(bg, (val) => {
@@ -43,7 +34,7 @@ onMounted(() => {
   })
 })
 
-const getCommentMusicFn = async (id: number, page: number) => {
+const getCommentMusicFn = async (id, page) => {
   commentInfo({
     songId: id,
     page: page
@@ -58,12 +49,12 @@ const getCommentMusicFn = async (id: number, page: number) => {
     }
   })
 }
-const currentChange = (page: number) => {
+const currentChange = (page) => {
   state.currentPage = page
   getCommentMusicFn(parseInt(songId), page)
 }
 
-const gotoUserDetail = (userId: number) => {
+const gotoUserDetail = (userId) => {
   router.push({
     path: '/userDetail',
     query: {
@@ -78,7 +69,7 @@ const resetComments = () => {
 }
 
 const handleSubmit = () => {
-  commentPost({
+  commentSong({
     userId: parseInt(userId),
     songId: parseInt(songId),
     comment: comment.value,
