@@ -46,44 +46,59 @@ const emit = defineEmits(['size-change', 'current-change'])
   padding: 30px 0;
 }
 
-.el-pagination {
-  :deep(button) {
-    background-color: rgba(255, 255, 255, 0.12) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    transition: 0.3s;
-    color: white !important;
+:deep(.el-pagination) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 
-    &:hover:not(button:disabled) {
-      background-color: rgba(255, 255, 255, 0.08) !important;
+  button, .el-pager li {
+    background-color: transparent !important;
+    color: rgb(210,210,210) !important;
+    min-width: 32px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    font-weight: normal;
+    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    transition: all 0.3s;
+
+    &:hover:not(.is-active):not(:disabled) {
+      background-color: rgba(220, 55, 55, 0.5) !important;
+      color: white !important;
+    }
+
+    &.is-active {
+      background-color: rgb(236,65,65) !important;
+      color: white !important;
+      border: none !important;
+    }
+
+    &:disabled {
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
-  :deep(button:disabled) {
-    cursor: auto !important;
-  }
-}
+  .el-pager {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    
+    .more {
+      border: none !important;
+      &:hover {
+        background-color: transparent !important;
+      }
+    }
 
-:deep(.el-pager) {
-  .is-active.number {
-    background-color: rgb(236,65,65) !important;
-    color: white;
-  }
-
-  .more {
-    background-color: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgb(210,210,210) !important;
-  }
-
-  .number {
-    background-color: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgb(210,210,210) !important;
-    transition: 0.3s;
-
-    &:hover:not(.is-active) {
-      background-color: rgba(220, 55, 55, 0.5) !important;
-      color: white;
+    li.number::marker {
+      display: none;
+      content: "";
     }
   }
 }

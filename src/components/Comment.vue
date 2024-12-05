@@ -113,7 +113,7 @@ onMounted(() => {
     }
   }
 
-  state.total = 50 // 总评论数
+  state.total = 3 // 总评论数
   state.pageSize = 20 // 每页显示评论数
   state.currentPage = 1 // 当前页码
 
@@ -258,10 +258,13 @@ function adjustHeight(event) {
             </div>
           </div>
           <pagination
+              class="pagination"
               @current-change="currentChange"
               :total="state.total"
               :pageSize="state.pageSize"
               :currentPage="state.currentPage"
+              :background="true"
+              layout="prev, pager, next"
           />
         </div>
       </div>
@@ -542,6 +545,30 @@ function adjustHeight(event) {
             }
           }
         }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+        }
+
+        :deep(.el-pagination) {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          white-space: nowrap;
+        }
+
+        :deep(.el-pagination .el-pager) {
+          display: flex;
+          flex-direction: row;
+        }
+
+        :deep(.el-pagination .el-pager li) {
+          margin: 0 4px;
+        }
       }
     }
 
@@ -554,22 +581,31 @@ function adjustHeight(event) {
       width: 100%;
       padding: 20px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
 
-    .song-info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
 
-    .song-info-label {
-      font-weight: bold;
-      width: 20%;
-    }
+      .song-info-row {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 20px;
 
-    .song-info-value {
-      display: flex;
-      width: 80%;
+
+        .song-info-label {
+          font-weight: bold;
+          width: 80px; /* 固定标签宽度 */
+          flex-shrink: 0; /* 防止标签被压缩 */
+          text-align: left;
+          margin-right: 100px;
+        }
+
+        .song-info-value {
+          flex: 1; /* 让内容区域占据剩余空间 */
+          text-align: left;
+          word-wrap: break-word; /* 允许长文本换行 */
+          word-break: break-all; /* 在任意字符间换行 */
+          padding-right: 20px; /* 右侧留出一些空间，防止文字贴边 */
+          max-width: calc(100% - 120px); /* 确保不会超出容器宽度 */
+        }
+      }
     }
   }
 }
