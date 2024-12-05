@@ -1,7 +1,16 @@
 import { axios } from '../utils/request';
 import { COMMENT_MODULE } from './_prefix';
 
-
+/*
+    id: number
+ */
+export const commentInfo = (commentInfo) => {
+    console.log(commentInfo)
+    return axios.get(`${COMMENT_MODULE}/${commentInfo.id}`)
+        .then((res) => {
+            return res
+        })
+}
 /*
     // TODO - modified
     - commenter_user_name: string

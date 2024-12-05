@@ -5,8 +5,8 @@ import {toggleImg} from '@/utils'
 import {commentInfo, commentSong, commentPlaylist} from "@/api/comment"
 import {getUserById} from "@/api/user"
 import {ElMessage} from "element-plus"
-import {Star} from "@element-plus/icons-vue";
 import defaultBg from '@/assets/pictures/jj.png'
+import likeIcon from '@/assets/icons/comment/点赞.png'
 import {useTheme} from "@/store/theme";
 import Pagination from "@/components/Pagination.vue";
 
@@ -58,19 +58,22 @@ onMounted(() => {
       userId: 1,
       comment: "这首歌真的太棒了！林俊杰的声音太有感染力了",
       createTime: "2024-03-15 14:30",
-      likedCount: 156
+      likedCount: 156,
+      isLiked: false
     },
     {
       userId: 2,
       comment: "歌词写得太深刻了，每次听都有新的感悟",
       createTime: "2024-03-14 18:45",
-      likedCount: 89
+      likedCount: 89,
+      isLiked: false
     },
     {
       userId: 3,
       comment: "编曲非常精妙，层次感很强",
       createTime: "2024-03-13 20:15",
-      likedCount: 67
+      likedCount: 67,
+      isLiked: false
     }
   ]
 
@@ -124,7 +127,7 @@ onMounted(() => {
 
 const getCommentMusicFn = async (id, page) => {
   commentInfo({
-    songId: id,
+    id: id,
     page: page
   }).then(res => {
     state.comments = res.data.result;
@@ -190,6 +193,15 @@ function adjustHeight(event) {
     event.target.style.height = event.target.scrollHeight + 26 + 'px'
   })
 }
+
+const handleLike = (index) => {
+  state.comments[index].isLiked = !state.comments[index].isLiked
+  if (state.comments[index].isLiked) {
+    state.comments[index].likedCount++
+  } else {
+    state.comments[index].likedCount--
+  }
+}
 </script>
 
 <template>
@@ -245,11 +257,20 @@ function adjustHeight(event) {
                 <div class="handle-box">
                   <div class="time">{{ state.comments[i - 1].createTime }}</div>
                   <div class="operation">
-                    <el-icon>
-                      <Star/>
-                    </el-icon>
-                    <span v-if="state.comments[i-1].likedCount > 0"
-                          style="font-size: 12px">{{ state.comments[i - 1].likedCount }}</span>
+                    <img 
+                      :src="likeIcon" 
+                      class="like-icon" 
+                      :class="{ 'liked': state.comments[i-1].isLiked }"
+                      alt="like"
+                      @click="handleLike(i-1)"
+                    />
+                    <span 
+                      v-if="state.comments[i-1].likedCount > 0"
+                      :class="{ 'liked-count': state.comments[i-1].isLiked }"
+                      style="font-size: 12px"
+                    >
+                      {{ state.comments[i - 1].likedCount }}
+                    </span>
                     <div class="operator-line"></div>
                   </div>
                 </div>
@@ -430,14 +451,10 @@ function adjustHeight(event) {
         resize: none;
       }
 
-      .custom-button {
-        cursor: pointer; /* 默认显示手型光标 */
-      }
-
       .custom-button:focus,
       .custom-button.active,
       .custom-button:hover {
-        cursor: default; /* 鼠标移入时显示箭头光标 */
+        cursor: pointer; /* 默认显示手型光标 */
         background-color: inherit !important; /* 保持背景色 */
         border-color: inherit !important; /* 保持边框色 */
         color: #ddc323 !important;
@@ -529,6 +546,25 @@ function adjustHeight(event) {
                   top: 4px;
                   display: flex;
                   align-items: center;
+                  gap: 4px;
+
+                  .like-icon {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    
+                    &.liked {
+                      filter: drop-shadow(0 0 2px #ddc323) 
+                              drop-shadow(0 0 2px #ddc323);
+                    }
+                  }
+
+                  .liked-count {
+                    color: #ddc323;
+                    text-shadow: 0 0 2px #ddc323;
+                    margin-left: 4px;
+                  }
 
                   .operator-line {
                     width: 1.5px;
