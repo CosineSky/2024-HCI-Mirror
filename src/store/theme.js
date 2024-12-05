@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import ColorThief from 'colorthief'
-import { toggleImg } from '../utils'
+import { toggleImg } from '@/utils'
 
 export const useTheme = defineStore('themeId', {
     state() {
