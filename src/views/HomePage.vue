@@ -143,8 +143,10 @@ onMounted(() => {
     artistName = document.querySelector(".music-info p");
     
     function updateSongInfo() {
+      if(songName && artistName){
         songName.textContent = songs[currentSongIndex.value].title;
         artistName.textContent = songs[currentSongIndex.value].name;
+      }
         // song.src = songs[currentSongIndex.value].source;
         // console.log(song.src)
         
@@ -272,9 +274,9 @@ onMounted(() => {
 <!--				</ul>-->
 <!--			</nav>-->
             <left-side-bar/>
-			<section class="content">
-				<div class="left-content">
-          <el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 600px">
+			<section class="content" :class="{ 'full-width': !showRightContent }">
+				<div class="left-content" :class="{ 'expanded': !showRightContent }">
+          <el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 610px">
             <Comment songId = "1" userId = "1"/>
           </el-container>
           <div class="albums" v-if="!album_selected && !show_comment">
@@ -352,7 +354,7 @@ onMounted(() => {
 				        </div>
 				    </div>
 				</div>
-				<div class="right-content">
+				<div v-if="showRightContent" class="right-content">
 					<div class="music-player music-info">
 						<a href="#play" style="margin: 10px 0 0 0;">
 							<div class="album-cover">
@@ -362,12 +364,9 @@ onMounted(() => {
 						</a>
 						<h2>ウミユリ海底譚</h2>
 						<p>n-buna</p>
-						<audio id="song">
-							<source src="../assets/audio/2.mp3" type="audio/mpeg" />
-						</audio>
 					</div>
 
-					<div class="current-playlist" style="margin-top: 10px">
+					<div class="current-playlist" style="margin-top: 20px">
 						<el-container class="playlist-container" style="height: 64px">
 							<div class="playlist-item" style="display: flex; flex-direction: row">
 								<img src="../assets/icons/add.png" alt="" style=""/>
@@ -381,7 +380,7 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 256px">
+						<el-container class="playlist-container" style="overflow: auto; height: 320px">
 							<div v-for="_ in 10" class="playlist-item" style="display: flex; flex-direction: row">
 								<div>
 									<img src="../assets/pictures/bg1.jpg" alt=""/>
@@ -425,6 +424,9 @@ onMounted(() => {
 									 max-width: 120px;
 									 box-shadow: 0 10px 60px rgba(200, 187, 255);
 								"/>
+              <audio id="song">
+                <source src="../assets/audio/2.mp3" type="audio/mpeg"/>
+              </audio>
 						</div>
 					</a>
 				</div>
@@ -468,7 +470,16 @@ onMounted(() => {
                 </div>
 				<input type="range" value="0" id="progress" style="margin: 0 0 10px 0; width: 500px"/>
 			</el-card>
-
+      <div class="queue-icon bottom-component" style="
+				position: absolute;
+				left: 85%;
+				transform: translateX(-50%);
+				color: white;
+				cursor: pointer;
+			">
+        <img src="../assets/icons/queue.png" alt="" style="width: 24px; height: 24px;"
+             @click="showRightContent = !showRightContent">
+      </div>
 			<el-card class="bottom-settings bottom-component">
 				<h1></h1>
 			</el-card>
@@ -621,6 +632,11 @@ footer {
 .content {
 	display: grid;
 	grid-template-columns: 75% 25%;
+  transition: all 0.3s ease;
+}
+
+.content.full-width {
+  grid-template-columns: 100% !important;
 }
 
 /* LEFT CONTENT */
@@ -631,6 +647,11 @@ footer {
 	justify-content: center;
 	padding: 30px 20px;
 	color: #e5e5e5;
+  transition: all 0.3s ease;
+}
+
+.left-content.expanded {
+  width: 100%;
 }
 
 .swiper-slide img {
@@ -996,7 +1017,7 @@ footer {
 }
 
 @media (max-width: 1100px) {
-	.content {
+  .content:not(.full-width) {
 		grid-template-columns: 60% 40%;
 	}
 
@@ -1059,7 +1080,7 @@ footer {
 }
 
 @media (max-width: 825px) {
-	.content {
+  .content:not(.full-width) {
 		grid-template-columns: 52% 48%;
 	}
 
@@ -1082,7 +1103,7 @@ footer {
 		grid-template-columns: 15% 85%;
 	}
 
-	.content {
+  .content:not(.full-width) {
 		grid-template-columns: 100%;
 		grid-template-areas:
       "leftContent"
@@ -1199,6 +1220,7 @@ footer {
   }
 }
 
+.queue-icon,
 .comment-icon {
   display: flex;
   align-items: center;
@@ -1210,6 +1232,7 @@ footer {
   transition: all 0.3s ease;
 }
 
+.queue-icon:hover,
 .comment-icon:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateX(-50%) scale(1.1);
