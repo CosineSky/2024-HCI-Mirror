@@ -9,11 +9,11 @@ const searchInput = ref('');
 
 const showDropdown = ref(false);
 function toggleDropdown() {
-  showDropdown.value =!showDropdown.value;
+    showDropdown.value =!showDropdown.value;
 }
 
 function exit() {
-  router.push('/login');
+    router.push('/login');
 }
 
 function callPersonalData() {
@@ -36,32 +36,38 @@ function callSearch() {
 </script>
 
 <template>
-  <div class="header">
-    <router-link to="/home" class="home-btn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
-    </router-link>
-    <div class="search-box">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" v-model="searchInput" placeholder="想播放什么？" @keyup.enter="callSearch" />
+    <div class="header">
+        <div style="display: flex; flex-direction: row">
+            <router-link to="/home" class="home-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </router-link>
+            <router-link to="/manage" class="manage-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"></path></svg>
+            </router-link>
+        </div>
+        
+        <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" v-model="searchInput" placeholder="想播放什么？" @keyup.enter="callSearch" />
+        </div>
+        <div class="role-btn" @click="toggleDropdown">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <div class="dropdown" v-show="showDropdown" style="z-index: 2147483647">
+            <button @click="callPersonalData">个人资料</button>
+            <button @click="callSetting">设置</button>
+            <button @click="exit">退出</button>
+        </div>
     </div>
-    <div class="role-btn" @click="toggleDropdown">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </svg>
-    </div>
-    <div class="dropdown" v-show="showDropdown" style="z-index: 2147483647">
-      <button @click="callPersonalData">个人资料</button>
-      <button @click="callSetting">设置</button>
-      <button @click="exit">退出</button>
-    </div>
-  </div>
 </template>
 
 <style scoped>
@@ -91,6 +97,20 @@ function callSearch() {
   width: 32px;
   height: 32px;
   margin-right: 10px;
+}
+
+.manage-btn {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.manage-btn svg {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
 }
 
 .search-box {

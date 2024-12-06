@@ -39,6 +39,12 @@ const router = createRouter({
             component: () => import('../views/ProfilePage.vue'),
             meta: {title: 'Profile'}
         },
+        {
+            path: '/manage',
+            // @ts-ignore
+            component: () => import('../views/ManagePage.vue'),
+            meta: {title: 'Manage'}
+        },
     ]
 })
 

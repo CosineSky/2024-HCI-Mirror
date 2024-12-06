@@ -102,7 +102,6 @@ defineProps({
              @mouseenter="()=>{hoverOnAlbum=true}"
              @mouseleave="()=>{hoverOnAlbum=false}"
              :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}">
-<!--            <button @click="callParentFunction('子组件传参')">调用父组件函数</button>-->
 
             <div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
                  :key="album.id"
