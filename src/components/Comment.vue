@@ -1,11 +1,16 @@
 <script setup>
-import { reactive, ref, onMounted, watch, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { toggleImg } from '../utils'
-import { commentInfo, commentSong, commentPlaylist } from "@/api/comment"
-import { getUserById } from "@/api/user"
-import { ElMessage } from "element-plus"
+import {reactive, ref, onMounted, watch, nextTick} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {toggleImg} from '../utils'
+import {commentInfo, commentSong, commentPlaylist} from "../api/comment"
+import {getUserById} from "../api/user"
+import {ElMessage} from "element-plus"
+import defaultBg from '../assets/pictures/jj.png'
+import likeIcon from '../assets/icons/comment/点赞.png'
+import {useTheme} from "../store/theme";
+import Pagination from "../components/Pagination.vue";
 
+const theme = useTheme()
 const state = reactive({
   comments: [],
   commenters: [],
@@ -17,8 +22,19 @@ const state = reactive({
 
 const router = useRouter()
 const route = useRoute()
-const songId = route.params.songId.toString()
-const userId = route.params.userId.toString()
+// const songId = route.params.songId.toString()
+// const userId = route.params.userId.toString()
+const {songId, userId} = defineProps({
+      songId: {
+        type: String,
+        required: true
+      },
+      userId: {
+        type: String,
+        required: true
+      }
+    }
+)
 const page = ref(1)
 const imgEl = ref()
 const bg = ref('')
@@ -29,14 +45,89 @@ const showDetail = ref(false)
 onMounted(() => {
   watch(bg, (val) => {
     toggleImg(val).then((img) => {
-      imgEl.value!.style.backgroundImage = `url(${img.src})`
+      if (imgEl.value) {
+        imgEl.value.style.backgroundImage = `url(${img.src})`
+      }
     })
   })
+  console.log(songId, userId)
+
+  // 初始化所有state数据
+  state.comments = [
+    {
+      userId: 1,
+      comment: "这首歌真的太棒了！林俊杰的声音太有感染力了",
+      createTime: "2024-03-15 14:30",
+      likedCount: 156,
+      isLiked: false
+    },
+    {
+      userId: 2,
+      comment: "歌词写得太深刻了，每次听都有新的感悟",
+      createTime: "2024-03-14 18:45",
+      likedCount: 89,
+      isLiked: false
+    },
+    {
+      userId: 3,
+      comment: "编曲非常精妙，层次感很强",
+      createTime: "2024-03-13 20:15",
+      likedCount: 67,
+      isLiked: false
+    }
+  ]
+
+  state.commenters = [
+    {
+      userId: 1,
+      username: "音乐爱好者",
+      avatarUrl: "https://example.com/avatar1.jpg"
+    },
+    {
+      userId: 2,
+      username: "JJ粉丝",
+      avatarUrl: "https://example.com/avatar2.jpg"
+    },
+    {
+      userId: 3,
+      username: "乐评人",
+      avatarUrl: "https://example.com/avatar3.jpg"
+    }
+  ]
+
+  state.song = {
+    song: {
+      name: '达尔文',
+    },
+    singer: [
+      {
+        name: '林俊杰'
+      }
+    ],
+    songDetail: {
+      lyricist: '林可邦',
+      composer: '蔡健雅',
+      arranger: '林俊杰 JJ Lin',
+      language: '国语',
+      genre: 'Pop',
+      originalArtist: '达尔文 - 蔡健雅',
+      recordCompany: '就是俊杰音乐股份有限公司',
+      description: '《达尔文》是林俊杰的一首经典之作，以进化论之父Charles Darwin为名，寓意生命的进化与演变。这首歌不仅旋律悠扬，更在歌词中蕴含了深刻的哲理，引人深思。当林俊杰的歌声响起，仿佛带领我们穿越时空，见证生命从简单到复杂的蜕变过程。每一个音符都如同自然的密码，诠释着生命的奥秘。用心聆听，你会发现，这首歌不仅仅是一首歌，更是一部关于生命进化的壮丽史诗。'
+    }
+  }
+
+  state.total = 3 // 总评论数
+  state.pageSize = 20 // 每页显示评论数
+  state.currentPage = 1 // 当前页码
+
+  bg.value = defaultBg
+  // getCommentMusicFn(parseInt(songId), page.value)
+  theme.change(defaultBg)
 })
 
 const getCommentMusicFn = async (id, page) => {
   commentInfo({
-    songId: id,
+    id: id,
     page: page
   }).then(res => {
     state.comments = res.data.result;
@@ -95,11 +186,21 @@ const showDetails = () => {
   navLeft.classList.remove('active')
   navRight.classList.add('active')
 }
+
 function adjustHeight(event) {
   nextTick(() => {
     event.target.style.height = 'auto'
     event.target.style.height = event.target.scrollHeight + 26 + 'px'
   })
+}
+
+const handleLike = (index) => {
+  state.comments[index].isLiked = !state.comments[index].isLiked
+  if (state.comments[index].isLiked) {
+    state.comments[index].likedCount++
+  } else {
+    state.comments[index].likedCount--
+  }
 }
 </script>
 
@@ -109,13 +210,13 @@ function adjustHeight(event) {
       <div class="info">
         <div ref="imgEl" class="bg-img"></div>
         <div class="song-info">
-          <div class="song-name">{{ (state.song as GetMusicDetailData).song.name }}</div>
+          <div class="song-name">{{ state.song.song.name }}</div>
           <div class="singers">
             <div class="singer-info">
               <span v-for="(item, index) in state.song.singer"
               >歌手:
                 {{
-                  item.name + (index < (state.song as GetMusicDetailData).singer.length - 1 ? '/' : '')
+                  item.name + (index < state.song.singer.length - 1 ? '/' : '')
                 }}</span
               >
             </div>
@@ -128,13 +229,13 @@ function adjustHeight(event) {
       </div>
       <div v-if="showComment" class="user-comment">
         <textarea placeholder="请输入您的评论..." @input="adjustHeight"></textarea>
-        <el-button
+        <span
             class="custom-button"
-            text
-            style="color: white; font-size: 20px; position: absolute; bottom: 5px; right: 2%"
+            style="color: white; font-size: 20px; position: absolute; bottom: 8px; right: 2%"
+            @click.stop="handleSubmit"
         >
           发布
-        </el-button>
+        </span>
       </div>
       <div v-if="showComment" class="comment-content">
         <div class="comment-content-box">
@@ -156,11 +257,20 @@ function adjustHeight(event) {
                 <div class="handle-box">
                   <div class="time">{{ state.comments[i - 1].createTime }}</div>
                   <div class="operation">
-                    <el-icon>
-                      <Star/>
-                    </el-icon>
-                    <span v-if="state.comments[i-1].likedCount > 0"
-                          style="font-size: 12px">{{ state.comments[i - 1].likedCount }}</span>
+                    <img 
+                      :src="likeIcon" 
+                      class="like-icon" 
+                      :class="{ 'liked': state.comments[i-1].isLiked }"
+                      alt="like"
+                      @click="handleLike(i-1)"
+                    />
+                    <span 
+                      v-if="state.comments[i-1].likedCount > 0"
+                      :class="{ 'liked-count': state.comments[i-1].isLiked }"
+                      style="font-size: 12px"
+                    >
+                      {{ state.comments[i - 1].likedCount }}
+                    </span>
                     <div class="operator-line"></div>
                   </div>
                 </div>
@@ -169,52 +279,52 @@ function adjustHeight(event) {
             </div>
           </div>
           <pagination
+              class="pagination"
               @current-change="currentChange"
               :total="state.total"
               :pageSize="state.pageSize"
               :currentPage="state.currentPage"
+              :background="true"
+              layout="prev, pager, next"
           />
         </div>
       </div>
       <div v-if="showDetail" class="song-info-container">
         <div class="song-info-row">
           <div class="song-info-label">演唱者:</div>
-          <div class="song-info-value">林俊杰</div>
+          <div class="song-info-value">{{ state.song.singer[0].name }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">作词:</div>
-          <div class="song-info-value">林可邦</div>
+          <div class="song-info-value">{{ state.song.songDetail.lyricist }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">作曲:</div>
-          <div class="song-info-value">蔡健雅</div>
+          <div class="song-info-value">{{ state.song.songDetail.composer }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">编曲:</div>
-          <div class="song-info-value">林俊杰 JJ Lin</div>
+          <div class="song-info-value">{{ state.song.songDetail.arranger }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">歌曲语种:</div>
-          <div class="song-info-value">国语</div>
+          <div class="song-info-value">{{ state.song.songDetail.language }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">歌曲流派:</div>
-          <div class="song-info-value">Pop</div>
+          <div class="song-info-value">{{ state.song.songDetail.genre }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">原唱:</div>
-          <div class="song-info-value">达尔文 - 蔡健雅</div>
+          <div class="song-info-value">{{ state.song.songDetail.originalArtist }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">唱片公司:</div>
-          <div class="song-info-value">就是俊杰音乐股份有限公司</div>
+          <div class="song-info-value">{{ state.song.songDetail.recordCompany }}</div>
         </div>
         <div class="song-info-row">
           <div class="song-info-label">简介:</div>
-          <div class="song-info-value">
-            《达尔文》是林俊杰的一首经典之作，以进化论之父Charles
-            Darwin为名，寓意生命的进化与演变。这首歌不仅旋律悠扬，更在歌词中蕴含了深刻的哲理，引人深思。当林俊杰的歌声响起，仿佛带领我们穿越时空，见证生命从简单到复杂的蜕变过程。每一个音符都如同自然的密码，诠释着生命的奥秘。用心聆听，你会发现，这首歌不仅仅是一首歌，更是一部关于生命进化的壮丽史诗。
-          </div>
+          <div class="song-info-value">{{ state.song.songDetail.description }}</div>
         </div>
       </div>
     </div>
@@ -274,7 +384,9 @@ function adjustHeight(event) {
         width: 130px;
         height: 130px;
         border-radius: 10px;
-        .bgSetting();
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         margin-right: 20px;
       }
     }
@@ -342,6 +454,7 @@ function adjustHeight(event) {
       .custom-button:focus,
       .custom-button.active,
       .custom-button:hover {
+        cursor: pointer; /* 默认显示手型光标 */
         background-color: inherit !important; /* 保持背景色 */
         border-color: inherit !important; /* 保持边框色 */
         color: #ddc323 !important;
@@ -349,6 +462,7 @@ function adjustHeight(event) {
         transition: color 0.2s ease;
       }
     }
+
     .comment-content {
       :deep(.el-tabs__item) {
         margin-right: 30px;
@@ -359,6 +473,7 @@ function adjustHeight(event) {
         margin-bottom: 150px;
 
         .title {
+          display: flex;
           font-size: 18px;
           margin-bottom: 5px;
         }
@@ -392,7 +507,9 @@ function adjustHeight(event) {
               border-radius: 50%;
               background-color: #42b983;
               margin-right: 20px;
-              .bgSetting();
+              background-size: cover;
+              background-position: center;
+              background-repeat: no-repeat;
             }
 
             .right-box {
@@ -429,6 +546,25 @@ function adjustHeight(event) {
                   top: 4px;
                   display: flex;
                   align-items: center;
+                  gap: 4px;
+
+                  .like-icon {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    
+                    &.liked {
+                      filter: drop-shadow(0 0 2px #ddc323) 
+                              drop-shadow(0 0 2px #ddc323);
+                    }
+                  }
+
+                  .liked-count {
+                    color: #ddc323;
+                    text-shadow: 0 0 2px #ddc323;
+                    margin-left: 4px;
+                  }
 
                   .operator-line {
                     width: 1.5px;
@@ -445,6 +581,30 @@ function adjustHeight(event) {
             }
           }
         }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+        }
+
+        :deep(.el-pagination) {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          white-space: nowrap;
+        }
+
+        :deep(.el-pagination .el-pager) {
+          display: flex;
+          flex-direction: row;
+        }
+
+        :deep(.el-pagination .el-pager li) {
+          margin: 0 4px;
+        }
       }
     }
 
@@ -457,21 +617,31 @@ function adjustHeight(event) {
       width: 100%;
       padding: 20px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
 
-    .song-info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
 
-    .song-info-label {
-      font-weight: bold;
-      width: 20%;
-    }
+      .song-info-row {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 20px;
 
-    .song-info-value {
-      width: 80%;
+
+        .song-info-label {
+          font-weight: bold;
+          width: 80px; /* 固定标签宽度 */
+          flex-shrink: 0; /* 防止标签被压缩 */
+          text-align: left;
+          margin-right: 100px;
+        }
+
+        .song-info-value {
+          flex: 1; /* 让内容区域占据剩余空间 */
+          text-align: left;
+          word-wrap: break-word; /* 允许长文本换行 */
+          word-break: break-all; /* 在任意字符间换行 */
+          padding-right: 20px; /* 右侧留出一些空间，防止文字贴边 */
+          max-width: calc(100% - 120px); /* 确保不会超出容器宽度 */
+        }
+      }
     }
   }
 }
