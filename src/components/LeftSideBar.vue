@@ -1,11 +1,13 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {defineEmits, onMounted, ref} from "vue";
 import musicAlbumOpened from "../icon/musicAlbumOpened.vue";
 import musicAlbumClosed from "../icon/musicAlbumClosed.vue";
 import searchIcon from "../icon/searchIcon.vue";
 import plusIcon from "../icon/plusIcon.vue";
 import playButton from "../icon/playButton.vue";
 import {getPlaylistsByUser} from "../api/playlist";
+
+const emit = defineEmits();
 
 const musicAlbums = ref([
     { id: 1, image: require('../assets/pictures/playlists/1.jpg'), title: '歌单 1' },
@@ -35,7 +37,7 @@ function toggleSideBar() {
     isSideBarOpen = !isSideBarOpen;
     sideBarWidth.value = isSideBarOpen? criticalWidth : minWidth;
 }
-function  startResizing(event) {
+function startResizing(event) {
     event.preventDefault();
     const initialWidth = sideBarWidth.value;
     const initialMouseX = event.clientX;
@@ -116,7 +118,7 @@ defineProps({
                     class="musicAlbum-image"
                     :style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"
                 />
-                <play-button @click="callParentFunction(album.id)" v-if="albumHoveredIndex === album.id" class="play-button"/>
+                <play-button @click="emit('setCurrentPlaylist', album.id);" v-if="albumHoveredIndex === album.id" class="play-button"/>
                 
                 <div class="musicAlbum-description">
                     <p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>

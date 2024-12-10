@@ -2,15 +2,29 @@ import { axios } from '../utils/request';
 import { COMMENT_MODULE } from './_prefix';
 
 /*
-    id: number
+    // TODO - newly added
+    + song_id: number
  */
-export const commentInfo = (commentInfo) => {
+export const getSongComments = (commentInfo) => {
     console.log(commentInfo)
-    return axios.get(`${COMMENT_MODULE}/${commentInfo.id}`)
+    return axios.get(`${COMMENT_MODULE}/${commentInfo.song_id}`)
         .then((res) => {
             return res
         })
 }
+
+/*
+    // TODO - newly added
+    + playlist_id: number
+ */
+export const getPlaylistComments = (commentInfo) => {
+    console.log(commentInfo)
+    return axios.get(`${COMMENT_MODULE}/${commentInfo.playlist_id}`)
+        .then((res) => {
+            return res
+        })
+}
+
 /*
     // TODO - modified
     - commenter_user_name: string
