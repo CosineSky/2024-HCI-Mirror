@@ -14,3 +14,14 @@ export const getSongsByPlaylist = (playlistInfo) => {
             return res;
         });
 }
+
+/*
+    // TODO - newly added
+    - song_id: number
+ */
+export const getSongInfo = (songInfo) => {
+    return axios.get(`${SONG_MODULE}/info`, { params: songInfo })
+      .then(res => {
+            return res;
+        });
+}

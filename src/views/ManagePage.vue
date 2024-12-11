@@ -30,8 +30,10 @@ function handleSubmit() {
         song_name: song_title.value,
         artist: song_artist.value,
         album: song_album.value,
-        audio_path: "",
-        lyrics_path: "",
+	    description: song_description.value,
+        audio_path: song_url,
+	    cover_path: cover_url,
+        lyrics_path: lyrics_url,
     }).then(() => {
         console.log("success")
     }).catch(() => {
