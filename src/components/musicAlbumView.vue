@@ -11,14 +11,17 @@ const props = defineProps({
 	musicList: {},
 });
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
-const albumInfo = ref({
-	id: 1,
-	image: require('../assets/pictures/playlists/1.jpg'),
-	name: '歌单 1',
-	creator: 'Kriskyy',
-	songCount: 6,
-	totalTime: '20:54'
-});
+
+// const albumInfo = ref({
+	// id: 1,
+	// image: require('../assets/pictures/playlists/1.jpg'),
+	// name: '歌单 1',
+	// creator: 'Kriskyy',
+	// songCount: 6,
+	// totalTime: '20:54'
+// });
+
+
 
 // const musicList = ref([
 // 	{
@@ -168,13 +171,14 @@ const enterAuthorDescription = (authorName) => {
 <template>
 	<div class="album-content" :style="{backgroundImage: gradientColor}">
 		<div class="header">
-			<img :src="albumInfo.image" alt="" class="album-image" @load="updateBackground"/>
+			<img src="../assets/pictures/songs/4.jpg" alt="" class="album-image" @load="updateBackground"/>
+<!--			<img :src="albumInfo.image" alt="" class="album-image" @load="updateBackground"/>-->
 			<div class="header-content">
 				<p style="text-align: left;margin:20px 0 0 15px">歌单</p>
 				<p class="header-album-name" style="font-weight: bolder;font-size:100px;margin:10px 0 35px 10px;">
-					{{ albumInfo.name }}</p>
+					{{ albumInfo.title }}</p>
 				<div class="header-content-detail">
-					<p class="header-creator" @click="enterPersonalSpace">{{ albumInfo.creator }}</p>
+					<p class="header-creator" @click="enterPersonalSpace">{{ albumInfo.description }}</p>
 					<p>•</p>
 					<p style="margin-left:6px">歌曲数量: {{ musicList.length }}</p>
 				</div>

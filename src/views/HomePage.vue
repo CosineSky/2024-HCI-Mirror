@@ -68,9 +68,12 @@ const currentSongIndex = ref(0);
 /*
     PLAYLISTS
  */
+const playlists = ref([]);
+const currentPlaylist = ref(1);
 const currentPlaylistId = ref(1);
 const receivePlaylistId = (value) => {
-	currentPlaylistId.value = value;
+	currentPlaylist.value = value;
+	currentPlaylistId.value = value.id;
 	console.log("Current Playlist Id:", currentPlaylistId.value)
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
@@ -81,10 +84,8 @@ const receivePlaylistId = (value) => {
 		console.log("Failed to get songs!");
 	});
 };
-const playlists = ref([]);
-setInterval(() => {
-	console.log(currentPlaylistId.value, playlists.value)
-}, 600)
+
+
 
 function toggleComment() {
 	show_comment.value = !show_comment.value
@@ -247,6 +248,8 @@ onMounted(() => {
 		user_id: currentUserId.value,
 	}).then((res) => {
 		playlists.value = res.data.result;
+		currentPlaylist.value = playlists.value[0];
+		currentPlaylistId.value = currentPlaylist.value.id;
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
@@ -274,7 +277,7 @@ onMounted(() => {
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 				</el-container>
 				<el-container v-if="!show_comment" class="playlist-container" style="overflow: auto; height: 610px">
-					<MusicAlbumView :album-info="" :music-list="songs"/>
+					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 				</el-container>
 			</div>
 			<div v-if="showRightContent" class="right-content">
