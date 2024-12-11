@@ -54,7 +54,6 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 
-
 /*
     SONGS
  */
@@ -84,7 +83,6 @@ const receivePlaylistId = (value) => {
 		console.log("Failed to get songs!");
 	});
 };
-
 
 
 function toggleComment() {
@@ -276,7 +274,7 @@ onMounted(() => {
 				<el-container v-if="show_comment" class="playlist-container">
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 				</el-container>
-				<el-container v-if="!show_comment" class="playlist-container" style="overflow: auto; height: 610px">
+				<el-container v-if="!show_comment" class="playlist-container" style="overflow: auto; height: 698px">
 					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 				</el-container>
 			</div>
@@ -457,6 +455,7 @@ body {
 	background-color: rgba(0, 0, 0, 1);
 	background-repeat: no-repeat;
 	background-size: cover;
+	overflow: hidden;
 }
 
 /* MAIN MENU */
@@ -488,10 +487,10 @@ footer {
 	/*background: rgba(16, 21, 61, 0.8);*/
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.5);
-	box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
-	0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
-	z-index: 10;
+	//border: 1px solid rgba(255, 255, 255, 0.5);
+	//box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
+	//0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
+	//z-index: 10;
 }
 
 .transparent-btn {

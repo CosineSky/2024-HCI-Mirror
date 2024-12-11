@@ -107,8 +107,8 @@ const icons = ref([  // 需要弹出的图标列表
 	/*background-color: rgba(17, 6, 58, 0.7);*/
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
-	border: 1px solid #fff;
+	//box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
+	//border: 1px solid #fff;
 }
 
 .home-btn {
