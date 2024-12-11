@@ -45,3 +45,15 @@ export const addSongToPlaylist = (songInfo) => {
             return res;
         });
 }
+
+/*
+    // TODO - newly added
+    - playlist_id: number
+ */
+export const removePlaylist = (removePlaylistInfo) => {
+    return axios.post(`${PLAYLIST_MODULE}/remove`, removePlaylistInfo,
+        { headers: { 'Content-Type': 'application/json' } })
+        .then(res => {
+            return res;
+        });
+}

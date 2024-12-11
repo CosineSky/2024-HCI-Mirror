@@ -1,17 +1,15 @@
 /* eslint-disable */
 <script setup>
-import {ref} from "vue"
-import {onMounted} from "vue";
-import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
-import {ElLoading} from "element-plus";
-import {parseLrc} from "../utils/parseLyrics";
+import {onMounted, ref} from "vue"
+import {LOOP_MODE, NORMAL_MODE, PAUSE, PLAY, RANDOM_MODE} from "../assets/base64";
 import Header from "../components/Header";
 import Comment from "../components/Comment";
 import LeftSideBar from "../components/LeftSideBar";
 import {useTheme} from "../store/theme";
 import defaultBg from '../assets/pictures/Eason.png'
 import {getSongsByPlaylist} from "../api/song";
-import  {getPlaylistsByUser} from "../api/playlist";
+import {getPlaylistsByUser} from "../api/playlist";
+import MusicAlbumView from "../components/musicAlbumView.vue";
 
 const theme = useTheme()
 const album_selected = ref(false);
@@ -49,11 +47,11 @@ let controlIcon;
 let playModeIcon;
 
 
-
 /*
     USER
  */
-const currentUserId = ref(1);
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 
 
@@ -65,7 +63,6 @@ const songs = ref([]);
 const isPaused = ref(false);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
 const currentSongIndex = ref(0);
-
 
 
 /*
@@ -85,8 +82,9 @@ const receivePlaylistId = (value) => {
 	});
 };
 const playlists = ref([]);
-
-
+setInterval(() => {
+	console.log(currentPlaylistId.value, playlists.value)
+}, 600)
 
 function toggleComment() {
 	show_comment.value = !show_comment.value
@@ -163,7 +161,8 @@ onMounted(() => {
 			songName.textContent = songs[currentSongIndex.value].title;
 			artistName.textContent = songs[currentSongIndex.value].name;
 		}
-		song.addEventListener("loadeddata", function () {});
+		song.addEventListener("loadeddata", function () {
+		});
 	}
 	
 	song.addEventListener("loadedmetadata", function () {
@@ -266,170 +265,81 @@ onMounted(() => {
 
 <template>
 	<body>
-		<Header/>
-		<main @click="unSelectAlbum">
-			<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
-			<section class="content" :class="{ 'full-width': !showRightContent }">
-				<div class="left-content" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 610px">
-						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
-					</el-container>
-					<div class="albums" v-if="!album_selected && !show_comment">
-						<h1 style="margin: 20px 0 14px 0;" v-if="!album_selected">Playlists</h1>
-						<div style="display: flex; flex-direction: row">
-							<el-container class="album-container" style="margin-right: 20px">
-								<el-card class="album">
-									<div class="album-frame">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-											<path fill="currentColor"
-											      d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"></path>
-										</svg>
-									</div>
-									<div>
-										<h2>New Playlist</h2>
-									</div>
-								</el-card>
-							</el-container>
-							<el-container class="album-container containers">
-<!--								<el-card @click.stop="selectAlbum" class="album">-->
-<!--									<div class="album-frame">-->
-<!--										<img src="../assets/pictures/playlists/1.jpg" alt=""/>-->
-<!--									</div>-->
-<!--									<div>-->
-<!--										<h2>中古 | 凯尔特民谣</h2>-->
-<!--										<p>CosSky</p>-->
-<!--									</div>-->
-<!--								</el-card>-->
-								
-								<el-card @click.stop="selectAlbum" class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/1.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>中古 | 凯尔特民谣</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/4.png" alt=""/>
-									</div>
-									<div>
-										<h2>Xeuphoria Collection 1</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/2.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>花と水飴、最終電車</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/3.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>だから僕は音楽を辞めた</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/5.jpg" alt=""/>
-									</div>
-									<div>
-										<h2 style="max-width: 120px; overflow-wrap: break-word">
-											testtesttesttesttesttesttesttesttest</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-							</el-container>
+	<Header/>
+	<main @click="unSelectAlbum">
+		<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
+		<section class="content" :class="{ 'full-width': !showRightContent }">
+			<div class="left-content" :class="{ 'expanded': !showRightContent }">
+				<el-container v-if="show_comment" class="playlist-container">
+					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
+				</el-container>
+				<el-container v-if="!show_comment" class="playlist-container" style="overflow: auto; height: 610px">
+					<MusicAlbumView :album-info="" :music-list="songs"/>
+				</el-container>
+			</div>
+			<div v-if="showRightContent" class="right-content">
+				<div class="music-player music-info">
+					<a href="#play" style="margin: 10px 0 0 0;">
+						<div class="album-cover">
+							<img src="../assets/pictures/songs/2.jpg" id="rotatingImage" alt=""/>
+							<span class="point"></span>
 						</div>
-					</div>
-					<div class="album-details" v-if="album_selected" style="
-							display: grid;
-							grid-template-columns: 30% 70%;
-					        width: 750px;
-					        height: 200px;
-						">
-						<img src="../assets/pictures/playlists/1.jpg" alt="Album Cover" style="width: 100%; height: 100%"/>
-						<div class="details-text">
-							<h2 style="text-align: left; margin-left: 20px">Hi</h2>
-							<p style="text-align: left; margin-left: 20px">Lorem ipsum dolor sit amet, consectetur
-								adipisicing elit. Eius ipsa, praesentium. Aliquid blanditiis excepturi, expedita fugiat
-								illum iure labore nulla placeat quasi quidem ratione rem reprehenderit tempore temporibus
-								voluptate voluptatum?</p>
-						</div>
-					</div>
+					</a>
+					<h2>ウミユリ海底譚</h2>
+					<p>n-buna</p>
 				</div>
-				<div v-if="showRightContent" class="right-content">
-					<div class="music-player music-info">
-						<a href="#play" style="margin: 10px 0 0 0;">
-							<div class="album-cover">
-								<img src="../assets/pictures/songs/2.jpg" id="rotatingImage" alt=""/>
-								<span class="point"></span>
-							</div>
-						</a>
-						<h2>ウミユリ海底譚</h2>
-						<p>n-buna</p>
-					</div>
-					
-					<div class="current-playlist" style="margin-top: 20px">
-						<el-container class="playlist-container" style="height: 64px">
-							<div class="playlist-item" style="display: flex; flex-direction: row">
-								<img src="../assets/icons/add.png" alt="" style=""/>
-								<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
-									<p class="playlist-container-desc" style="
+				
+				<div class="current-playlist" style="margin-top: 20px">
+					<el-container class="playlist-container" style="height: 64px">
+						<div class="playlist-item" style="display: flex; flex-direction: row">
+							<img src="../assets/icons/add.png" alt="" style=""/>
+							<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
+								<p class="playlist-container-desc" style="
 											color: white;
 											font-size: 16px;
 											text-align: left;
 											margin-top: 16px;
 										">New Song</p>
-								</div>
 							</div>
-						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 320px">
-							<div v-for="song in songs" class="playlist-item" style="display: flex; flex-direction: row">
-								<div>
-									<img src="../assets/pictures/bg1.jpg" alt=""/>
-								</div>
-								<div style="display: flex; flex-direction: column; margin-left: 10px">
-									<p class="playlist-container-desc" style="
+						</div>
+					</el-container>
+					<el-container class="playlist-container" style="overflow: auto; height: 320px">
+						<div v-for="song in songs" class="playlist-item" style="display: flex; flex-direction: row">
+							<div>
+								<img src="../assets/pictures/bg1.jpg" alt=""/>
+							</div>
+							<div style="display: flex; flex-direction: column; margin-left: 10px">
+								<p class="playlist-container-desc" style="
 											color: white;
 											font-size: 16px;
 											text-align: left;
 											overflow: auto;
 											width: 240px;
 											height: 24px
-										">{{song.title}}</p>
-									<p class="playlist-container-desc" style="
+										">{{ song.title }}</p>
+								<p class="playlist-container-desc" style="
 											color: white;
 											font-size: 12px;
 											text-align: left;
 											overflow: auto;
 											width: 240px;
 											height: 18px
-										">{{song.artist}}</p>
-								</div>
+										">{{ song.artist }}</p>
 							</div>
-						</el-container>
-					</div>
-				
+						</div>
+					</el-container>
 				</div>
-			</section>
-		</main>
-		<footer>
-			<div class="bottom-description bottom-component"
-			     style="display: flex; flex-direction: row; justify-content: center;">
-				<div>
-					<a href="#play">
-						<div>
-							<img src="../assets/pictures/songs/2.jpg" alt=""
-							     style="
+			</div>
+		</section>
+	</main>
+	<footer>
+		<div class="bottom-description bottom-component"
+		     style="display: flex; flex-direction: row; justify-content: center;">
+			<div>
+				<a href="#play">
+					<div>
+						<img src="../assets/pictures/songs/2.jpg" alt=""
+						     style="
 									     width: 60px;
 									     margin: 0 0 0 10px;
 									     border-radius: 5%;
@@ -437,65 +347,65 @@ onMounted(() => {
 										 max-width: 120px;
 										 box-shadow: 0 10px 60px rgba(200, 187, 255);
 									"/>
-							<audio id="song">
-								<source src="../assets/audio/2.mp3" type="audio/mpeg"/>
-							</audio>
-						</div>
-					</a>
-				</div>
-				<div style="display: flex; flex-direction: column; justify-content: center;">
-					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						ウミユリ海底譚</p>
-					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						n-buna</p>
-				</div>
+						<audio id="song">
+							<source src="../assets/audio/2.mp3" type="audio/mpeg"/>
+						</audio>
+					</div>
+				</a>
 			</div>
-			
-			<div class="comment-icon bottom-component" style="
+			<div style="display: flex; flex-direction: column; justify-content: center;">
+				<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
+					ウミユリ海底譚</p>
+				<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
+					n-buna</p>
+			</div>
+		</div>
+		
+		<div class="comment-icon bottom-component" style="
 					position: absolute;
 					left: 15%;
 					transform: translateX(-50%);
 					color: white;
 					cursor: pointer;
 				">
-				<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-				     @click="toggleComment()">
-			</div>
-			<el-card class="bottom-controller bottom-component" style="
+			<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
+			     @click="toggleComment()">
+		</div>
+		<el-card class="bottom-controller bottom-component" style="
 					position: absolute;
 				    left: 50%;
 				    transform: translateX(-50%);
 				">
-				<div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
-					<button class="share-btn" style="margin: 0">
-						<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
-					</button>
-					<button class="backward" style="margin: 0 10px 0 10px">
-						<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
-					</button>
-					<button class="play-pause-btn" style="margin: 0 10px 0 10px">
-						<img id="controlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
-					</button>
-					<button class="forward" style="margin: 0 10px 0 10px">
-						<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
-					</button>
-					<button class="play-mode-btn" style="margin: 0">
-						<img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
-					</button>
-				</div>
-				<input type="range" value="0" id="progress" style="margin: 0 0 10px 0; width: 500px"/>
-			</el-card>
-			<div class="queue-icon bottom-component" style="
+			<div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
+				<button class="share-btn" style="margin: 0">
+					<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
+				</button>
+				<button class="backward" style="margin: 0 10px 0 10px">
+					<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
+				</button>
+				<button class="play-pause-btn" style="margin: 0 10px 0 10px">
+					<img id="controlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+				</button>
+				<button class="forward" style="margin: 0 10px 0 10px">
+					<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
+				</button>
+				<button class="play-mode-btn" style="margin: 0">
+					<img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+				</button>
+			</div>
+			<input type="range" value="0" id="progress" style="margin: 0 0 10px 0; width: 500px"/>
+		</el-card>
+		<div class="queue-icon bottom-component" style="
 					position: absolute;
 					left: 85%;
 					transform: translateX(-50%);
 					color: white;
 					cursor: pointer;
 				">
-				<img src="../assets/icons/queue.png" alt="" style="width: 24px; height: 24px;"
-				     @click="showRightContent = !showRightContent">
-			</div>
-		</footer>
+			<img src="../assets/icons/queue.png" alt="" style="width: 24px; height: 24px;"
+			     @click="showRightContent = !showRightContent">
+		</div>
+	</footer>
 	</body>
 </template>
 
@@ -653,16 +563,19 @@ footer {
 
 /* LEFT CONTENT */
 
-.left-content {
+.left-content > {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 30px 20px;
 	color: #e5e5e5;
 	transition: all 0.3s ease;
+	margin: 0;
+	padding: 0;
 }
 
 .left-content.expanded {
+	margin: 0;
+	padding: 0;
 	width: 100%;
 }
 
@@ -769,7 +682,6 @@ footer {
 }
 
 /* Containers Scrollbar Style */
-
 .playlist-container::-webkit-scrollbar {
 	height: 10px;
 	display: none;
@@ -1119,8 +1031,8 @@ footer {
 	.content:not(.full-width) {
 		grid-template-columns: 100%;
 		grid-template-areas:
-      "leftContent"
-      "rightContent";
+        "leftContent"
+        "rightContent";
 	}
 	
 	.left-content {

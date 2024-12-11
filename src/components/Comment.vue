@@ -125,24 +125,24 @@ onMounted(() => {
 })
 
 const getCommentMusicFn = async (id, page) => {
-	getSongComments({
-		song_id: id,
-		page: page
-	}).then(res => {
-		state.comments = res.data.result;
-		for (let i = 0; i < state.comments.length; i++) {
-			getUserById({
-				user_id: state.comments[i].userId
-			}).then(res => {
-				state.commenters.push(res.data.result)
-			})
-		}
-		getSongById({
-			song_id: songId,
-		}).then(res => {
-			state.song = res.data.result
-		})
-	})
+	// getSongComments({
+	// 	song_id: id,
+	// 	page: page
+	// }).then(res => {
+	// 	state.comments = res.data.result;
+	// 	for (let i = 0; i < state.comments.length; i++) {
+	// 		getUserById({
+	// 			user_id: state.comments[i].userId
+	// 		}).then(res => {
+	// 			state.commenters.push(res.data.result)
+	// 		})
+	// 	}
+	// 	getSongById({
+	// 		song_id: songId,
+	// 	}).then(res => {
+	// 		state.song = res.data.result
+	// 	})
+	// })
 }
 const currentChange = (page) => {
 	state.currentPage = page

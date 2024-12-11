@@ -7,6 +7,7 @@ import pinia from './store/store'
 
 axios.defaults.baseURL = ("http://localhost:8081")
 // axios.defaults.baseURL = ("http://172.29.4.13:8081")
+
 axios.defaults.timeout = 30000;
 
 createApp(App).use(ElementPlus).use(router).use(pinia).mount('#app')
