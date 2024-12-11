@@ -45,6 +45,12 @@ const router = createRouter({
             component: () => import('../views/ManagePage.vue'),
             meta: {title: 'Manage'}
         },
+        {
+            path: '/test',
+            // @ts-ignore
+            component: () => import('../components/musicAlbumView.vue'),
+            meta: {title: 'musicAlbumView'}
+        }
     ]
 })
 

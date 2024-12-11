@@ -60,10 +60,11 @@ function  startResizing(event) {
 }
 function addAlbum() {
     //TODO:
-    
+    console.log(111)
 }
 function searchAlbum() {
     //TODO:
+  console.log(111)
 }
 
 onMounted(()=>{

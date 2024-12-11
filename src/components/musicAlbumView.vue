@@ -207,7 +207,7 @@ const enterAuthorDescription = (authorName)=>{}
              @mouseenter="()=>{musicHoveredIndex = music.id;}"
              @mouseleave="()=>{musicHoveredIndex = null}"
              @click="musicClickedIndex=music.id"
-             ondblclick="playFromId(music.id)"
+             @dblclick="playFromId(music.id)"
              :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
                musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)' }"
              :class="[musicClickedIndex === music.id ? 'music-after-click' : '']"
