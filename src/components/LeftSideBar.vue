@@ -6,6 +6,7 @@ import searchIcon from "../icon/searchIcon.vue";
 import plusIcon from "../icon/plusIcon.vue";
 import playButton from "../icon/playButton.vue";
 import {getPlaylistsByUser} from "../api/playlist";
+import {ElPopover} from "element-plus";
 
 const emit = defineEmits();
 
@@ -61,12 +62,23 @@ function startResizing(event) {
     window.addEventListener('mouseup', onMouseUp);
 }
 function addAlbum() {
-    //TODO:
-    console.log(111)
+  //TODO：添加新的空歌单
 }
+function toggleSearchBar(){
+  const input = document.querySelector(".search-input");
+  input.classList.toggle('active'); // 切换输入框的显示状态
+  input.focus(); // 点击搜索图标后聚焦输入框
+}
+function blurSearchBar(){
+  const input = document.querySelector(".search-input");
+  if(input.classList.contains('active'))
+   input.classList.remove('active');
+
+}
+
 function searchAlbum() {
-    //TODO:
-  console.log(111)
+     const input = document.querySelector(".search-input").value;
+    // TODO:提交表单
 }
 
 onMounted(()=>{
@@ -92,14 +104,29 @@ defineProps({
                 <music-album-closed v-if="!isSideBarOpen" />
                 <p style="margin-left: 15px;font:normal small-caps bold 20px Arial, sans-serif ;" v-if="isSideBarOpen">音乐库</p>
             </div>
-            <div class="add-album" v-if="isSideBarOpen" @click="addAlbum">
-                <plus-icon />
-            </div>
+
+          <el-popover class="dropdown-options"
+                      :width="200"
+                      trigger="click"
+                      hide-after="0">
+            <template #reference v-if="isSideBarOpen">
+              <div class="add-album"  >
+                <plus-icon class="plus-icon"/>
+              </div>
+            </template>
+            <ul>
+              <li @click="addAlbum">添加歌单</li>
+            </ul>
+          </el-popover>
         
         </div>
-        <div class="search-album" v-if="isSideBarOpen" @click="searchAlbum">
-            <search-icon/>
+      <div class="search-container">
+        <div class="search-album" v-if="isSideBarOpen" @click="toggleSearchBar" >
+          <search-icon class="search-icon"/>
         </div>
+          <input type="text" class="search-input" placeholder="输入搜索歌单" @keydown.enter="searchAlbum" @blur="blurSearchBar" />
+      </div>
+
         
         <div class="musicAlbums"
              @mouseenter="()=>{hoverOnAlbum=true}"
@@ -141,7 +168,22 @@ defineProps({
     padding: 0;
     margin: 0;
 }
-
+ul {
+  background-color: #282828;
+  list-style-type: none;
+  margin: 0;
+  border-radius: 10px;
+  padding: 12px 8px;
+}
+li {
+  color: white;
+  padding: 10px 12px;
+}
+li:hover {
+  cursor: pointer;
+  background-color: #404040;
+  text-decoration: underline;
+}
 nav {
     user-select: none;
     -webkit-user-select: none;
@@ -171,8 +213,73 @@ nav {
     align-items: center;
     justify-content: space-between;
 }
+.add-album{
+  color:#b2b2b2;
+  margin-top: 5px;
+  margin-right:10px;
+  width: 30px;
+  cursor: pointer;
+}
+
+.search-container {
+  margin: 12px 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.search-icon {
+  font-size: 24px;
+  transition: margin-right 0.3s ease;
+}
+.search-input {
+  background-color: #404040;
+  font-size: 15px;
+  color: #ffffff;
+  height: 35px;
+  border: none;
+  width: 0;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+  padding: 5px;
+  border-radius: 4px;
+  outline: none;
+}
+.search-input.active {
+  width: 70%; /* 设置输入框拉伸后的宽度 */
+  opacity: 1;
+}
+.search-album{
+  display: flex;
+  color:#b2b2b2;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.plus-icon{
+
+  border-radius: 50%;
+  transition: width,color,background-color  ease-in-out 0.2s;
+}
+.plus-icon:hover{
+    transform: scale(1.1);
+    color:#efeeee;
+  background-color: #404040;
+}
+.search-icon{
+  padding: 3px;
+  border-radius: 50%;
+  transition: width,color,background-color ease-in-out 0.2s;
+}
+.search-icon:hover{
+  transform: scale(1.05);
+    color: #efeeee;
+  background-color: #404040;
+}
+
 .toggle-button:hover{
-    color : #d2d0d0;
+    color : #efeeee;
 }
 .toggle-button{
     display: flex;
@@ -181,22 +288,10 @@ nav {
     margin: 0 0 0 16px;
     background-color:transparent;
     cursor: pointer;
-    transition: color  0.5s ease ;
+    transition: color  0.2s ease ;
     color: #b2b2b2;
 }
-.add-album{
-    color:#b2b2b2;
-    margin-top: 5px;
-    margin-right:15px;
-    width: 30px;
-    cursor: pointer;
-}
-.search-album{
-    color:#b2b2b2;
-    margin: 16px 0 0 13px;
-    width: 40px;
-    cursor: pointer;
-}
+
 .resizer {
     position: absolute;
     width: 5px;

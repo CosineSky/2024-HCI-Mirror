@@ -496,16 +496,17 @@ p{
 ul {
   background-color: #282828;
   list-style-type: none;
-  padding: 0;
   margin: 0;
   border-radius: 10px;
+  padding: 12px 8px;
 }
 li {
   color: white;
-  padding: 15px 12px;
+  padding: 10px 12px;
 }
 li:hover {
   cursor: pointer;
+  background-color: #404040;
   text-decoration: underline;
 }
 
