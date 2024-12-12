@@ -10,6 +10,7 @@ import defaultBg from '../assets/pictures/Eason.png'
 import {getSongsByPlaylist} from "../api/song";
 import {getPlaylistsByUser} from "../api/playlist";
 import MusicAlbumView from "../components/musicAlbumView.vue";
+import SearchView from "@/components/SearchView.vue";
 
 const theme = useTheme()
 const album_selected = ref(false);
@@ -89,6 +90,22 @@ function toggleComment() {
 	show_comment.value = !show_comment.value
 }
 
+/*
+    SEARCH
+ */
+const searchResult = ref(); // 定义一个响应式数据来接收搜索结果
+const showSearch = ref(false);
+function exitSearch() {
+	showSearch.value = false;
+}
+
+function receiveDataFromHeader(data) {
+  // 在这里处理从子组件接收到的数据
+  searchResult.value = data.searchResult;
+  showSearch.value = data.showSearch;
+  console.log(data);
+  // 你可以在这里更新父组件的状态或执行其他操作
+}
 
 onMounted(() => {
 	/*
@@ -266,17 +283,21 @@ onMounted(() => {
 
 <template>
 	<body>
-	<Header/>
+	<Header @headData="receiveDataFromHeader"/>
 	<main @click="unSelectAlbum">
 		<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
 		<section class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="left-content" :class="{ 'expanded': !showRightContent }">
-				<el-container v-if="show_comment" class="playlist-container">
+				<el-container v-if="show_comment && !showSearch" class="playlist-container">
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 				</el-container>
-				<el-container v-if="!show_comment" class="playlist-container" style="overflow: auto; height: 698px">
+				<el-container v-if="!show_comment && !showSearch" class="playlist-container" style="overflow: auto; height: 698px">
 					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 				</el-container>
+        <el-container v-if="showSearch" class="playlist-container" style="overflow: auto; height: 698px" >
+          <el-button @click="exitSearch">退出搜索</el-button>
+          <SearchView :search-result="searchResult"/>
+        </el-container>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div class="music-player music-info">

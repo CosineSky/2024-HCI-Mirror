@@ -5,6 +5,10 @@ import {searchByKeyword} from "../api/search";
 
 const router = useRouter();
 const searchInput = ref('');
+const searchResult = ref(); // 定义一个响应式数据来存储搜索结果
+const showSearch = ref(true)
+// 使用 defineEmits 定义事件
+const emit = defineEmits(['headData']);
 
 function toggleIcons() {
 	showIcons.value = !showIcons.value;
@@ -23,9 +27,13 @@ function callSetting() {
 }
 
 function callSearch() {
+  searchResult.value = "123"; // 更新搜索结果
+  showSearch.value = true
+  // 触发事件
+  emit('headData', { searchResult: searchResult.value, showSearch: showSearch.value });
 	searchByKeyword({keyword: searchInput.value})
 		.then(res => {
-			console.log("true")
+      console.log("true")
 		})
 		.catch(() => {
 			console.log("false")
