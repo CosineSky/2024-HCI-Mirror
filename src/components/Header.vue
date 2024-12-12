@@ -27,7 +27,38 @@ function callSetting() {
 }
 
 function callSearch() {
-  searchResult.value = "123"; // 更新搜索结果
+  searchResult.value = {
+    "songs": [
+      {
+        "id": 1,
+        "title": "Song 1",
+        "artist": "Artist 1",
+        "album": "Album 1",
+        "picPath": "/songs/1"
+      },
+      {
+        "id": 2,
+        "title": "Song 2",
+        "artist": "Artist 2",
+        "album": "Album 2",
+        "picPath": "/songs/2"
+      }
+    ],
+    "playlists": [
+      {
+        "id": 1,
+        "title": "Playlist 1",
+        "username": "user 1",
+        "picPath": "/songs/1"
+      },
+      {
+        "id": 2,
+        "title": "Playlist 2",
+        "username": "user 2",
+        "picPath": "/songs/2"
+      }
+    ]
+  }; // 更新搜索结果
   showSearch.value = true
   // 触发事件
   emit('headData', { searchResult: searchResult.value, showSearch: showSearch.value });
