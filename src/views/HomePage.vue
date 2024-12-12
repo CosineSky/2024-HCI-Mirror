@@ -295,7 +295,8 @@ onMounted(() => {
 					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 				</el-container>
         <el-container v-if="showSearch" class="playlist-container" style="overflow: auto; height: 698px" >
-          <el-button @click="exitSearch">退出搜索</el-button>
+          <el-button class="exit-search" @click="exitSearch">
+          </el-button>
           <SearchView :search-result="searchResult"/>
         </el-container>
 			</div>
@@ -1186,4 +1187,50 @@ footer {
 	transform: translateX(-50%) scale(1.1);
 }
 
+/* 退出搜索图标 */
+.exit-search {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  transition: background-color 0.3s ease;
+  border: 2px solid #fff;
+}
+
+.exit-search:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+
+.exit-search::before {
+  content: "\2716";
+  font-size: 20px;
+  color: #fff;
+}
+
+.exit-search:hover::after {
+  content: "Exit";
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background-color: #fff;
+  color: #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.exit-search:hover::after {
+  opacity: 1;
+}
 </style>
