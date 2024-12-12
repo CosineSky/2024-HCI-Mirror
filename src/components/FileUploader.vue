@@ -3,6 +3,7 @@ import {ref} from "vue";
 import {uploadFile} from "../api/tool";
 import {defineEmits} from 'vue';
 
+const emit = defineEmits();
 const fileList = ref([])
 const fileUrl = ref('')
 const isUploadingFiles = ref(false);
@@ -21,13 +22,34 @@ const handleChange = (file, fileList) => {
             fileUrl.value = res.data.result
             isUploadingFiles.value = false;
             passFileUrl(fileUrl.value)
+	        console.log("File Url: ", fileUrl.value)
         })
 }
+
+const checkFile = (file, fileType) => {
+	const fileExt = file.name.split('.').pop().toLowerCase()
+	const isAllowedSize = () => {
+		return file.size / 1024 / 1024 < 32;
+	}
+	const isAllowedType = () => {
+		switch (fileType) {
+			case 'cover':
+				return fileExt === 'png' || fileExt === 'jpg';
+			case 'audio':
+				return fileExt === 'mp3';
+			case 'lyrics':
+				return fileExt === 'lyc';
+			default:
+				return false;
+		}
+	}
+	
+	return isAllowedSize() && isAllowedType();
+}
+
 const uploadHttpRequest = () => {
     return new XMLHttpRequest()
 }
-
-const emit = defineEmits();
 
 const passFileUrl = (url) => {
     emit('updateFileUrl', url);
@@ -38,10 +60,10 @@ const passFileUrl = (url) => {
     <el-upload
         v-model:file-list="fileList"
         :limit="1"
+        list-type="picture"
         :on-change="handleChange"
         :on-exceed="handleExceed"
         :on-remove="handleChange"
-        list-type="picture"
         :http-request="uploadHttpRequest"
         drag
     >
