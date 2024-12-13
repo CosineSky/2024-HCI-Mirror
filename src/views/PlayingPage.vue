@@ -414,7 +414,7 @@ onMounted(() => {
                     <span v-if="isFullScreen">↖</span>
                     <span v-else>⛶</span>
                 </button>
-                <button @click="router.push('/home')" class="corner-button">
+                <button @click="isPlayingPage" class="corner-button">
                     <span>◀</span>
                 </button>
             </div>
