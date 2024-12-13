@@ -247,7 +247,7 @@ const enterAuthorDescription = (authorName) => {
 					<div class="music-detailed-info">
 						<!--TODO: img src to be changed-->
 						<img class="music-image"
-						     src="../assets/pictures/playlists/1.jpg"
+						     :src="music.picPath"
 						     alt="歌曲图片"/>
 						<div class="music-name-author" style="padding-left: 5px;">
 							<p @click="enterMusicDescription(music.id)" class="music-name">{{ music.title }}</p>
@@ -290,7 +290,7 @@ const enterAuthorDescription = (authorName) => {
 					<span>{{ music.number }}</span>
 					<!--TODO: img src to be changed-->
 					<img
-						src="../assets/pictures/playlists/2.jpg"
+						src="../assets/pictures/playlists/5.jpg"
 						alt="推荐歌曲图片"
 						class="music-image"
 					/>

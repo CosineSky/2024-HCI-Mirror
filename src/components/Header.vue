@@ -1,14 +1,24 @@
 <script setup>
 import {useRouter} from "vue-router";
 import {ref} from "vue";
-import {searchByKeyword} from "../api/search";
+import {searchSongByKeyword, searchPlaylistByKeyword} from "../api/search";
 
 const router = useRouter();
-const searchInput = ref('');
-const searchResult = ref(); // 定义一个响应式数据来存储搜索结果
-const showSearch = ref(true)
-// 使用 defineEmits 定义事件
 const emit = defineEmits(['headData']);
+
+/*
+ *  Search
+ */
+const showSearch = ref(true)
+const searchInput = ref('');
+const songResult = ref();
+const playlistResult = ref();
+
+/*
+ *  Icons
+ */
+const showIcons = ref(false)
+
 
 function toggleIcons() {
 	showIcons.value = !showIcons.value;
@@ -27,57 +37,35 @@ function callSetting() {
 }
 
 function callSearch() {
-  searchResult.value = {
-    "songs": [
-      {
-        "id": 1,
-        "title": "Song 1",
-        "artist": "Artist 1",
-        "album": "Album 1",
-        "picPath": "/songs/1"
-      },
-      {
-        "id": 2,
-        "title": "Song 2",
-        "artist": "Artist 2",
-        "album": "Album 2",
-        "picPath": "/songs/2"
-      }
-    ],
-    "playlists": [
-      {
-        "id": 1,
-        "title": "Playlist 1",
-        "username": "user 1",
-        "picPath": "/songs/1"
-      },
-      {
-        "id": 2,
-        "title": "Playlist 2",
-        "username": "user 2",
-        "picPath": "/songs/2"
-      }
-    ]
-  }; // 更新搜索结果
-  showSearch.value = true
-  // 触发事件
-  emit('headData', { searchResult: searchResult.value, showSearch: showSearch.value });
-	searchByKeyword({keyword: searchInput.value})
-		.then(res => {
-      console.log("true")
-		})
-		.catch(() => {
-			console.log("false")
-		})
+	songResult.value = [];
+	playlistResult.value = [];
+	showSearch.value = true
+
+	searchSongByKeyword({
+		keyword: searchInput.value
+	}).then(res => {
+		songResult.value = res.data.result || []
+		emit('headData', {
+			songResult: songResult.value,
+			playlistResult: playlistResult.value,
+			showSearch: showSearch.value
+		});
+	}).catch(() => {
+		console.log("Failed to fetch songs!")
+	})
+	searchPlaylistByKeyword({
+		keyword: searchInput.value
+	}).then(res => {
+		playlistResult.value = res.data.result || []
+		emit('headData', {
+			songResult: songResult.value,
+			playlistResult: playlistResult.value,
+			showSearch: showSearch.value
+		});
+	}).catch(() => {
+		console.log("Failed to fetch playlists!")
+	})
 }
-
-const showIcons = ref(false)  // 控制新图标的显示与隐藏
-const icons = ref([  // 需要弹出的图标列表
-	{ viewBox: '0 0 24 24', path: 'M12 2L2 7h20L12 2zM12 22l10-5H2l10 5zM2 12l10 5 10-5-10-5L2 12z' },
-	{ viewBox: '0 0 24 24', path: 'M12 2L2 7h20L12 2zM12 22l10-5H2l10 5z' },
-	{ viewBox: '0 0 24 24', path: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
-])
-
 </script>
 
 <template>
@@ -111,7 +99,10 @@ const icons = ref([  // 需要弹出的图标列表
 				</svg>
 			</router-link>
 			<div class="role-btn" @click="toggleIcons">
-				<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M160 448a32 32 0 0 1-32-32V160.064a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32V416a32 32 0 0 1-32 32zm448 0a32 32 0 0 1-32-32V160.064a32 32 0 0 1 32-32h255.936a32 32 0 0 1 32 32V416a32 32 0 0 1-32 32zM160 896a32 32 0 0 1-32-32V608a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32v256a32 32 0 0 1-32 32zm448 0a32 32 0 0 1-32-32V608a32 32 0 0 1 32-32h255.936a32 32 0 0 1 32 32v256a32 32 0 0 1-32 32z"></path></svg>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+					<path fill="currentColor"
+					      d="M160 448a32 32 0 0 1-32-32V160.064a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32V416a32 32 0 0 1-32 32zm448 0a32 32 0 0 1-32-32V160.064a32 32 0 0 1 32-32h255.936a32 32 0 0 1 32 32V416a32 32 0 0 1-32 32zM160 896a32 32 0 0 1-32-32V608a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32v256a32 32 0 0 1-32 32zm448 0a32 32 0 0 1-32-32V608a32 32 0 0 1 32-32h255.936a32 32 0 0 1 32 32v256a32 32 0 0 1-32 32z"></path>
+				</svg>
 			</div>
 			
 			<!-- 新增的图标区域 -->
@@ -125,10 +116,17 @@ const icons = ref([  // 需要弹出的图标列表
 					</svg>
 				</div>
 				<div @click="callSetting" class="animated-icon" :style="{ animationDelay: `${0.2}s` }">
-					<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384m0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256"></path></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+						<path fill="currentColor"
+						      d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384m0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256"></path>
+					</svg>
 				</div>
 				<div @click="exit" class="animated-icon" :style="{ animationDelay: `${0.3}s` }">
-					<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M352 159.872V230.4a352 352 0 1 0 320 0v-70.528A416.128 416.128 0 0 1 512 960a416 416 0 0 1-160-800.128z"></path><path fill="currentColor" d="M512 64q32 0 32 32v320q0 32-32 32t-32-32V96q0-32 32-32"></path></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+						<path fill="currentColor"
+						      d="M352 159.872V230.4a352 352 0 1 0 320 0v-70.528A416.128 416.128 0 0 1 512 960a416 416 0 0 1-160-800.128z"></path>
+						<path fill="currentColor" d="M512 64q32 0 32 32v320q0 32-32 32t-32-32V96q0-32 32-32"></path>
+					</svg>
 				</div>
 			</div>
 		</div>
@@ -143,11 +141,8 @@ const icons = ref([  // 需要弹出的图标列表
 	padding: 10px 20px;
 	width: 100%;
 	height: 60px;
-	/*background-color: rgba(17, 6, 58, 0.7);*/
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	//box-shadow: 0 4px 8px rgba(200, 187, 255, 0.3);
-	//border: 1px solid #fff;
 }
 
 .home-btn {
@@ -253,7 +248,7 @@ input[type="text"]:focus {
 @keyframes slideIn {
 	to {
 		opacity: 1;
-		transform: translateX(0);  /* 动画结束时回到原位 */
+		transform: translateX(0); /* 动画结束时回到原位 */
 	}
 }
 

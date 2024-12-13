@@ -9,12 +9,11 @@ import {useTheme} from "../store/theme";
 import defaultBg from '../assets/pictures/Eason.png'
 import {getSongsByPlaylist} from "../api/song";
 import {getPlaylistsByUser} from "../api/playlist";
-import MusicAlbumView from "../components/musicAlbumView.vue";
+import MusicAlbumView from "../components/MusicAlbumView.vue";
 import SearchView from "@/components/SearchView.vue";
 
 const theme = useTheme()
 const album_selected = ref(false);
-const show_comment = ref(false);
 const showRightContent = ref(false)
 
 const selectAlbum = () => {
@@ -58,10 +57,13 @@ const currentUserId = ref(userToken.value.id);
 /*
     SONGS
  */
-const currentSongId = ref(1);
+// Playing Status
 const songs = ref([]);
 const isPaused = ref(false);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
+
+// Current Playing
+const currentSongId = ref(1);
 const currentSongIndex = ref(0);
 
 
@@ -86,25 +88,27 @@ const receivePlaylistId = (value) => {
 };
 
 
-function toggleComment() {
-	show_comment.value = !show_comment.value
-}
-
 /*
     SEARCH
  */
-const searchResult = ref(); // 定义一个响应式数据来接收搜索结果
-const showSearch = ref(false);
-function exitSearch() {
-	showSearch.value = false;
-}
+const songResult = ref();
+const playlistResult = ref();
 
 function receiveDataFromHeader(data) {
-  // 在这里处理从子组件接收到的数据
-  searchResult.value = data.searchResult;
-  showSearch.value = data.showSearch;
-  console.log(data);
-  // 你可以在这里更新父组件的状态或执行其他操作
+	songResult.value = data.songResult;
+	playlistResult.value = data.playlistResult;
+	setMidComponents(3);
+}
+
+/*
+    MID COMPONENTS
+    1 - Music Albums
+    2 - Comments
+    3 - Search Results
+ */
+const midComponents = ref(1);
+const setMidComponents = (val) => {
+	midComponents.value = val;
 }
 
 onMounted(() => {
@@ -288,17 +292,16 @@ onMounted(() => {
 		<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
 		<section class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="left-content" :class="{ 'expanded': !showRightContent }">
-				<el-container v-if="show_comment && !showSearch" class="playlist-container">
-					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
-				</el-container>
-				<el-container v-if="!show_comment && !showSearch" class="playlist-container" style="overflow: auto; height: 698px">
+				<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px">
 					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 				</el-container>
-        <el-container v-if="showSearch" class="playlist-container" style="overflow: auto; height: 698px" >
-          <el-button class="exit-search" @click="exitSearch">
-          </el-button>
-          <SearchView :search-result="searchResult"/>
-        </el-container>
+				<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
+					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
+				</el-container>
+				<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">
+					<el-button class="exit-search" @click="setMidComponents(1)"></el-button>
+					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
+				</el-container>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div class="music-player music-info">
@@ -392,7 +395,7 @@ onMounted(() => {
 					cursor: pointer;
 				">
 			<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-			     @click="toggleComment()">
+			     @click="setMidComponents(2)">
 		</div>
 		<el-card class="bottom-controller bottom-component" style="
 					position: absolute;
@@ -506,13 +509,8 @@ footer {
 	height: 75px;
 	width: 100%;
 	margin: 20px 0 0 0;
-	/*background: rgba(16, 21, 61, 0.8);*/
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	//border: 1px solid rgba(255, 255, 255, 0.5);
-	//box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
-	//0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
-	//z-index: 10;
 }
 
 .transparent-btn {
@@ -1189,48 +1187,48 @@ footer {
 
 /* 退出搜索图标 */
 .exit-search {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  background-color: transparent;
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 999;
-  transition: background-color 0.3s ease;
-  border: 2px solid #fff;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 30px;
+	height: 30px;
+	background-color: transparent;
+	color: #fff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 999;
+	transition: background-color 0.3s ease;
+	border: 2px solid #fff;
 }
 
 .exit-search:hover {
-  background-color: rgba(255, 0, 0, 0.8);
+	background-color: rgba(255, 0, 0, 0.8);
 }
 
 .exit-search::before {
-  content: "\2716";
-  font-size: 20px;
-  color: #fff;
+	content: "\2716";
+	font-size: 20px;
+	color: #fff;
 }
 
 .exit-search:hover::after {
-  content: "Exit";
-  position: absolute;
-  top: 35px;
-  right: 0;
-  background-color: #fff;
-  color: #000;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+	content: "Exit";
+	position: absolute;
+	top: 35px;
+	right: 0;
+	background-color: #fff;
+	color: #000;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 14px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
 }
 
 .exit-search:hover::after {
-  opacity: 1;
+	opacity: 1;
 }
 </style>

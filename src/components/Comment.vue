@@ -217,12 +217,9 @@ const handleLike = (index) => {
 					<div class="song-name">{{ state.song.song.name }}</div>
 					<div class="singers">
 						<div class="singer-info">
-              <span v-for="(item, index) in state.song.singer"
-              >歌手:
-                {{
-		              item.name + (index < state.song.singer.length - 1 ? '/' : '')
-	              }}</span
-              >
+							<span v-for="(item, index) in state.song.singer">
+								歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}
+							</span>
 						</div>
 					</div>
 				</div>
@@ -344,7 +341,8 @@ const handleLike = (index) => {
 
 .comment {
 	height: 100%;
-	width: 100%;
+	width: 95%;
+	margin: 50px 0 0 0;
 	//position: fixed;
 	//transform: translateY(100%);
 	//background-color: @bgColor;
@@ -354,7 +352,7 @@ const handleLike = (index) => {
 		flex-wrap: wrap;
 		flex-direction: column;
 		flex-flow: column;
-		height: 100%;
+		height: 50%;
 		
 		.info {
 			display: flex;
