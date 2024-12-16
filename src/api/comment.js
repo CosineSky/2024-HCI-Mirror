@@ -34,6 +34,7 @@ export const getPlaylistComments = (commentInfo) => {
     + song_id: number
  */
 export const commentSong = (commentSongInfo) => {
+    console.log(commentSongInfo)
     return axios.post(`${COMMENT_MODULE}/song`, commentSongInfo,
         { headers: { 'Content-Type': 'application/json' } })
         .then(res => {

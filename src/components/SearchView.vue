@@ -1,5 +1,6 @@
 <script setup>
 import {ref} from "vue";
+import Empty from "./Empty.vue";
 
 const {songResult, playlistResult} = defineProps({
 	songResult: Array,
@@ -11,10 +12,6 @@ const currentTab = ref('songs') // 当前选中的标签，默认为'songs'
 const handleTabClick = (tab) => {
 	currentTab.value = tab
 }
-
-setInterval(() => {
-	console.log(songResult)
-}, 1000)
 </script>
 
 <template>
@@ -36,7 +33,7 @@ setInterval(() => {
 				<li v-for="(song, index) in songResult" :key="song.id">
 					<div class="song-item">
 						<span class="song-index">{{ index + 1 }}</span>
-						<img :src="song.picPath" class="song-pic"/>
+						<img :src="song.picPath" class="song-pic" alt=""/>
 						<div class="song-info">
 							<h3 class="song-title">{{ song.title }}</h3>
 							<p class="song-artist">{{ song.artist }}</p>
@@ -47,9 +44,10 @@ setInterval(() => {
 			
 			</ul>
 			<ul v-if="currentTab === 'playlists'">
-				<li v-for="playlist in playlistResult" :key="playlist.id">
+				<li v-for="(playlist, index) in playlistResult" :key="playlist.id">
 					<div class="playlist-item">
-						<img :src="playlist.picPath" class="playlist-pic"/>
+						<span class="song-index">{{ index + 1 }}</span>
+						<img :src="playlist.picPath" class="playlist-pic" alt=""/>
 						<div class="playlist-info">
 							<h3 class="playlist-title">{{ playlist.title }}</h3>
 							<p class="playlist-username">{{ playlist.username }}</p>
@@ -57,6 +55,9 @@ setInterval(() => {
 					</div>
 				</li>
 			</ul>
+		</div>
+		<div v-if="songResult.length === 0 && playlistResult.length === 0">
+			<Empty :magic="Math.floor(Math.random() * 8)"/>
 		</div>
 	</div>
 </template>
@@ -102,7 +103,7 @@ setInterval(() => {
 .song-item {
 	display: flex;
 	align-items: center;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 }
 
 .song-index {
@@ -112,8 +113,8 @@ setInterval(() => {
 }
 
 .song-pic {
-	width: 50px;
-	height: 50px;
+	width: 80px;
+	height: 80px;
 	border-radius: 50%;
 	object-fit: cover;
 	margin-right: 10px;
@@ -121,35 +122,37 @@ setInterval(() => {
 
 .song-info {
 	display: flex;
+	text-align: left;
 	flex-direction: column;
 }
 
 .song-title {
-	font-size: 18px;
+	font-size: 24px;
 	color: #fff;
-	margin-bottom: 5px;
+	margin: 0;
 }
 
 .song-artist {
 	font-size: 14px;
 	color: #fff;
-	margin-bottom: 5px;
+	margin: 0;
 }
 
 .song-album {
 	font-size: 14px;
 	color: #fff;
+	margin: 0;
 }
 
 .playlist-item {
 	display: flex;
 	align-items: center;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 }
 
 .playlist-pic {
-	width: 50px;
-	height: 50px;
+	width: 80px;
+	height: 80px;
 	border-radius: 50%;
 	object-fit: cover;
 	margin-right: 10px;
@@ -157,19 +160,20 @@ setInterval(() => {
 
 .playlist-info {
 	display: flex;
+	text-align: left;
 	flex-direction: column;
 }
 
 .playlist-title {
 	font-size: 18px;
 	color: #fff;
-	margin-bottom: 5px;
+	margin: 0;
 }
 
 .playlist-username {
 	font-size: 14px;
 	color: #fff;
-	margin-bottom: 5px;
+	margin: 0;
 }
 
 </style>

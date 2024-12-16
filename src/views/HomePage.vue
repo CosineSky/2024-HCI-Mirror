@@ -372,6 +372,7 @@ const playlists = ref([]);
 const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
 const receivePlaylistId = (value) => {
+	console.log(value)
 	currentPlaylist.value = value;
 	currentPlaylistId.value = value.id;
 	console.log("Current Playlist Id:", currentPlaylistId.value)
@@ -451,6 +452,7 @@ onMounted(() => {
 						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 					</el-container>
 					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
+						<el-button class="exit-search" @click="setMidComponents(1)"></el-button>
 						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 					</el-container>
 					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">

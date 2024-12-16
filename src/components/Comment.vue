@@ -49,78 +49,74 @@ onMounted(() => {
 		})
 	})
 	
-	console.log("song id:", songId, "user id:", userId);
-	
 	// 初始化所有state数据
 	state.comments = [
-		{
-			userId: 1,
-			comment: "这首歌真的太棒了！林俊杰的声音太有感染力了",
-			createTime: "2024-03-15 14:30",
-			likedCount: 156,
-			isLiked: false
-		},
-		{
-			userId: 2,
-			comment: "歌词写得太深刻了，每次听都有新的感悟",
-			createTime: "2024-03-14 18:45",
-			likedCount: 89,
-			isLiked: false
-		},
-		{
-			userId: 3,
-			comment: "编曲非常精妙，层次感很强",
-			createTime: "2024-03-13 20:15",
-			likedCount: 67,
-			isLiked: false
-		}
+		// {
+		// 	userId: 1,
+		// 	comment: "这首歌真的太棒了！林俊杰的声音太有感染力了",
+		// 	createTime: "2024-03-15 14:30",
+		// 	likedCount: 156,
+		// 	isLiked: false
+		// },
+		// {
+		// 	userId: 2,
+		// 	comment: "歌词写得太深刻了，每次听都有新的感悟",
+		// 	createTime: "2024-03-14 18:45",
+		// 	likedCount: 89,
+		// 	isLiked: false
+		// },
+		// {
+		// 	userId: 3,
+		// 	comment: "编曲非常精妙，层次感很强",
+		// 	createTime: "2024-03-13 20:15",
+		// 	likedCount: 67,
+		// 	isLiked: false
+		// }
 	]
 	
 	state.commenters = [
-		{
-			userId: 1,
-			username: "音乐爱好者",
-			avatarUrl: "https://example.com/avatar1.jpg"
-		},
-		{
-			userId: 2,
-			username: "JJ粉丝",
-			avatarUrl: "https://example.com/avatar2.jpg"
-		},
-		{
-			userId: 3,
-			username: "乐评人",
-			avatarUrl: "https://example.com/avatar3.jpg"
-		}
+		// {
+		// 	userId: 1,
+		// 	username: "音乐爱好者",
+		// 	avatarUrl: "https://example.com/avatar1.jpg"
+		// },
+		// {
+		// 	userId: 2,
+		// 	username: "JJ粉丝",
+		// 	avatarUrl: "https://example.com/avatar2.jpg"
+		// },
+		// {
+		// 	userId: 3,
+		// 	username: "乐评人",
+		// 	avatarUrl: "https://example.com/avatar3.jpg"
+		// }
 	]
 	
 	state.song = {
-		title: '达尔文',
-		artist: '林俊杰',
-		singer: [
-			{
-				name: '林俊杰'
-			}
-		],
-		songDetail: {
-			lyricist: '林可邦',
-			composer: '蔡健雅',
-			arranger: '林俊杰 JJ Lin',
-			language: '国语',
-			genre: 'Pop',
-			originalArtist: '达尔文 - 蔡健雅',
-			recordCompany: '就是俊杰音乐股份有限公司',
-			description: '《达尔文》是林俊杰的一首经典之作，以进化论之父Charles Darwin为名，寓意生命的进化与演变。这首歌不仅旋律悠扬，更在歌词中蕴含了深刻的哲理，引人深思。当林俊杰的歌声响起，仿佛带领我们穿越时空，见证生命从简单到复杂的蜕变过程。每一个音符都如同自然的密码，诠释着生命的奥秘。用心聆听，你会发现，这首歌不仅仅是一首歌，更是一部关于生命进化的壮丽史诗。'
-		}
+		// title: '达尔文',
+		// artist: '林俊杰',
+		// singer: [
+		// 	{
+		// 		name: '林俊杰'
+		// 	}
+		// ],
+		// songDetail: {
+		// 	lyricist: '林可邦',
+		// 	composer: '蔡健雅',
+		// 	arranger: '林俊杰 JJ Lin',
+		// 	language: '国语',
+		// 	genre: 'Pop',
+		// 	originalArtist: '达尔文 - 蔡健雅',
+		// 	recordCompany: '就是俊杰音乐股份有限公司',
+		// 	description: '《达尔文》是林俊杰的一首经典之作，以进化论之父Charles Darwin为名，寓意生命的进化与演变。这首歌不仅旋律悠扬，更在歌词中蕴含了深刻的哲理，引人深思。当林俊杰的歌声响起，仿佛带领我们穿越时空，见证生命从简单到复杂的蜕变过程。每一个音符都如同自然的密码，诠释着生命的奥秘。用心聆听，你会发现，这首歌不仅仅是一首歌，更是一部关于生命进化的壮丽史诗。'
+		// }
 	}
 	
-	state.total = 3 // 总评论数
+	state.total = 0 // 总评论数
 	state.pageSize = 20 // 每页显示评论数
 	state.currentPage = 1 // 当前页码
 	
-	bg.value = defaultBg
 	getCommentMusicFn(parseInt(songId), page.value)
-	theme.change(bg.value)
 })
 
 const getCommentMusicFn = async (id, page) => {
@@ -129,10 +125,12 @@ const getCommentMusicFn = async (id, page) => {
 		page: page
 	}).then(res => {
 		state.comments = res.data.result;
+		state.total = state.comments.length;
 		for (let i = 0; i < state.comments.length; i++) {
 			getUserById({
 				user_id: state.comments[i].userId
 			}).then(res => {
+				console.log("COMMENTER FOUND")
 				state.commenters.push(res.data.result)
 			})
 		}
@@ -219,9 +217,9 @@ const handleLike = (index) => {
 					<div class="singers">
 						<div class="singer-info">
 							<span>歌手:{{ state.song.artist }}</span>
-							<!--							<span v-for="(item, index) in state.song.singer">-->
-							<!--								歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}-->
-							<!--							</span>-->
+							<!--<span v-for="(item, index) in state.song.singer">-->
+							<!--歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}-->
+							<!--</span>-->
 						</div>
 					</div>
 				</div>
@@ -231,28 +229,27 @@ const handleLike = (index) => {
 				<div class="nav-right" @click="showDetails">详情</div>
 			</div>
 			<div v-if="showComment" class="user-comment">
-				<textarea placeholder="请输入您的评论..." @input="adjustHeight"></textarea>
+				<textarea placeholder="请输入您的评论..." v-model="comment" @input="adjustHeight"></textarea>
 				<span
 					class="custom-button"
 					style="color: white; font-size: 20px; position: absolute; bottom: 8px; right: 2%"
 					@click.stop="handleSubmit"
-				>
-          发布
-        </span>
+				>发布</span>
 			</div>
 			<div v-if="showComment" class="comment-content">
 				<div class="comment-content-box">
 					<div class="title">精彩评论</div>
 					<div class="content" @wheel.stop>
 						<div v-for="i in state.comments.length" class="content-line">
+<!--							:style="{ backgroundImage: `url(${state.commenters[i - 1].avatarUrl})` }"-->
 							<div
 								@click="gotoUserDetail(state.commenters[i - 1].userId)"
-								:style="{ backgroundImage: `url(${state.commenters[i - 1].avatarUrl})` }"
+								:style="{ backgroundImage: '../assets/pictures/avatar.png' }"
 								class="photo"
 							></div>
-							<div class="right-box">
+							<div v-if="state.commenters[i - 1] !== undefined" class="right-box">
 								<div class="comment-text">
-									<div @click="gotoUserDetail(state.comments[i - 1].userId)" class="name">
+									<div @click="gotoUserDetail(state.comments[i - 1].id)" class="name">
 										{{ state.commenters[i - 1].username }}:
 									</div>
 									<div class="text">{{ state.comments[i - 1].comment }}</div>
@@ -292,42 +289,46 @@ const handleLike = (index) => {
 				</div>
 			</div>
 			<div v-if="showDetail" class="song-info-container">
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">演唱者:</div>-->
-<!--					<div class="song-info-value">{{ state.song.singer[0].name }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">作词:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.lyricist }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">作曲:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.composer }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">编曲:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.arranger }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">歌曲语种:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.language }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">歌曲流派:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.genre }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">原唱:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.originalArtist }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">唱片公司:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.recordCompany }}</div>-->
-<!--				</div>-->
-<!--				<div class="song-info-row">-->
-<!--					<div class="song-info-label">简介:</div>-->
-<!--					<div class="song-info-value">{{ state.song.songDetail.description }}</div>-->
-<!--				</div>-->
+				<div class="song-info-row">
+					<div class="song-info-label">歌曲:</div>
+					<div class="song-info-value">{{ state.song.title }}</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">艺人:</div>
+					<div class="song-info-value">{{ state.song.artist }}</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">专辑:</div>
+					<div class="song-info-value">{{ state.song.album }}</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">作词:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">作曲:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">歌曲语种:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">歌曲流派:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">原唱:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">唱片公司:</div>
+					<div class="song-info-value">未提供</div>
+				</div>
+				<div class="song-info-row">
+					<div class="song-info-label">详细介绍:</div>
+					<div class="song-info-value">{{ state.song.description }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
