@@ -18,9 +18,11 @@ export const getSongsByPlaylist = (playlistInfo) => {
 /*
     // TODO - newly added
     - song_id: number
+    - playlist_id: number
  */
-export const getSongInfo = (songInfo) => {
-    return axios.get(`${SONG_MODULE}/info`, { params: songInfo })
+export const removeSongFromPlaylist = (removeSongInfo) => {
+    return axios.post(`${SONG_MODULE}/remove`, removeSongInfo,
+        { headers: { 'Content-Type': 'application/json' } })
       .then(res => {
             return res;
         });

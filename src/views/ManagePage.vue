@@ -27,17 +27,17 @@ const receiveLyricsUrl = (value) => {
 
 function handleSubmit() {
     addSong({
-        song_name: song_title.value,
+        title: song_title.value,
         artist: song_artist.value,
         album: song_album.value,
 	    description: song_description.value,
-        audio_path: song_url,
-	    cover_path: cover_url,
-        lyrics_path: lyrics_url,
+        filePath: song_url.value,
+	    picPath: cover_url.value,
+        lyricsPath: lyrics_url.value,
     }).then(() => {
-        console.log("success")
+        console.log("Successfully uploaded a new song!")
     }).catch(() => {
-        console.log("fail")
+        console.log("Failed to upload a new song!")
     })
 }
 

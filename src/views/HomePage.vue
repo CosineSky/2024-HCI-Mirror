@@ -1,21 +1,122 @@
 /* eslint-disable */
 <script setup>
-import {ref} from "vue"
-import {onMounted} from "vue";
-import {PLAY, PAUSE, NORMAL_MODE, LOOP_MODE, RANDOM_MODE} from "../assets/base64";
-import {ElLoading} from "element-plus";
-import {parseLrc} from "../utils/parseLyrics";
+// Vue Basics
+import {onMounted, ref, watch, computed} from "vue"
+import {router} from "../router";
+
+// Assets
+import defaultBg from '../assets/pictures/Eason.png'
+import {LOOP_MODE, NORMAL_MODE, PAUSE, PLAY, RANDOM_MODE} from "../assets/base64";
+
+// Components
 import Header from "../components/Header";
 import Comment from "../components/Comment";
+import PlayingPage from "./PlayingPage.vue";
 import LeftSideBar from "../components/LeftSideBar";
-import {useTheme} from "../store/theme";
-import defaultBg from '../assets/pictures/Eason.png'
+import SearchView from "@/components/SearchView.vue";
+import MusicAlbumView from "../components/MusicAlbumView.vue";
+
+// APIs
 import {getSongsByPlaylist} from "../api/song";
-import  {getPlaylistsByUser} from "../api/playlist";
+import {getPlaylistsByUser} from "../api/playlist";
+
+// Others
+import {useTheme} from "../store/theme";
+import ColorThief from "colorthief";
+import {parseLrc, parseLrcOld} from "../utils/parseLyrics"
+
+
+
+/*
+    BACKGROUND
+ */
+const textColor = ref("#000");
+const backgroundColor = ref("#ffffff");
+const gradientColor = computed(() => `linear-gradient(to top right, ${backgroundColor.value}, #000000)`)
+const isFullScreen = ref(false);
+function toggleFullScreen() {
+	isFullScreen.value = !isFullScreen.value;
+	if (isFullScreen.value) {
+		document.documentElement.requestFullscreen();
+	} else {
+		document.exitFullscreen();
+	}
+}
+function isDarkColor(rgb) {
+	const [r, g, b] = rgb.match(/\d+/g).map(Number);
+	const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+	return brightness < 128;
+}
+function getDominantColor(imageSrc, callback, alpha = 0.2) {
+	const img = new Image();
+	img.crossOrigin = "anonymous";
+	img.src = imageSrc;
+	img.onload = () => {
+		const colorThief = new ColorThief();
+		const dominantColor = colorThief.getColor(img);
+		if (dominantColor) {
+			let [r, g, b] = dominantColor;
+			const whiteR = 255, whiteG = 255, whiteB = 255;
+			r = Math.floor(r + alpha * (whiteR - r));
+			g = Math.floor(g + alpha * (whiteG - g));
+			b = Math.floor(b + alpha * (whiteB - b));
+			callback(`rgb(${r}, ${g}, ${b})`);
+		} else {
+			console.log("Failed to extract dominant color.");
+			callback("rgb(200, 200, 200)");
+		}
+	};
+}
+function updateBackground (event) {
+	const imageSrc = event.target.src;
+	getDominantColor(imageSrc, (color) => {
+		backgroundColor.value = color;
+		textColor.value = isDarkColor(color) ? "#fff" : "#000";
+	});
+}
+
+
+
+/*
+    LYRICS
+ */
+const lyrics = ref([]); // 歌词数组
+const currentTime = ref(0); // 当前播放时间
+const currentLineIndex = ref(0); // 当前歌词行的索引
+const isLyricsDisplaying = ref(true);
+
+function toggleLyrics() {
+	isLyricsDisplaying.value = !isLyricsDisplaying.value;
+}
+function formatTime(time) {
+	const minutes = Math.floor(time / 60);
+	const seconds = Math.floor(time % 60);
+	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+function updateCurrentTime(event) {
+	currentTime.value = event.target.currentTime;
+	updateCurrentLine();
+}
+function updateCurrentLine() {
+	// 根据当前时间更新当前歌词行
+	for (let i = 0; i < lyrics.value.length; i++) {
+		if (
+			currentTime.value >= lyrics.value[i].time &&
+			(!lyrics.value[i + 1] || currentTime.value < lyrics.value[i + 1].time)
+		) {
+			currentLineIndex.value = i;
+			break;
+		}
+	}
+}
+
+setInterval(() => {
+	// console.log(progresses.length, controlIcons.length, playModeIcons.length);
+}, 1000);
+
 
 const theme = useTheme()
 const album_selected = ref(false);
-const show_comment = ref(false);
 const showRightContent = ref(false)
 
 const selectAlbum = () => {
@@ -34,71 +135,30 @@ const unSelectAlbum = () => {
 // main-elements
 let song;
 let progress;
-let songName;
-let artistName;
 
 // buttons
-let playPauseButton;
-let forwardButton;
-let backwardButton;
-let playModeButton;
-let shareButton;
+let playPauseButtons;
+let forwardButtons;
+let backwardButtons;
+let playModeButtons;
+let shareButtons;
 
 // icons
 let controlIcon;
 let playModeIcon;
 
+// test items
+let progresses;
+let controlIcons;
+let playModeIcons;
 
 
-/*
-    USER
- */
-const currentUserId = ref(1);
-
-
-
-/*
-    SONGS
- */
-const currentSongId = ref(1);
-const songs = ref([]);
-const isPaused = ref(false);
-const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
-const currentSongIndex = ref(0);
-
-
-
-/*
-    PLAYLISTS
- */
-const currentPlaylistId = ref(1);
-const receivePlaylistId = (value) => {
-	currentPlaylistId.value = value;
-	console.log("Current Playlist Id:", currentPlaylistId.value)
-	getSongsByPlaylist({
-		playlist_id: currentPlaylistId.value,
-	}).then((res) => {
-		songs.value = res.data.result;
-		console.log("Songs:", res.data.result);
-	}).catch(e => {
-		console.log("Failed to get songs!");
-	});
-};
-const playlists = ref([]);
-
-
-
-function toggleComment() {
-	show_comment.value = !show_comment.value
-}
-
-
-onMounted(() => {
+const registerDOMs = () => {
 	/*
-        DOMS & EVENTS
+        Navs & Containers
 	 */
-	theme.change(defaultBg)
 	const navItems = document.querySelectorAll(".nav-item");
+	const containers = document.querySelectorAll(".containers");
 	
 	navItems.forEach((navItem) => {
 		navItem.addEventListener("click", () => {
@@ -108,9 +168,6 @@ onMounted(() => {
 			navItem.className = "nav-item active";
 		});
 	});
-	
-	const containers = document.querySelectorAll(".containers");
-	
 	containers.forEach((container) => {
 		let isDragging = false;
 		let startX;
@@ -121,7 +178,6 @@ onMounted(() => {
 			startX = e.pageX - container.offsetLeft;
 			scrollLeft = container.scrollLeft;
 		});
-		
 		container.addEventListener("mousemove", (e) => {
 			if (!isDragging) {
 				return;
@@ -132,56 +188,48 @@ onMounted(() => {
 			const step = (x - startX) * 0.6;
 			container.scrollLeft = scrollLeft - step;
 		});
-		
 		container.addEventListener("mouseup", () => {
 			isDragging = false;
 		});
-		
 		container.addEventListener("mouseleave", () => {
 			isDragging = false;
 		});
-		
 		container.addEventListener('wheel', (e) => {
 			container.scrollLeft += e.deltaY / 2;
 		});
 	});
 	
+	/*
+        Songs Related
+	 */
 	song = document.getElementById("song");
-	progress = document.getElementById("progress");
-	controlIcon = document.getElementById("controlIcon");
-	playModeIcon = document.getElementById("playModeIcon");
-	playPauseButton = document.querySelector(".play-pause-btn");
-	forwardButton = document.querySelector(".controls button.forward");
-	backwardButton = document.querySelector(".controls button.backward");
-	playModeButton = document.querySelector(".play-mode-btn");
-	shareButton = document.querySelector(".share-btn");
-	songName = document.querySelector(".music-info h2");
-	artistName = document.querySelector(".music-info p");
+	playPauseButtons = document.querySelectorAll(".play-pause-btn");
+	forwardButtons = document.querySelectorAll(".controls button.forward");
+	backwardButtons = document.querySelectorAll(".controls button.backward");
+	playModeButtons = document.querySelectorAll(".play-mode-btn");
+	shareButtons = document.querySelectorAll(".share-btn");
+	
+	progresses = document.querySelectorAll('.idProgress');
+	controlIcons = document.querySelectorAll('.idControlIcon');
+	playModeIcons = document.querySelectorAll('.idPlayModeIcon');
 	
 	function updateSongInfo() {
-		if (songName && artistName) {
-			songName.textContent = songs[currentSongIndex.value].title;
-			artistName.textContent = songs[currentSongIndex.value].name;
+		try {
+			if (songs.value[currentSongIndex.value]) {
+				controlIcons.forEach(controlIcon => {
+					controlIcon.src = PLAY;
+				});
+				song.src = songs.value[currentSongIndex.value].filePath;
+				parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
+					lyrics.value = res;
+				});
+				song.load();
+				song.play();
+			}
+		} catch (e) {
+			console.log("Uncaught Error in updateSongInfo!", e);
 		}
-		song.addEventListener("loadeddata", function () {});
 	}
-	
-	song.addEventListener("loadedmetadata", function () {
-		progress.max = song.duration;
-		progress.value = song.currentTime;
-	});
-	
-	song.addEventListener("ended", function () {
-		currentSongIndex.value = (currentSongIndex.value + 1) % songs.length;
-		updateSongInfo();
-		playPause();
-	});
-	
-	song.addEventListener("timeupdate", function () {
-		if (!song.paused) {
-			progress.value = song.currentTime;
-		}
-	});
 	
 	function shareSong() {
 		console.log("Hello!");
@@ -189,12 +237,20 @@ onMounted(() => {
 	
 	function playPause() {
 		isPaused.value = !isPaused.value;
-		if (song.paused) {
-			song.play();
-			controlIcon.src = PLAY;
-		} else {
-			song.pause();
-			controlIcon.src = PAUSE;
+		try {
+			if (song.paused) {
+				song.play();
+				controlIcons.forEach(controlIcon => {
+					controlIcon.src = PLAY;
+				});
+			} else {
+				song.pause();
+				controlIcons.forEach(controlIcon => {
+					controlIcon.src = PAUSE;
+				});
+			}
+		} catch (e) {
+			console.log("Uncaught Error in playPause!", e);
 		}
 	}
 	
@@ -202,44 +258,176 @@ onMounted(() => {
 		playingMode.value = (playingMode.value + 1) % 3
 		switch (playingMode.value) {
 			case 0:
-				playModeIcon.src = NORMAL_MODE;
+				playModeIcons.forEach(playModeIcon => {
+					playModeIcon.src = NORMAL_MODE;
+				});
 				break;
 			case 1:
-				playModeIcon.src = LOOP_MODE;
+				playModeIcons.forEach(playModeIcon => {
+					playModeIcon.src = LOOP_MODE;
+				});
 				break;
 			case 2:
-				playModeIcon.src = RANDOM_MODE;
+				playModeIcons.forEach(playModeIcon => {
+					playModeIcon.src = RANDOM_MODE;
+				});
 				break;
 			default:
 				break;
 		}
 	}
 	
-	shareButton.addEventListener("click", shareSong);
-	playPauseButton.addEventListener("click", playPause);
-	playModeButton.addEventListener("click", switchPlayMode);
-	
-	progress.addEventListener("input", function () {
-		song.currentTime = progress.value;
+	song.addEventListener("loadedmetadata", function () {
+		progresses.forEach(progress => {
+			progress.max = song.duration;
+			progress.value = song.currentTime;
+		});
 	});
-	
-	progress.addEventListener("change", function () {
-		song.play();
-	});
-	
-	forwardButton.addEventListener("click", function () {
-		currentSongIndex.value = (currentSongIndex.value + 1) % songs.length;
+	song.addEventListener("ended", function () {
+		currentSongIndex.value = (currentSongIndex.value + 1) % songs.value.length;
 		updateSongInfo();
-		playPause();
+	});
+	song.addEventListener("timeupdate", function () {
+		if (!song.paused) {
+			progresses.forEach(progress => {
+				progress.value = song.currentTime;
+			});
+		}
 	});
 	
-	backwardButton.addEventListener("click", function () {
-		currentSongIndex.value = (currentSongIndex.value - 1 + songs.length) % songs.length;
-		updateSongInfo();
-		playPause();
+	playPauseButtons.forEach(playPauseButton => {
+		if (!playPauseButton._hasClickListener) {
+			playPauseButton.addEventListener("click", playPause);
+			playPauseButton._hasClickListener = true;
+		}
+	});
+	playModeButtons.forEach(playModeButton => {
+		if (!playModeButton._hasClickListener) {
+			playModeButton.addEventListener("click", switchPlayMode);
+			playModeButton._hasClickListener = true;
+		}
+	});
+	shareButtons.forEach(shareButton => {
+		if (!shareButton._hasClickListener) {
+			shareButton.addEventListener("click", shareSong);
+			shareButton._hasClickListener = true;
+		}
+	});
+	forwardButtons.forEach(forwardButton => {
+		if (!forwardButton._hasClickListener) {
+			forwardButton.addEventListener("click", function () {
+				currentSongIndex.value = (currentSongIndex.value + 1) % songs.value.length;
+				updateSongInfo();
+			});
+			forwardButton._hasClickListener = true;
+		}
+	});
+	backwardButtons.forEach(backwardButton => {
+		if (!backwardButton._hasClickListener) {
+			backwardButton.addEventListener("click", function () {
+				currentSongIndex.value = (currentSongIndex.value - 1 + songs.value.length) % songs.value.length;
+				updateSongInfo();
+			});
+			backwardButton._hasClickListener = true;
+		}
 	});
 	
-	updateSongInfo();
+	progresses.forEach(progress => {
+		progress.addEventListener("input", function () {
+			if (!song.paused) {
+				song.currentTime = progress.value;
+			}
+		});
+		progress.addEventListener("change", function () {
+			try {
+				if (song.paused) {
+					song.play();
+				}
+			} catch (e) {
+				console.log("Uncaught Error in change!", e);
+			}
+		});
+	});
+	
+	// updateSongInfo();
+}
+
+
+/*
+    USER
+ */
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
+
+
+/*
+    SONGS
+ */
+// Playing Status
+const songs = ref([]);
+const isPaused = ref(false);
+const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
+
+// Current Playing
+const currentSongId = ref(1);
+const currentSongIndex = ref(0);
+const isPlayingPage = ref(false);
+const togglePlayingPage = () => {
+	isPlayingPage.value =!isPlayingPage.value;
+	registerDOMs();
+}
+
+
+/*
+    PLAYLISTS
+ */
+const playlists = ref([]);
+const currentPlaylist = ref(2);
+const currentPlaylistId = ref(2);
+const receivePlaylistId = (value) => {
+	currentPlaylist.value = value;
+	currentPlaylistId.value = value.id;
+	console.log("Current Playlist Id:", currentPlaylistId.value)
+	getSongsByPlaylist({
+		playlist_id: currentPlaylistId.value,
+	}).then((res) => {
+		songs.value = res.data.result;
+		console.log("Songs:", res.data.result);
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
+};
+
+
+/*
+    SEARCH
+ */
+const songResult = ref();
+const playlistResult = ref();
+
+function receiveDataFromHeader(data) {
+	songResult.value = data.songResult;
+	playlistResult.value = data.playlistResult;
+	setMidComponents(3);
+}
+
+/*
+    MID COMPONENTS
+    1 - Music Albums
+    2 - Comments
+    3 - Search Results
+ */
+const midComponents = ref(1);
+const setMidComponents = (val) => {
+	midComponents.value = val;
+}
+
+onMounted(() => {
+	/*
+        DOMS & EVENTS
+	 */
+	theme.change(defaultBg)
+	registerDOMs();
 	
 	/*
 		API
@@ -248,15 +436,15 @@ onMounted(() => {
 		user_id: currentUserId.value,
 	}).then((res) => {
 		playlists.value = res.data.result;
+		currentPlaylist.value = playlists.value[0];
+		currentPlaylistId.value = currentPlaylist.value.id;
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
 			songs.value = res.data.result;
-			console.log("Songs:", res.data.result);
 		}).catch(e => {
 			console.log("Failed to get songs!");
 		});
-		console.log("Playlists:", res.data.result);
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
@@ -265,117 +453,31 @@ onMounted(() => {
 </script>
 
 <template>
-	<body>
-		<Header/>
+	<body v-show="!isPlayingPage">
+		<Header @headData="receiveDataFromHeader"/>
 		<main @click="unSelectAlbum">
 			<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
 			<section class="content" :class="{ 'full-width': !showRightContent }">
 				<div class="left-content" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="show_comment" class="playlist-container" style="overflow: auto; height: 610px">
+					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px">
+						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
+					</el-container>
+					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
 						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 					</el-container>
-					<div class="albums" v-if="!album_selected && !show_comment">
-						<h1 style="margin: 20px 0 14px 0;" v-if="!album_selected">Playlists</h1>
-						<div style="display: flex; flex-direction: row">
-							<el-container class="album-container" style="margin-right: 20px">
-								<el-card class="album">
-									<div class="album-frame">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-											<path fill="currentColor"
-											      d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"></path>
-										</svg>
-									</div>
-									<div>
-										<h2>New Playlist</h2>
-									</div>
-								</el-card>
-							</el-container>
-							<el-container class="album-container containers">
-<!--								<el-card @click.stop="selectAlbum" class="album">-->
-<!--									<div class="album-frame">-->
-<!--										<img src="../assets/pictures/playlists/1.jpg" alt=""/>-->
-<!--									</div>-->
-<!--									<div>-->
-<!--										<h2>中古 | 凯尔特民谣</h2>-->
-<!--										<p>CosSky</p>-->
-<!--									</div>-->
-<!--								</el-card>-->
-								
-								<el-card @click.stop="selectAlbum" class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/1.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>中古 | 凯尔特民谣</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/4.png" alt=""/>
-									</div>
-									<div>
-										<h2>Xeuphoria Collection 1</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/2.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>花と水飴、最終電車</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/3.jpg" alt=""/>
-									</div>
-									<div>
-										<h2>だから僕は音楽を辞めた</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-								<el-card class="album">
-									<div class="album-frame">
-										<img src="../assets/pictures/playlists/5.jpg" alt=""/>
-									</div>
-									<div>
-										<h2 style="max-width: 120px; overflow-wrap: break-word">
-											testtesttesttesttesttesttesttesttest</h2>
-										<p>CosSky</p>
-									</div>
-								</el-card>
-							</el-container>
-						</div>
-					</div>
-					<div class="album-details" v-if="album_selected" style="
-							display: grid;
-							grid-template-columns: 30% 70%;
-					        width: 750px;
-					        height: 200px;
-						">
-						<img src="../assets/pictures/playlists/1.jpg" alt="Album Cover" style="width: 100%; height: 100%"/>
-						<div class="details-text">
-							<h2 style="text-align: left; margin-left: 20px">Hi</h2>
-							<p style="text-align: left; margin-left: 20px">Lorem ipsum dolor sit amet, consectetur
-								adipisicing elit. Eius ipsa, praesentium. Aliquid blanditiis excepturi, expedita fugiat
-								illum iure labore nulla placeat quasi quidem ratione rem reprehenderit tempore temporibus
-								voluptate voluptatum?</p>
-						</div>
-					</div>
+					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">
+						<el-button class="exit-search" @click="setMidComponents(1)"></el-button>
+						<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
+					</el-container>
 				</div>
 				<div v-if="showRightContent" class="right-content">
 					<div class="music-player music-info">
-						<a href="#play" style="margin: 10px 0 0 0;">
-							<div class="album-cover">
-								<img src="../assets/pictures/songs/2.jpg" id="rotatingImage" alt=""/>
-								<span class="point"></span>
-							</div>
-						</a>
-						<h2>ウミユリ海底譚</h2>
-						<p>n-buna</p>
+						<div class="album-cover" @click="togglePlayingPage">
+							<img :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
+							<span class="point"></span>
+						</div>
+						<h2>{{songs[currentSongIndex].title}}</h2>
+						<p>{{songs[currentSongIndex].artist}}</p>
 					</div>
 					
 					<div class="current-playlist" style="margin-top: 20px">
@@ -384,11 +486,11 @@ onMounted(() => {
 								<img src="../assets/icons/add.png" alt="" style=""/>
 								<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
 									<p class="playlist-container-desc" style="
-											color: white;
-											font-size: 16px;
-											text-align: left;
-											margin-top: 16px;
-										">New Song</p>
+												color: white;
+												font-size: 16px;
+												text-align: left;
+												margin-top: 16px;
+											">New Song</p>
 								</div>
 							</div>
 						</el-container>
@@ -399,73 +501,73 @@ onMounted(() => {
 								</div>
 								<div style="display: flex; flex-direction: column; margin-left: 10px">
 									<p class="playlist-container-desc" style="
-											color: white;
-											font-size: 16px;
-											text-align: left;
-											overflow: auto;
-											width: 240px;
-											height: 24px
-										">{{song.title}}</p>
+												color: white;
+												font-size: 16px;
+												text-align: left;
+												overflow: auto;
+												width: 240px;
+												height: 24px
+											">{{ song.title }}</p>
 									<p class="playlist-container-desc" style="
-											color: white;
-											font-size: 12px;
-											text-align: left;
-											overflow: auto;
-											width: 240px;
-											height: 18px
-										">{{song.artist}}</p>
+												color: white;
+												font-size: 12px;
+												text-align: left;
+												overflow: auto;
+												width: 240px;
+												height: 18px
+											">{{ song.artist }}</p>
 								</div>
 							</div>
 						</el-container>
 					</div>
-				
 				</div>
 			</section>
 		</main>
 		<footer>
 			<div class="bottom-description bottom-component"
 			     style="display: flex; flex-direction: row; justify-content: center;">
-				<div>
-					<a href="#play">
-						<div>
-							<img src="../assets/pictures/songs/2.jpg" alt=""
-							     style="
-									     width: 60px;
-									     margin: 0 0 0 10px;
-									     border-radius: 5%;
-										 border: 2px solid rgba(222, 215, 255, 0.9);
-										 max-width: 120px;
-										 box-shadow: 0 10px 60px rgba(200, 187, 255);
-									"/>
-							<audio id="song">
-								<source src="../assets/audio/2.mp3" type="audio/mpeg"/>
-							</audio>
-						</div>
-					</a>
+				<div @click="togglePlayingPage">
+					<img v-if="songs[currentSongIndex] !== undefined"
+					     :src="songs[currentSongIndex].picPath" alt=""
+					     style="
+						     width: 60px;
+						     margin: 0 0 0 10px;
+						     border-radius: 5%;
+							 border: 2px solid rgba(222, 215, 255, 0.9);
+							 max-width: 120px;
+							 box-shadow: 0 10px 60px rgba(200, 187, 255);
+						"/>
+					<audio id="song" @timeupdate="updateCurrentTime">
+						<source
+							v-if="songs[currentSongIndex] !== undefined"
+							:src="songs[currentSongIndex].filePath"
+							type="audio/mpeg"/>
+					</audio>
 				</div>
-				<div style="display: flex; flex-direction: column; justify-content: center;">
+				<div v-if="songs[currentSongIndex] !== undefined"
+				     style="display: flex; flex-direction: column; justify-content: center;">
 					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						ウミユリ海底譚</p>
+						{{songs[currentSongIndex].title}}</p>
 					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						n-buna</p>
+						{{songs[currentSongIndex].artist}}</p>
 				</div>
 			</div>
 			
 			<div class="comment-icon bottom-component" style="
-					position: absolute;
-					left: 15%;
-					transform: translateX(-50%);
-					color: white;
-					cursor: pointer;
-				">
+						position: absolute;
+						left: 15%;
+						transform: translateX(-50%);
+						color: white;
+						cursor: pointer;
+					">
 				<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-				     @click="toggleComment()">
+				     @click="setMidComponents(2)">
 			</div>
 			<el-card class="bottom-controller bottom-component" style="
-					position: absolute;
-				    left: 50%;
-				    transform: translateX(-50%);
-				">
+						position: absolute;
+					    left: 50%;
+					    transform: translateX(-50%);
+					">
 				<div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
 					<button class="share-btn" style="margin: 0">
 						<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
@@ -474,29 +576,128 @@ onMounted(() => {
 						<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
 					</button>
 					<button class="play-pause-btn" style="margin: 0 10px 0 10px">
-						<img id="controlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+						<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
 					</button>
 					<button class="forward" style="margin: 0 10px 0 10px">
 						<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
 					</button>
 					<button class="play-mode-btn" style="margin: 0">
-						<img id="playModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+						<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
 					</button>
 				</div>
-				<input type="range" value="0" id="progress" style="margin: 0 0 10px 0; width: 500px"/>
+				<input type="range" value="0" id="progress" class="idProgress" style="margin: 0 0 10px 0; width: 500px"/>
 			</el-card>
 			<div class="queue-icon bottom-component" style="
-					position: absolute;
-					left: 85%;
-					transform: translateX(-50%);
-					color: white;
-					cursor: pointer;
-				">
+						position: absolute;
+						left: 85%;
+						transform: translateX(-50%);
+						color: white;
+						cursor: pointer;
+					">
 				<img src="../assets/icons/queue.png" alt="" style="width: 24px; height: 24px;"
 				     @click="showRightContent = !showRightContent">
 			</div>
 		</footer>
 	</body>
+	
+	
+	
+	<div v-show="isPlayingPage" class="playing-page">
+		<div v-if="isLyricsDisplaying" class="lyrics-container">
+			<div
+				class="lyrics-lines"
+				:style="{ transform: `translateY(${-currentLineIndex * 40}px)` }"
+			>
+				<div
+					v-for="(line, index) in lyrics"
+					:key="index"
+					:class="{ active: index === currentLineIndex }"
+					class="lyrics-line"
+				>{{ line.text }}</div>
+			</div>
+		</div>
+		<div class="player" :style="{ backgroundImage: gradientColor }">
+			<!-- 背景 -->
+			<div class="background"></div>
+			
+			<!-- 播放器内容 -->
+			<div class="player-content">
+				<!-- 专辑封面容器 -->
+				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
+					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover" @load="updateBackground" />
+				</div>
+				
+				<!-- 歌曲信息和控制条 -->
+				<div class="track-info-container">
+					
+					<!-- 歌曲信息 -->
+					<div v-if="songs[currentSongIndex] !== undefined" class="music-info" style="display: flex; flex-direction: column; justify-content: center;">
+						<p style="
+                            font-family: Consolas, serif;
+                            color: white;
+                            font-size: 32px;
+                            text-align: left;
+                            margin: 0">{{songs[currentSongIndex].title}}</p>
+						<span style="
+                            font-family: Consolas, serif;
+                            color: white;
+                            font-size: 16px;
+                            text-align: left;
+                            margin: 0">{{songs[currentSongIndex].artist}}</span>
+					</div>
+					
+					<!-- 按钮及控制条 -->
+					<div class="bottom-controller bottom-component" style="
+                        position: absolute;
+                        left: 50%;
+                        bottom: 2%;
+                        transform: translateX(-50%);
+                    ">
+						<div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
+							<button class="share-btn" style="margin: 0">
+								<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
+							</button>
+							<button class="backward" style="margin: 0 10px 0 10px">
+								<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
+							</button>
+							<button class="play-pause-btn" style="margin: 0 10px 0 10px">
+								<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+							</button>
+							<button class="forward" style="margin: 0 10px 0 10px">
+								<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
+							</button>
+							<button class="play-mode-btn" style="margin: 0">
+								<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+							</button>
+						</div>
+						<div style="display: flex; flex-direction: row;">
+							<p style="margin-right: 10px">{{formatTime(currentTime)}}</p>
+							<input type="range" value="0" id="progress" class="idProgress" style="margin: 20px 0 10px 0; width: 700px"/>
+							<p style="margin-left: 10px">0:00</p>
+						</div>
+					</div>
+				
+				</div>
+			
+			
+			</div>
+			
+			<!-- 全屏按钮 -->
+			<div class="corner-buttons">
+				<button @click="toggleLyrics" class="corner-button">
+					<span v-if="isLyricsDisplaying" style="text-decoration: underline">A</span>
+					<span v-else>A</span>
+				</button>
+				<button @click="toggleFullScreen" class="corner-button">
+					<span v-if="isFullScreen">↖</span>
+					<span v-else>⛶</span>
+				</button>
+				<button @click="togglePlayingPage" class="corner-button">
+					<span>◀</span>
+				</button>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style scoped>
@@ -544,6 +745,7 @@ body {
 	background-color: rgba(0, 0, 0, 1);
 	background-repeat: no-repeat;
 	background-size: cover;
+	overflow: hidden;
 }
 
 /* MAIN MENU */
@@ -572,13 +774,8 @@ footer {
 	height: 75px;
 	width: 100%;
 	margin: 20px 0 0 0;
-	/*background: rgba(16, 21, 61, 0.8);*/
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.5);
-	box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
-	0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
-	z-index: 10;
 }
 
 .transparent-btn {
@@ -653,16 +850,19 @@ footer {
 
 /* LEFT CONTENT */
 
-.left-content {
+.left-content > {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 30px 20px;
 	color: #e5e5e5;
 	transition: all 0.3s ease;
+	margin: 0;
+	padding: 0;
 }
 
 .left-content.expanded {
+	margin: 0;
+	padding: 0;
 	width: 100%;
 }
 
@@ -769,7 +969,6 @@ footer {
 }
 
 /* Containers Scrollbar Style */
-
 .playlist-container::-webkit-scrollbar {
 	height: 10px;
 	display: none;
@@ -1119,8 +1318,8 @@ footer {
 	.content:not(.full-width) {
 		grid-template-columns: 100%;
 		grid-template-areas:
-      "leftContent"
-      "rightContent";
+        "leftContent"
+        "rightContent";
 	}
 	
 	.left-content {
@@ -1249,6 +1448,173 @@ footer {
 .comment-icon:hover {
 	background: rgba(255, 255, 255, 0.2);
 	transform: translateX(-50%) scale(1.1);
+}
+
+/* 退出搜索图标 */
+.exit-search {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 30px;
+	height: 30px;
+	background-color: transparent;
+	color: #fff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 999;
+	transition: background-color 0.3s ease;
+	border: 2px solid #fff;
+}
+
+.exit-search:hover {
+	background-color: rgba(255, 0, 0, 0.8);
+}
+
+.exit-search::before {
+	content: "\2716";
+	font-size: 20px;
+	color: #fff;
+}
+
+.exit-search:hover::after {
+	content: "Exit";
+	position: absolute;
+	top: 35px;
+	right: 0;
+	background-color: #fff;
+	color: #000;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 14px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.exit-search:hover::after {
+	opacity: 1;
+}
+
+
+
+
+
+
+
+
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.player {
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	color: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-size: cover;
+	background-position: center;
+	z-index: -1;
+}
+
+.player-content {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	width: 100%;
+	padding: 20px;
+}
+
+.album-cover-container {
+	position: relative;
+	width: 240px;
+	height: 240px;
+	margin: 0 0 10px 10px;
+	z-index: 1;
+}
+
+.album-cover {
+	width: 240px;
+	height: 240px;
+	border-radius: 10px;
+	object-fit: cover;
+}
+
+.track-info-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	margin-left: 20px; /* 专辑封面与歌曲信息之间的间距 */
+	max-width: 60%; /* 限制内容的最大宽度 */
+	width: 100%;
+}
+
+.seek-bar input {
+	width: 100%; /* 让进度条宽度填满可用空间 */
+	margin-top: 10px;
+}
+
+.time-info {
+	margin-top: 10px;
+	font-size: 1rem;
+}
+
+.corner-buttons {
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+}
+
+.corner-button {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 2rem;
+	cursor: pointer;
+}
+
+.lyrics-container {
+	z-index: 10;
+	overflow: hidden;
+	height: 400px;
+	position: absolute;
+	top: 40%;  /* 距离顶部50% */
+	left: 50%; /* 距离左边50% */
+	transform: translate(-50%, -50%); /* 偏移自身宽高的50%来实现完全居中 */
+}
+
+.lyrics-lines {
+	transition: transform 0.3s;
+}
+
+.lyrics-line {
+	text-align: center;
+	padding: 10px 0;
+	color: #aaa;
+	transition: color 0.3s;
+}
+
+.lyrics-line.active {
+	color: #30e1f1;
+	font-weight: bold;
 }
 
 </style>

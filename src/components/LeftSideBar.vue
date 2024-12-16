@@ -10,21 +10,7 @@ import {ElPopover} from "element-plus";
 
 const emit = defineEmits();
 
-const musicAlbums = ref([
-    { id: 1, image: require('../assets/pictures/playlists/1.jpg'), title: '歌单 1' },
-    { id: 2, image: require('../assets/pictures/playlists/2.jpg'), title: '歌单 2' },
-    { id: 3, image: require('../assets/pictures/playlists/3.jpg'), title: '歌单 3' },
-    { id: 4, image: require('../assets/pictures/playlists/1.jpg'), title: '歌单 1' },
-    { id: 5, image: require('../assets/pictures/playlists/2.jpg'), title: '歌单 2' },
-    { id: 6, image: require('../assets/pictures/playlists/3.jpg'), title: '歌单 3' },
-    { id: 7, image: require('../assets/pictures/playlists/1.jpg'), title: '歌单 1' },
-    { id: 8, image: require('../assets/pictures/playlists/2.jpg'), title: '歌单 2' },
-    { id: 9, image: require('../assets/pictures/playlists/3.jpg'), title: '歌单 3' },
-    { id: 10, image: require('../assets/pictures/playlists/1.jpg'), title: '歌单 1' },
-    { id: 11 ,image: require('../assets/pictures/playlists/2.jpg'), title: '歌单 2' },
-    { id: 12, image: require('../assets/pictures/playlists/3.jpg'), title: '歌单 3' },
-    // 更多歌单
-]);
+const musicAlbums = ref([]);
 
 let albumHoveredIndex = ref(null);
 let hoverOnAlbum= ref(false);
@@ -146,7 +132,7 @@ defineProps({
                     class="musicAlbum-image"
                     :style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"
                 />
-                <play-button @click="emit('setCurrentPlaylist', album.id);" v-if="albumHoveredIndex === album.id" class="play-button"/>
+                <play-button @click="emit('setCurrentPlaylist', album);" v-if="albumHoveredIndex === album.id" class="play-button"/>
                 
                 <div class="musicAlbum-description">
                     <p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>
