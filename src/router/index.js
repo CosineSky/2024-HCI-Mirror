@@ -42,7 +42,7 @@ const router = createRouter({
         {
             path: '/test',
             // @ts-ignore
-            component: () => import('../components/musicAlbumView.vue'),
+            component: () => import('../components/MusicAlbumView.vue'),
             meta: {title: 'musicAlbumView'}
         }
     ]

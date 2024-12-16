@@ -12,74 +12,6 @@ const props = defineProps({
 });
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
-// const albumInfo = ref({
-	// id: 1,
-	// image: require('../assets/pictures/playlists/1.jpg'),
-	// name: '歌单 1',
-	// creator: 'Kriskyy',
-	// songCount: 6,
-	// totalTime: '20:54'
-// });
-
-
-
-// const musicList = ref([
-// 	{
-// 		id: 1,
-// 		number: 1,
-// 		name: "包好听的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// 	{
-// 		id: 2,
-// 		number: 2,
-// 		name: "包难听的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// 	{
-// 		id: 3,
-// 		number: 3,
-// 		name: "包不错的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// 	{
-// 		id: 4,
-// 		number: 4,
-// 		name: "包OK的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// 	{
-// 		id: 5,
-// 		number: 5,
-// 		name: "包没毛病的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// 	{
-// 		id: 6,
-// 		number: 6,
-// 		name: "包NB的歌",
-// 		author: "cossky",
-// 		img: require("../assets/pictures/songs/1.jpg"),
-// 		time: "3:30",
-// 		album: "cos的专辑"
-// 	},
-// ]);
-
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
 
@@ -172,7 +104,7 @@ const enterAuthorDescription = (authorName) => {
 	<div class="album-content" :style="{backgroundImage: gradientColor}">
 		<div class="header">
 			<img src="../assets/pictures/songs/3.jpg" alt="" class="album-image" @load="updateBackground"/>
-<!--			<img :src="albumInfo.image" alt="" class="album-image" @load="updateBackground"/>-->
+			<!--			<img :src="albumInfo.image" alt="" class="album-image" @load="updateBackground"/>-->
 			<div class="header-content">
 				<p style="text-align: left;margin:20px 0 0 15px">歌单</p>
 				<p class="header-album-name" style="font-weight: bolder;font-size:100px;margin:10px 0 35px 10px;">
