@@ -11,7 +11,6 @@ import {LOOP_MODE, NORMAL_MODE, PAUSE, PLAY, RANDOM_MODE} from "../assets/base64
 // Components
 import Header from "../components/Header";
 import Comment from "../components/Comment";
-import PlayingPage from "./PlayingPage.vue";
 import LeftSideBar from "../components/LeftSideBar";
 import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
@@ -24,6 +23,7 @@ import {getPlaylistsByUser} from "../api/playlist";
 import {useTheme} from "../store/theme";
 import ColorThief from "colorthief";
 import {parseLrc, parseLrcOld} from "../utils/parseLyrics"
+import {updateBackground} from "../utils/getBackgroundColor";
 
 
 
@@ -41,38 +41,6 @@ function toggleFullScreen() {
 	} else {
 		document.exitFullscreen();
 	}
-}
-function isDarkColor(rgb) {
-	const [r, g, b] = rgb.match(/\d+/g).map(Number);
-	const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-	return brightness < 128;
-}
-function getDominantColor(imageSrc, callback, alpha = 0.2) {
-	const img = new Image();
-	img.crossOrigin = "anonymous";
-	img.src = imageSrc;
-	img.onload = () => {
-		const colorThief = new ColorThief();
-		const dominantColor = colorThief.getColor(img);
-		if (dominantColor) {
-			let [r, g, b] = dominantColor;
-			const whiteR = 255, whiteG = 255, whiteB = 255;
-			r = Math.floor(r + alpha * (whiteR - r));
-			g = Math.floor(g + alpha * (whiteG - g));
-			b = Math.floor(b + alpha * (whiteB - b));
-			callback(`rgb(${r}, ${g}, ${b})`);
-		} else {
-			console.log("Failed to extract dominant color.");
-			callback("rgb(200, 200, 200)");
-		}
-	};
-}
-function updateBackground (event) {
-	const imageSrc = event.target.src;
-	getDominantColor(imageSrc, (color) => {
-		backgroundColor.value = color;
-		textColor.value = isDarkColor(color) ? "#fff" : "#000";
-	});
 }
 
 
@@ -98,7 +66,6 @@ function updateCurrentTime(event) {
 	updateCurrentLine();
 }
 function updateCurrentLine() {
-	// 根据当前时间更新当前歌词行
 	for (let i = 0; i < lyrics.value.length; i++) {
 		if (
 			currentTime.value >= lyrics.value[i].time &&
@@ -284,7 +251,7 @@ const registerDOMs = () => {
 		});
 	});
 	song.addEventListener("ended", function () {
-		currentSongIndex.value = (currentSongIndex.value + 1) % songs.value.length;
+		switchSongs(1);
 		updateSongInfo();
 	});
 	song.addEventListener("timeupdate", function () {
@@ -316,7 +283,7 @@ const registerDOMs = () => {
 	forwardButtons.forEach(forwardButton => {
 		if (!forwardButton._hasClickListener) {
 			forwardButton.addEventListener("click", function () {
-				currentSongIndex.value = (currentSongIndex.value + 1) % songs.value.length;
+				switchSongs(1);
 				updateSongInfo();
 			});
 			forwardButton._hasClickListener = true;
@@ -325,7 +292,7 @@ const registerDOMs = () => {
 	backwardButtons.forEach(backwardButton => {
 		if (!backwardButton._hasClickListener) {
 			backwardButton.addEventListener("click", function () {
-				currentSongIndex.value = (currentSongIndex.value - 1 + songs.value.length) % songs.value.length;
+				switchSongs(-1);
 				updateSongInfo();
 			});
 			backwardButton._hasClickListener = true;
@@ -375,6 +342,26 @@ const isPlayingPage = ref(false);
 const togglePlayingPage = () => {
 	isPlayingPage.value =!isPlayingPage.value;
 	registerDOMs();
+}
+const switchSongs = (del) => {
+	console.log(playingMode.value, currentSongIndex.value, songs.value.length)
+	switch (playingMode.value) {
+		case 0:
+			console.log("normal mode")
+			currentSongIndex.value = (currentSongIndex.value + del + songs.value.length) % songs.value.length;
+			break;
+		case 1:
+			console.log("loop mode")
+			currentSongIndex.value = currentSongIndex.value;
+			break;
+		case 2:
+			console.log("random mode")
+			currentSongIndex.value = Math.floor(Math.random() * songs.value.length);
+			break;
+		default:
+			break;
+	}
+	currentSongId.value = songs.value[currentSongIndex.value].id;
 }
 
 
@@ -442,6 +429,7 @@ onMounted(() => {
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
 			songs.value = res.data.result;
+			currentSongId.value = songs.value[0].id;
 		}).catch(e => {
 			console.log("Failed to get songs!");
 		});

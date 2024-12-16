@@ -16,12 +16,6 @@ const router = createRouter({
             meta: {title: 'Home'}
         },
         {
-            path: '/play',
-            // @ts-ignore
-            component: () => import('../views/PlayingPage.vue'),
-            meta: {title: 'Playing'}
-        },
-        {
             path: '/login',
             // @ts-ignore
             component: () => import('../views/LoginPage.vue'),

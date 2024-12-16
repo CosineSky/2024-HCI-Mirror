@@ -4,6 +4,12 @@ import ColorThief from "colorthief";
 
 const backgroundColor = ref("#ffffff");
 
+function isDarkColor(rgb) {
+    const [r, g, b] = rgb.match(/\d+/g).map(Number);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness < 128;
+}
+
 function getDominantColor(imageSrc, callback, alpha = 0.2) {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -33,7 +39,7 @@ function updateBackground (event) {
 }
 
 
-export  {updateBackground,backgroundColor}
+export {updateBackground, backgroundColor}
 
 
 

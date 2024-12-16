@@ -2,7 +2,7 @@
 import {nextTick, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {toggleImg} from '../utils'
-import {getSongComments, commentSong} from "../api/comment"
+import {commentSong, getSongComments} from "../api/comment"
 import {getSongById, getUserById} from "../api/resolve"
 import {ElMessage} from "element-plus"
 import defaultBg from '../assets/pictures/jj.png'
@@ -95,9 +95,8 @@ onMounted(() => {
 	]
 	
 	state.song = {
-		song: {
-			name: '达尔文',
-		},
+		title: '达尔文',
+		artist: '林俊杰',
 		singer: [
 			{
 				name: '林俊杰'
@@ -121,28 +120,30 @@ onMounted(() => {
 	
 	bg.value = defaultBg
 	getCommentMusicFn(parseInt(songId), page.value)
-	theme.change(defaultBg)
+	theme.change(bg.value)
 })
 
 const getCommentMusicFn = async (id, page) => {
-	// getSongComments({
-	// 	song_id: id,
-	// 	page: page
-	// }).then(res => {
-	// 	state.comments = res.data.result;
-	// 	for (let i = 0; i < state.comments.length; i++) {
-	// 		getUserById({
-	// 			user_id: state.comments[i].userId
-	// 		}).then(res => {
-	// 			state.commenters.push(res.data.result)
-	// 		})
-	// 	}
-	// 	getSongById({
-	// 		song_id: songId,
-	// 	}).then(res => {
-	// 		state.song = res.data.result
-	// 	})
-	// })
+	getSongComments({
+		song_id: id,
+		page: page
+	}).then(res => {
+		state.comments = res.data.result;
+		for (let i = 0; i < state.comments.length; i++) {
+			getUserById({
+				user_id: state.comments[i].userId
+			}).then(res => {
+				state.commenters.push(res.data.result)
+			})
+		}
+		getSongById({
+			song_id: songId,
+		}).then(res => {
+			state.song = res.data.result
+			bg.value = res.data.result.picPath
+			theme.change(bg.value)
+		})
+	})
 }
 const currentChange = (page) => {
 	state.currentPage = page
@@ -214,12 +215,13 @@ const handleLike = (index) => {
 			<div class="info">
 				<div ref="imgEl" class="bg-img"></div>
 				<div class="song-info">
-					<div class="song-name">{{ state.song.song.name }}</div>
+					<div class="song-name">{{ state.song.title }}</div>
 					<div class="singers">
 						<div class="singer-info">
-							<span v-for="(item, index) in state.song.singer">
-								歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}
-							</span>
+							<span>歌手:{{ state.song.artist }}</span>
+							<!--							<span v-for="(item, index) in state.song.singer">-->
+							<!--								歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}-->
+							<!--							</span>-->
 						</div>
 					</div>
 				</div>
@@ -269,9 +271,8 @@ const handleLike = (index) => {
 											v-if="state.comments[i-1].likedCount > 0"
 											:class="{ 'liked-count': state.comments[i-1].isLiked }"
 											style="font-size: 12px"
-										>
-                      {{ state.comments[i - 1].likedCount }}
-                    </span>
+										>{{ state.comments[i - 1].likedCount }}
+										</span>
 										<div class="operator-line"></div>
 									</div>
 								</div>
@@ -291,42 +292,42 @@ const handleLike = (index) => {
 				</div>
 			</div>
 			<div v-if="showDetail" class="song-info-container">
-				<div class="song-info-row">
-					<div class="song-info-label">演唱者:</div>
-					<div class="song-info-value">{{ state.song.singer[0].name }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">作词:</div>
-					<div class="song-info-value">{{ state.song.songDetail.lyricist }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">作曲:</div>
-					<div class="song-info-value">{{ state.song.songDetail.composer }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">编曲:</div>
-					<div class="song-info-value">{{ state.song.songDetail.arranger }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">歌曲语种:</div>
-					<div class="song-info-value">{{ state.song.songDetail.language }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">歌曲流派:</div>
-					<div class="song-info-value">{{ state.song.songDetail.genre }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">原唱:</div>
-					<div class="song-info-value">{{ state.song.songDetail.originalArtist }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">唱片公司:</div>
-					<div class="song-info-value">{{ state.song.songDetail.recordCompany }}</div>
-				</div>
-				<div class="song-info-row">
-					<div class="song-info-label">简介:</div>
-					<div class="song-info-value">{{ state.song.songDetail.description }}</div>
-				</div>
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">演唱者:</div>-->
+<!--					<div class="song-info-value">{{ state.song.singer[0].name }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">作词:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.lyricist }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">作曲:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.composer }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">编曲:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.arranger }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">歌曲语种:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.language }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">歌曲流派:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.genre }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">原唱:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.originalArtist }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">唱片公司:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.recordCompany }}</div>-->
+<!--				</div>-->
+<!--				<div class="song-info-row">-->
+<!--					<div class="song-info-label">简介:</div>-->
+<!--					<div class="song-info-value">{{ state.song.songDetail.description }}</div>-->
+<!--				</div>-->
 			</div>
 		</div>
 	</div>

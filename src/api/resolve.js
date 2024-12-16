@@ -1,5 +1,5 @@
 import {axios} from "@/utils/request";
-import {RESOLVE_MODULE} from "@/api/_prefix";
+import {PLAYLIST_MODULE, RESOLVE_MODULE, SONG_MODULE, USER_MODULE} from "@/api/_prefix";
 
 /*
     // TODO: newly added
@@ -7,8 +7,7 @@ import {RESOLVE_MODULE} from "@/api/_prefix";
  */
 export const getUserById = (userId) => {
     console.log(userId)
-    return axios.post(`${RESOLVE_MODULE}/user`, userId,
-        { headers: { 'Content-Type': 'application/json' } })
+    return axios.get(`${USER_MODULE}/id`, { params: userId })
         .then(res => {
             return res;
         });
@@ -20,8 +19,7 @@ export const getUserById = (userId) => {
  */
 export const getSongById = (songId) => {
     console.log(songId)
-    return axios.post(`${RESOLVE_MODULE}/song`, songId,
-        { headers: { 'Content-Type': 'application/json' } })
+    return axios.get(`${SONG_MODULE}/id`, { params: songId })
         .then(res => {
             return res;
         });
@@ -33,8 +31,7 @@ export const getSongById = (songId) => {
  */
 export const getPlaylistById = (playlistId) => {
     console.log(playlistId)
-    return axios.post(`${RESOLVE_MODULE}/playlist`, playlistId,
-        { headers: { 'Content-Type': 'application/json' } })
+    return axios.get(`${PLAYLIST_MODULE}/id`, { params: playlistId })
         .then(res => {
             return res;
         });

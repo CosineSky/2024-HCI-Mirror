@@ -7,7 +7,7 @@ import { COMMENT_MODULE } from './_prefix';
  */
 export const getSongComments = (commentInfo) => {
     console.log(commentInfo)
-    return axios.get(`${COMMENT_MODULE}/${commentInfo.song_id}`)
+    return axios.get(`${COMMENT_MODULE}/querySong/${commentInfo.song_id}`)
         .then((res) => {
             return res
         })
@@ -19,7 +19,7 @@ export const getSongComments = (commentInfo) => {
  */
 export const getPlaylistComments = (commentInfo) => {
     console.log(commentInfo)
-    return axios.get(`${COMMENT_MODULE}/${commentInfo.playlist_id}`)
+    return axios.get(`${COMMENT_MODULE}/queryPlaylist/${commentInfo.playlist_id}`)
         .then((res) => {
             return res
         })
