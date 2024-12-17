@@ -22,4 +22,14 @@ export function toggleImg(src, size) {
             console.error(`Failed to load image: ${src}`)
         }
     })
-} 
+}
+
+/**
+ * 转换时间格式
+ * @param time
+ * @returns {string}
+ */
+export function parseTime(time) {
+    let times = time.split(/[T.]/)
+    return times[0] + " " + times[1]
+}
