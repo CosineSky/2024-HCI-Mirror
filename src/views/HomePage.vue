@@ -520,7 +520,7 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 448px">
+						<el-container class="playlist-container" style="overflow: auto; height: 320px">
 							<div v-for="(song, index) in songs" class="playlist-item" style="display: flex; flex-direction: row">
 								<div @click="switchToSong(index)" style="cursor: pointer">
 									<img :src="song.picPath" alt=""
