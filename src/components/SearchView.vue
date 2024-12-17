@@ -21,12 +21,15 @@ const handleTabClick = (tab) => {
 				class="tab-button"
 				:class="{ 'active': currentTab === 'songs' }"
 				@click="handleTabClick('songs')"
-			>🎵歌曲</button>
+			>💿歌曲</button>
 			<button
 				class="tab-button"
 				:class="{ 'active': currentTab === 'playlists' }"
 				@click="handleTabClick('playlists')"
-			>📕播放列表</button>
+			>📕歌单</button>
+			<button
+				class="tab-button"
+			>🙂用户</button>
 		</div>
 		<div class="search-results">
 			<ul v-if="currentTab === 'songs'">
@@ -75,7 +78,7 @@ const handleTabClick = (tab) => {
 
 .tab-button {
 	background-color: transparent;
-	color: #fff;
+	color: #eaeaea;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -83,7 +86,7 @@ const handleTabClick = (tab) => {
 	cursor: pointer;
 	z-index: 999;
 	transition: background-color 0.3s ease;
-	border: 2px solid #fff;
+	border: 1px solid #fff;
 	margin: 0 10px;
 	border-radius: 12px;
 	font-size: 18px;

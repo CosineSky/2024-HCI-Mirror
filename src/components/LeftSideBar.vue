@@ -274,7 +274,6 @@ nav {
 }
 
 .plus-icon {
-	
 	border-radius: 50%;
 	transition: width, color, background-color ease-in-out 0.2s;
 }

@@ -17,7 +17,12 @@ export const useTheme = defineStore('themeId', {
                 toggleImg(src).then((img) => {
                     const colorThief = new ColorThief()
                     let rgb = colorThief.getColor(img)
-                    rgb = [rgb[0] * 1.2, rgb[1] * 1.2, rgb[2] * 1.2]
+                    rgb = [
+                        Math.min(rgb[0] * 0.7, 255),
+                        Math.min(rgb[1] * 0.8, 255),
+                        Math.min(rgb[2] * 0.9, 255),
+                    ];
+
 
                     const isRepeat = rgb.every((rgb, index) => {
                         return rgb === this.bgColor[index]

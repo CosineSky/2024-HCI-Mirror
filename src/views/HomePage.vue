@@ -84,7 +84,7 @@ setInterval(() => {
 
 const theme = useTheme()
 const album_selected = ref(false);
-const showRightContent = ref(false)
+const showRightContent = ref(true)
 
 const selectAlbum = () => {
 	console.log("selectAlbum");
@@ -192,6 +192,7 @@ const registerDOMs = () => {
 				});
 				song.load();
 				song.play();
+				theme.change(songs.value[currentSongIndex.value].picPath);
 			}
 		} catch (e) {
 			console.log("Uncaught Error in updateSongInfo!", e);
@@ -451,7 +452,7 @@ onMounted(() => {
 			<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
 			<section class="content" :class="{ 'full-width': !showRightContent }">
 				<div class="left-content" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px">
+					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 798px">
 						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 					</el-container>
 					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
@@ -464,9 +465,9 @@ onMounted(() => {
 					</el-container>
 				</div>
 				<div v-if="showRightContent" class="right-content">
-					<div class="music-player music-info">
+					<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
 						<div class="album-cover" @click="togglePlayingPage">
-							<img :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
+							<img  :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
 							<span class="point"></span>
 						</div>
 						<h2>{{songs[currentSongIndex].title}}</h2>
@@ -623,7 +624,9 @@ onMounted(() => {
 				>{{ line.text }}</div>
 			</div>
 		</div>
-		<div class="player" :style="{ backgroundImage: gradientColor }">
+		
+<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
+		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
@@ -745,7 +748,7 @@ body {
 main {
 	display: grid;
 	grid-template-columns: 11% 89%;
-	height: 700px;
+	height: 800px;
 	width: 95%;
 	margin: 20px 0 0 0;
 	/*background: rgba(16, 21, 61, 0.6);*/
@@ -1581,14 +1584,15 @@ html, body {
 	background: none;
 	border: none;
 	color: white;
-	font-size: 2rem;
+	font-size: 2.4rem;
 	cursor: pointer;
+	margin-right: 15px;
 }
 
 .lyrics-container {
 	z-index: 10;
 	overflow: hidden;
-	height: 400px;
+	height: 440px;
 	position: absolute;
 	top: 40%;  /* 距离顶部50% */
 	left: 50%; /* 距离左边50% */
@@ -1601,6 +1605,7 @@ html, body {
 
 .lyrics-line {
 	text-align: center;
+	font-size: 1.2rem;
 	padding: 10px 0;
 	color: #aaa;
 	transition: color 0.3s;

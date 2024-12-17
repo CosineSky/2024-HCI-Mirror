@@ -3,7 +3,6 @@ import {onMounted, ref} from "vue";
 import {addSong} from "../api/manager";
 import {useTheme} from "../store/theme";
 import ImageUploader from "../components/FileUploader.vue";
-import defaultBg from "../assets/pictures/Eason.png";
 
 const theme = useTheme()
 
