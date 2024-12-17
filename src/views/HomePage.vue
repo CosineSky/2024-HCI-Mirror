@@ -365,6 +365,28 @@ const switchSongs = (del) => {
 	currentSongId.value = songs.value[currentSongIndex.value].id;
 }
 
+const switchToSong = (index) => {
+	if (index === currentSongIndex.value) {
+		return;
+	}
+	
+	currentSongIndex.value = index;
+	currentSongId.value = songs.value[index].id;
+
+	if (song) {
+		controlIcons.forEach(controlIcon => {
+			controlIcon.src = PLAY;
+		});
+		song.src = songs.value[index].filePath;
+		parseLrc(songs.value[index].lyricsPath).then(res => {
+			lyrics.value = res;
+		});
+		song.load();
+		song.play();
+		theme.change(songs.value[index].picPath);
+	}
+}
+
 
 /*
     PLAYLISTS
@@ -456,11 +478,15 @@ onMounted(() => {
 						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 					</el-container>
 					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
-						<el-button class="exit-search" @click="setMidComponents(1)"></el-button>
+						<el-button class="exit-search"
+                       :class="{ 'adjusted-position': showRightContent }"
+                       @click="setMidComponents(1)"></el-button>
 						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 					</el-container>
 					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">
-						<el-button class="exit-search" @click="setMidComponents(1)"></el-button>
+						<el-button class="exit-search"
+                       :class="{ 'adjusted-position': showRightContent }"
+                       @click="setMidComponents(1)"></el-button>
 						<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
 					</el-container>
 				</div>
@@ -488,10 +514,12 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 320px">
-							<div v-for="i in songs.length" class="playlist-item" style="display: flex; flex-direction: row">
-								<div>
-									<img :src="songs[i - 1].picPath" alt=""/>
+						<el-container class="playlist-container" style="overflow: auto; height: 448px">
+							<div v-for="(song, index) in songs" class="playlist-item" style="display: flex; flex-direction: row">
+								<div @click="switchToSong(index)" style="cursor: pointer">
+									<img :src="song.picPath" alt="" 
+										 :class="{ 'playing': index === currentSongIndex }"
+									/>
 								</div>
 								<div style="display: flex; flex-direction: column; margin-left: 10px">
 									<p class="playlist-container-desc" style="
@@ -501,7 +529,7 @@ onMounted(() => {
 												overflow: auto;
 												width: 240px;
 												height: 24px
-											">{{ songs[i - 1].title }}</p>
+											">{{ songs[index].title }}</p>
 									<p class="playlist-container-desc" style="
 												color: white;
 												font-size: 12px;
@@ -509,7 +537,7 @@ onMounted(() => {
 												overflow: auto;
 												width: 240px;
 												height: 18px
-											">{{ songs[i - 1].artist }}</p>
+											">{{ songs[index].artist }}</p>
 								</div>
 							</div>
 						</el-container>
@@ -1494,6 +1522,10 @@ footer {
 	opacity: 1;
 }
 
+.exit-search.adjusted-position {
+  right: calc(23%);
+}
+
 
 
 
@@ -1614,6 +1646,21 @@ html, body {
 .lyrics-line.active {
 	color: #30e1f1;
 	font-weight: bold;
+}
+
+.playlist-item img {
+	transition: all 0.3s ease;
+}
+
+.playlist-item img.playing {
+	border-color: #ddc323;
+	box-shadow: 0 0 10px rgba(221, 195, 35, 0.5);
+	transform: scale(1.05);
+}
+
+.playlist-item:hover img:not(.playing) {
+	transform: scale(1.05);
+	border-color: rgba(255, 255, 255, 0.8);
 }
 
 </style>
