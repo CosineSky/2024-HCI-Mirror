@@ -32,7 +32,7 @@ function toggleIcons() {
 }
 
 function exit() {
-	document.exitFullscreen();
+	// document.exitFullscreen();
 	router.push('/login');
 }
 

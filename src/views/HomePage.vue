@@ -247,6 +247,7 @@ const registerDOMs = () => {
 	
 	song.addEventListener("loadedmetadata", function () {
 		progresses.forEach(progress => {
+			duration.value = song.duration;
 			progress.max = song.duration;
 			progress.value = song.currentTime;
 		});
@@ -334,6 +335,7 @@ const currentUserId = ref(userToken.value.id);
 // Playing Status
 const songs = ref([]);
 const isPaused = ref(false);
+const duration = ref(0);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
 
 // Current Playing
@@ -369,7 +371,7 @@ const switchToSong = (index) => {
 	if (index === currentSongIndex.value) {
 		return;
 	}
-	
+
 	currentSongIndex.value = index;
 	currentSongId.value = songs.value[index].id;
 
@@ -395,7 +397,6 @@ const playlists = ref([]);
 const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
 const receivePlaylistId = (value) => {
-	console.log(value)
 	currentPlaylist.value = value;
 	currentPlaylistId.value = value.id;
 	console.log("Current Playlist Id:", currentPlaylistId.value)
@@ -455,6 +456,11 @@ onMounted(() => {
 		}).then((res) => {
 			songs.value = res.data.result;
 			currentSongId.value = songs.value[0].id;
+
+			// TODO: currentSongIndex != currentSongId ?
+			parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
+				lyrics.value = res;
+			});
 		}).catch(e => {
 			console.log("Failed to get songs!");
 		});
@@ -474,7 +480,7 @@ onMounted(() => {
 			<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
 			<section class="content" :class="{ 'full-width': !showRightContent }">
 				<div class="left-content" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 798px">
+					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px">
 						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 					</el-container>
 					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
@@ -493,7 +499,7 @@ onMounted(() => {
 				<div v-if="showRightContent" class="right-content">
 					<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
 						<div class="album-cover" @click="togglePlayingPage">
-							<img  :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
+							<img :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
 							<span class="point"></span>
 						</div>
 						<h2>{{songs[currentSongIndex].title}}</h2>
@@ -517,21 +523,22 @@ onMounted(() => {
 						<el-container class="playlist-container" style="overflow: auto; height: 448px">
 							<div v-for="(song, index) in songs" class="playlist-item" style="display: flex; flex-direction: row">
 								<div @click="switchToSong(index)" style="cursor: pointer">
-									<img :src="song.picPath" alt="" 
+									<img :src="song.picPath" alt=""
 										 :class="{ 'playing': index === currentSongIndex }"
 									/>
 								</div>
 								<div style="display: flex; flex-direction: column; margin-left: 10px">
 									<p class="playlist-container-desc" style="
 												color: white;
-												font-size: 16px;
+												font-size: 18px;
+												font-family: Candara, serif;
 												text-align: left;
 												overflow: auto;
 												width: 240px;
-												height: 24px
+												height: 24px;
 											">{{ songs[index].title }}</p>
 									<p class="playlist-container-desc" style="
-												color: white;
+												color: #949494;
 												font-size: 12px;
 												text-align: left;
 												overflow: auto;
@@ -600,7 +607,11 @@ onMounted(() => {
 						<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
 					</button>
 				</div>
-				<input type="range" value="0" id="progress" class="idProgress" style="margin: 0 0 10px 0; width: 500px"/>
+				<div style="display: flex; flex-direction: row; margin-top: 10px">
+					<p style="margin-right: 10px; margin-bottom: 10px; color: white">{{formatTime(currentTime)}}</p>
+					<input type="range" value="0" id="progress" class="idProgress" style="margin: 0 0 10px 0; width: 500px"/>
+					<p style="margin-left: 10px; color: white">{{formatTime(duration)}}</p>
+				</div>
 			</el-card>
 			
 			<div class="share-icon bottom-component" style="
@@ -698,10 +709,10 @@ onMounted(() => {
 								<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
 							</button>
 						</div>
-						<div style="display: flex; flex-direction: row;">
+						<div v-if="songs[currentSongIndex] !== undefined" style="display: flex; flex-direction: row;">
 							<p style="margin-right: 10px">{{formatTime(currentTime)}}</p>
 							<input type="range" value="0" id="progress" class="idProgress" style="margin: 20px 0 10px 0; width: 700px"/>
-							<p style="margin-left: 10px">0:00</p>
+							<p style="margin-left: 10px">{{formatTime(duration)}}</p>
 						</div>
 					</div>
 				</div>
@@ -776,7 +787,7 @@ body {
 main {
 	display: grid;
 	grid-template-columns: 11% 89%;
-	height: 800px;
+	height: 700px;
 	width: 95%;
 	margin: 20px 0 0 0;
 	/*background: rgba(16, 21, 61, 0.6);*/
@@ -1079,6 +1090,7 @@ footer {
 .music-player {
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	color: #fff;
 	background: rgba(188, 184, 198, 0.2);
 	backdrop-filter: blur(10px);
@@ -1103,6 +1115,7 @@ footer {
 	transition: transform 0.5s ease-out;
 	pointer-events: none;
 	user-select: none;
+	margin-top: 10px;
 }
 
 .point {
