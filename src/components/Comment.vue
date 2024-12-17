@@ -180,14 +180,27 @@ const resetComments = () => {
 }
 
 const handleSubmit = () => {
+	if (!comment.value.replace(/(^\s*$) | (\s*$)/g, '')) {
+		ElMessage.warning("评论内容不能为空！");
+		return;
+	}
+
 	commentSong({
 		userId: parseInt(userId),
 		songId: parseInt(songId),
 		comment: comment.value,
 	}).then(() => {
-		ElMessage.success("评价成功！")
-		location.reload()
-	})
+		ElMessage.success("评论成功！");
+		
+		comment.value = "";
+		getCommentCount(parseInt(songId));
+		state.currentPage = 1;
+    sortBy.value = 'Time'
+		getCommentMusicFn(parseInt(songId), 1);
+	}).catch(error => {
+		ElMessage.error("发布评论失败，请稍后重试");
+		console.error("Submit comment failed:", error);
+	});
 }
 
 const showComments = () => {
