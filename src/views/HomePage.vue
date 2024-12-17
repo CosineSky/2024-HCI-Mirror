@@ -414,7 +414,7 @@ onMounted(() => {
 	/*
         DOMS & EVENTS
 	 */
-	theme.change(defaultBg)
+	theme.change(defaultBg);
 	registerDOMs();
 	
 	/*
@@ -426,6 +426,7 @@ onMounted(() => {
 		playlists.value = res.data.result;
 		currentPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;
+		theme.change(currentPlaylist.value.picPath);
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
@@ -443,6 +444,8 @@ onMounted(() => {
 
 <template>
 	<body v-show="!isPlayingPage">
+	
+		<!-- MAIN & RIGHT CONTENT -->
 		<Header @headData="receiveDataFromHeader"/>
 		<main @click="unSelectAlbum">
 			<left-side-bar @setCurrentPlaylist="receivePlaylistId"/>
@@ -485,9 +488,9 @@ onMounted(() => {
 							</div>
 						</el-container>
 						<el-container class="playlist-container" style="overflow: auto; height: 320px">
-							<div v-for="song in songs" class="playlist-item" style="display: flex; flex-direction: row">
+							<div v-for="i in songs.length" class="playlist-item" style="display: flex; flex-direction: row">
 								<div>
-									<img src="../assets/pictures/bg1.jpg" alt=""/>
+									<img :src="songs[i - 1].picPath" alt=""/>
 								</div>
 								<div style="display: flex; flex-direction: column; margin-left: 10px">
 									<p class="playlist-container-desc" style="
@@ -497,7 +500,7 @@ onMounted(() => {
 												overflow: auto;
 												width: 240px;
 												height: 24px
-											">{{ song.title }}</p>
+											">{{ songs[i - 1].title }}</p>
 									<p class="playlist-container-desc" style="
 												color: white;
 												font-size: 12px;
@@ -505,7 +508,7 @@ onMounted(() => {
 												overflow: auto;
 												width: 240px;
 												height: 18px
-											">{{ song.artist }}</p>
+											">{{ songs[i - 1].artist }}</p>
 								</div>
 							</div>
 						</el-container>
@@ -513,6 +516,9 @@ onMounted(() => {
 				</div>
 			</section>
 		</main>
+		
+		
+		<!-- FOOTER -->
 		<footer>
 			<div class="bottom-description bottom-component"
 			     style="display: flex; flex-direction: row; justify-content: center;">
@@ -542,17 +548,7 @@ onMounted(() => {
 						{{songs[currentSongIndex].artist}}</p>
 				</div>
 			</div>
-			
-			<div class="comment-icon bottom-component" style="
-						position: absolute;
-						left: 15%;
-						transform: translateX(-50%);
-						color: white;
-						cursor: pointer;
-					">
-				<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-				     @click="setMidComponents(2)">
-			</div>
+
 			<el-card class="bottom-controller bottom-component" style="
 						position: absolute;
 					    left: 50%;
@@ -560,7 +556,7 @@ onMounted(() => {
 					">
 				<div class="controls" style="display: flex; flex-direction: row; margin: 10px 0 0 0">
 					<button class="share-btn" style="margin: 0">
-						<img src="../assets/icons/controller/share.png" alt="" style="width: 60%">
+						<img src="../assets/icons/controller/mute.png" alt="" style="width: 60%">
 					</button>
 					<button class="backward" style="margin: 0 10px 0 10px">
 						<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
@@ -577,9 +573,30 @@ onMounted(() => {
 				</div>
 				<input type="range" value="0" id="progress" class="idProgress" style="margin: 0 0 10px 0; width: 500px"/>
 			</el-card>
+			
+			<div class="share-icon bottom-component" style="
+						position: absolute;
+						left: 92%;
+						transform: translateX(-50%);
+						color: white;
+						cursor: pointer;
+					">
+				<img src="../assets/icons/comment/share.png" alt="" style="width: 24px; height: 24px;"
+				     @click="">
+			</div>
+			<div class="comment-icon bottom-component" style="
+						position: absolute;
+						left: 95%;
+						transform: translateX(-50%);
+						color: white;
+						cursor: pointer;
+					">
+				<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
+				     @click="setMidComponents(2)">
+			</div>
 			<div class="queue-icon bottom-component" style="
 						position: absolute;
-						left: 85%;
+						left: 98%;
 						transform: translateX(-50%);
 						color: white;
 						cursor: pointer;
@@ -591,7 +608,7 @@ onMounted(() => {
 	</body>
 	
 	
-	
+	<!-- PLAYING PAGE -->
 	<div v-show="isPlayingPage" class="playing-page">
 		<div v-if="isLyricsDisplaying" class="lyrics-container">
 			<div
@@ -607,20 +624,12 @@ onMounted(() => {
 			</div>
 		</div>
 		<div class="player" :style="{ backgroundImage: gradientColor }">
-			<!-- 背景 -->
 			<div class="background"></div>
-			
-			<!-- 播放器内容 -->
 			<div class="player-content">
-				<!-- 专辑封面容器 -->
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
 					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover" @load="updateBackground" />
 				</div>
-				
-				<!-- 歌曲信息和控制条 -->
 				<div class="track-info-container">
-					
-					<!-- 歌曲信息 -->
 					<div v-if="songs[currentSongIndex] !== undefined" class="music-info" style="display: flex; flex-direction: column; justify-content: center;">
 						<p style="
                             font-family: Consolas, serif;
@@ -635,8 +644,6 @@ onMounted(() => {
                             text-align: left;
                             margin: 0">{{songs[currentSongIndex].artist}}</span>
 					</div>
-					
-					<!-- 按钮及控制条 -->
 					<div class="bottom-controller bottom-component" style="
                         position: absolute;
                         left: 50%;
@@ -666,13 +673,8 @@ onMounted(() => {
 							<p style="margin-left: 10px">0:00</p>
 						</div>
 					</div>
-				
 				</div>
-			
-			
 			</div>
-			
-			<!-- 全屏按钮 -->
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
 					<span v-if="isLyricsDisplaying" style="text-decoration: underline">A</span>
@@ -1422,6 +1424,7 @@ footer {
 	}
 }
 
+.share-icon,
 .queue-icon,
 .comment-icon {
 	display: flex;
@@ -1434,6 +1437,7 @@ footer {
 	transition: all 0.3s ease;
 }
 
+.share-icon:hover,
 .queue-icon:hover,
 .comment-icon:hover {
 	background: rgba(255, 255, 255, 0.2);

@@ -7,7 +7,7 @@ const {songResult, playlistResult} = defineProps({
 	playlistResult: Array
 })
 
-const currentTab = ref('songs') // 当前选中的标签，默认为'songs'
+const currentTab = ref('songs')
 
 const handleTabClick = (tab) => {
 	currentTab.value = tab

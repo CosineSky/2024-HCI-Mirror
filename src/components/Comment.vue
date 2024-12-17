@@ -6,7 +6,7 @@ import {commentSong, getSongComments} from "../api/comment"
 import {getSongById, getUserById} from "../api/resolve"
 import {ElMessage} from "element-plus"
 import defaultBg from '../assets/pictures/jj.png'
-import likeIcon from '../assets/icons/comment/点赞.png'
+import likeIcon from '../assets/icons/comment/like.png'
 import {useTheme} from "../store/theme";
 import Pagination from "../components/Pagination.vue";
 

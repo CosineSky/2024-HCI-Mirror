@@ -103,7 +103,7 @@ const enterAuthorDescription = (authorName) => {
 <template>
 	<div class="album-content" :style="{backgroundImage: gradientColor}">
 		<div class="header">
-			<img src="../assets/pictures/songs/3.jpg" alt="" class="album-image" @load="updateBackground"/>
+			<img :src="albumInfo.picPath" alt="" class="album-image" @load="updateBackground"/>
 			<!--			<img :src="albumInfo.image" alt="" class="album-image" @load="updateBackground"/>-->
 			<div class="header-content">
 				<p style="text-align: left;margin:20px 0 0 15px">歌单</p>

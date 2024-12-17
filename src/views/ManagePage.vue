@@ -1,7 +1,11 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {addSong} from "../api/manager";
+import {useTheme} from "../store/theme";
 import ImageUploader from "../components/FileUploader.vue";
+import defaultBg from "../assets/pictures/Eason.png";
+
+const theme = useTheme()
 
 const song_title = ref("");
 const song_artist = ref("");
@@ -42,77 +46,77 @@ function handleSubmit() {
 }
 
 onMounted(() => {
-
+	theme.reset();
 })
 </script>
 
 <template>
     <body>
-    <section class="user">
-        <div class="user_options-container">
-            <div class="user_options-text">
-                <div class="user_options-unregistered">
-                    <h2 class="user_unregistered-title">Want something NEW?</h2>
-                    <p class="user_unregistered-text">Tired of all those songs? Not a problem! As a music-player manager, you can always add new songs to our archives!</p>
-                </div>
-                <div class="user_options-registered">
-                    <button class="user_registered-login" id="login-button">Login</button>
-                </div>
-            </div>
-            
-            <div class="user_options-forms" id="user_options-forms">
-                <div class="user_forms-login">
-                    <h2 class="forms_title">Upload A NEW SONG</h2>
-                    <form class="forms_form">
-                        <div class="text-area">
-                            <h2>Song Information</h2>
-                            <div class="setting">
-                                <div class="setting-items">
-                                    <h3>Song Title</h3>
-                                    <input v-model="song_title" placeholder="..." type="text">
-                                </div>
-                                <div class="setting-items">
-                                    <h3>Artist</h3>
-                                    <input v-model="song_artist" placeholder="..." type="text">
-                                </div>
-                                <div class="setting-items">
-                                    <h3>Album</h3>
-                                    <input v-model="song_album" placeholder="..." type="text">
-                                </div>
-                                <div class="setting-items">
-                                    <h3>Description</h3>
-                                    <input v-model="song_description" placeholder="..." type="text">
-                                </div>
-                            </div>
-                            
-                            <h2>Source Files</h2>
-                            <div class="setting">
-                                <div class="setting-items">
-                                    <h3>Song File(.mp3)</h3>
-                                    <image-uploader @updateFileUrl="receiveSongUrl"/>
-                                </div>
-                                <div class="setting-items">
-                                    <h3>Cover File(.png/.jpg)</h3>
-                                    <image-uploader @updateFileUrl="receiveCoverUrl"/>
-                                </div>
-                                <div class="setting-items">
-                                    <h3>Lyrics File(.lyc)</h3>
-                                    <image-uploader @updateFileUrl="receiveLyricsUrl"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-	                        <router-link to="/home" class="home-btn">
-		                        <input style="margin: 5px" type="submit" value="Back" class="forms_buttons-cancel">
-	                        </router-link>
-                            <input style="margin: 5px" @click="handleSubmit" type="submit" value="Let's ROCK!" class="forms_buttons-action">
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-        </div>
-    </section>
+	    <section class="user">
+	        <div class="user_options-container">
+	            <div class="user_options-text">
+	                <div class="user_options-unregistered">
+	                    <h2 class="user_unregistered-title">Want something NEW?</h2>
+	                    <p class="user_unregistered-text">Tired of all those songs? Not a problem! As a music-player manager, you can always add new songs to our archives!</p>
+	                </div>
+	                <div class="user_options-registered">
+	                    <button class="user_registered-login" id="login-button">Login</button>
+	                </div>
+	            </div>
+	            
+	            <div class="user_options-forms" id="user_options-forms">
+	                <div class="user_forms-login">
+	                    <h2 class="forms_title">Upload A NEW SONG</h2>
+	                    <form class="forms_form">
+	                        <div class="text-area">
+	                            <h2>Song Information</h2>
+	                            <div class="setting">
+	                                <div class="setting-items">
+	                                    <h3>Song Title</h3>
+	                                    <input v-model="song_title" placeholder="..." type="text">
+	                                </div>
+	                                <div class="setting-items">
+	                                    <h3>Artist</h3>
+	                                    <input v-model="song_artist" placeholder="..." type="text">
+	                                </div>
+	                                <div class="setting-items">
+	                                    <h3>Album</h3>
+	                                    <input v-model="song_album" placeholder="..." type="text">
+	                                </div>
+	                                <div class="setting-items">
+	                                    <h3>Description</h3>
+	                                    <input v-model="song_description" placeholder="..." type="text">
+	                                </div>
+	                            </div>
+	                            
+	                            <h2>Source Files</h2>
+	                            <div class="setting">
+	                                <div class="setting-items">
+	                                    <h3>Song File(.mp3)</h3>
+	                                    <image-uploader @updateFileUrl="receiveSongUrl"/>
+	                                </div>
+	                                <div class="setting-items">
+	                                    <h3>Cover File(.png/.jpg)</h3>
+	                                    <image-uploader @updateFileUrl="receiveCoverUrl"/>
+	                                </div>
+	                                <div class="setting-items">
+	                                    <h3>Lyrics File(.lyc)</h3>
+	                                    <image-uploader @updateFileUrl="receiveLyricsUrl"/>
+	                                </div>
+	                            </div>
+	                        </div>
+	                        <div>
+		                        <router-link to="/home" class="home-btn">
+			                        <input style="margin: 5px" type="submit" value="Back" class="forms_buttons-cancel">
+		                        </router-link>
+	                            <input style="margin: 5px" @click="handleSubmit" type="submit" value="Let's ROCK!" class="forms_buttons-action">
+	                        </div>
+	                    </form>
+	                </div>
+	
+	            </div>
+	        </div>
+	    </section>
     </body>
 </template>
 

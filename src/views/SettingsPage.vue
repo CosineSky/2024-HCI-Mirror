@@ -1,5 +1,11 @@
 <script setup>
+import {useTheme} from "../store/theme";
+import {onMounted} from "vue";
+const theme = useTheme()
 
+onMounted(() => {
+	theme.reset();
+})
 </script>
 
 <template>
@@ -55,14 +61,13 @@ body {
 	align-items: center;
 	justify-content: center;
 	min-height: 100vh;
-	background-image: url("../assets/pictures/bg4.jpg");
+	background-image: url("../assets/pictures/bg2.jpg");
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 
 *{
 	box-sizing: border-box;
-	font-family: $font-stack;
 }
 
 section{

@@ -17,7 +17,7 @@ export const useTheme = defineStore('themeId', {
                 toggleImg(src).then((img) => {
                     const colorThief = new ColorThief()
                     let rgb = colorThief.getColor(img)
-                    rgb = [rgb[0] / 2, rgb[1] * 0.6, rgb[2] * 0.7]
+                    rgb = [rgb[0] * 1.2, rgb[1] * 1.2, rgb[2] * 1.2]
 
                     const isRepeat = rgb.every((rgb, index) => {
                         return rgb === this.bgColor[index]
@@ -38,7 +38,8 @@ export const useTheme = defineStore('themeId', {
                         this.pointer = 0
                     }
                 })
-            } else {
+            }
+            else {
                 this.bgColor = ''
                 if (this.pointer === 0) {
                     app.style.backgroundImage = ``
@@ -52,6 +53,11 @@ export const useTheme = defineStore('themeId', {
                     this.pointer = 0
                 }
             }
+        },
+        reset() {
+            this.bgColor = '';
+            this.pointer = 1;
+            this.change('');
         }
     }
 }) 

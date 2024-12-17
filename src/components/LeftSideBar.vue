@@ -145,8 +145,7 @@ defineProps({
 			     :style="{backgroundColor: albumHoveredIndex === album.id ? '#1F1F1F' : '#121212' }"
 			     class="musicAlbum-item">
 				<img
-					src='../assets/pictures/playlists/1.jpg'
-					:src="album.image"
+					:src="album.picPath"
 					alt="playlist"
 					class="musicAlbum-image"
 					:style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"

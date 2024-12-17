@@ -1,7 +1,10 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {userInfo, userLogin, userRegister} from "../api/user.js";
+import {useTheme} from "../store/theme";
 import {router} from "../router";
+
+const theme = useTheme()
 
 const login_email = ref("cossky@outlook.com")
 const login_password = ref("1145141919810")
@@ -51,6 +54,8 @@ function handleRegister() {
 }
 
 onMounted(() => {
+	theme.reset();
+	
 	/**
 	 * Variables
 	 */
@@ -81,6 +86,10 @@ onMounted(() => {
 
 <template>
 	<body>
+		<video autoplay muted loop id="video-background">
+			<source src="../assets/videos/1.mp4" type="video/mp4">
+			Your browser does not support the video tag.
+		</video>
 		<section class="user">
 			<div class="user_options-container">
 				<div class="user_options-text">
@@ -165,9 +174,19 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-image: url("../assets/pictures/bg2.jpg");
+	background-image: url("../assets/videos/1.mp4");
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+
+#video-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* 确保视频填充整个视口 */
+	z-index: -1; /* 将视频置于内容后面 */
 }
 
 button {
