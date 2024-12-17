@@ -26,7 +26,7 @@ function handleLogin() {
                 sessionStorage.setItem('user-token', JSON.stringify(res.data.result))
 	            console.log("Storing session: ", res.data.result);
 	            router.push({path: "/home"})
-	            document.documentElement.requestFullscreen();
+	            // document.documentElement.requestFullscreen();
             })
 		} else if (res.data.code === '400') {
   
