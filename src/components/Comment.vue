@@ -617,6 +617,8 @@ const changeSortBy = (type) => {
 
                 .text {
                   color: white;
+                  text-align: left;
+                  padding-right: 20px; /* 右侧留出一些空间，防止文字贴边 */
                 }
               }
 
