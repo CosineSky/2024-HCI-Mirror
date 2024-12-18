@@ -533,6 +533,7 @@ onMounted(() => {
 				<el-container v-if="midComponents == 2" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px" >
 					<el-button class="exit-search"
+					           data-tooltip="退出"
 					           :class="{ 'adjusted-position': showRightContent }"
 					           @click="setMidComponents(1)"></el-button>
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
@@ -540,6 +541,7 @@ onMounted(() => {
 				<el-container v-if="midComponents == 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
+					           data-tooltip="退出"
 					           :class="{ 'adjusted-position': showRightContent }"
 					           @click="setMidComponents(1)"></el-button>
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
@@ -1689,22 +1691,20 @@ footer {
 	color: #fff;
 }
 
-.exit-search:hover::after {
-	content: "Exit";
+/* 修改提示文字样式，与feature-icon保持一致 */
+.exit-search[data-tooltip]:hover::after {
+	content: attr(data-tooltip);
 	position: absolute;
 	top: 35px;
-	right: 0;
-	background-color: #fff;
-	color: #000;
-	padding: 5px 10px;
-	border-radius: 5px;
-	font-size: 14px;
-	opacity: 0;
-	transition: opacity 0.3s ease;
-}
-
-.exit-search:hover::after {
-	opacity: 1;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .exit-search.adjusted-position {

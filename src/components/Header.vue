@@ -84,7 +84,8 @@ function callSearch() {
 		<div class="search-box">
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
 			     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-			     class="feather feather-search">
+			     class="feather feather-search"
+           @click="callSearch">
 				<circle cx="11" cy="11" r="8"></circle>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 			</svg>
@@ -171,23 +172,22 @@ function callSearch() {
 }
 
 .home-btn:hover {
-  transform: scale(1.1);
-  color: #efeeee;
-  background-color: #404040;
+  transform: translateY(-2px);
 }
 
 .home-btn:hover::after {
   content: '回到主页';
-  color: #000000;
   position: absolute;
-  top: 100%;
+  top: 35px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 .manage-btn {
@@ -208,9 +208,7 @@ function callSearch() {
 }
 
 .manage-btn:hover {
-  transform: scale(1.1);
-  color: #efeeee;
-  background-color: #404040;
+  transform: translateY(-2px);
 }
 
 /*
@@ -218,16 +216,17 @@ function callSearch() {
  */
 .manage-btn:hover::after {
   content: '增加歌曲';
-  color: #000000;
   position: absolute;
-  top: 100%;
+  top: 35px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 .search-box {
@@ -292,22 +291,21 @@ input[type="text"]:focus {
 
 .more-btn:hover {
   transform: scale(1.1);
-  color: #efeeee;
-  background-color: #404040;
 }
 
 .more-btn:hover::after {
   content: '更多';
-  color: #000000;
   position: absolute;
-  top: 100%;
-  left: 50%;
+  top: 32px;
+  left: 38%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 .role-icon {
@@ -328,23 +326,22 @@ input[type="text"]:focus {
 }
 
 .role-icon svg:hover {
-  transform: scale(1.1);
-  color: #efeeee;
-  background-color: #404040;
+  transform: translateY(-2px);
 }
 
 .role-icon:hover::after {
   content: '个人主页';
-  color: #000000;
   position: absolute;
-  top: 100%;
+  top: 35px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 .set-icon {
@@ -365,23 +362,22 @@ input[type="text"]:focus {
 }
 
 .set-icon svg:hover {
-  transform: scale(1.1);
-  color: #efeeee;
-  background-color: #404040;
+  transform: translateY(-2px);
 }
 
 .set-icon:hover::after {
   content: '设置';
-  color: #000000;
   position: absolute;
-  top: 100%;
+  top: 35px;
   left: 38%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 .exit-icon {
@@ -402,23 +398,23 @@ input[type="text"]:focus {
 }
 
 .exit-icon svg:hover {
-  transform: scale(1.1);
   color: red;
-  background-color: #404040;
+  transform: translateY(-2px);
 }
 
 .exit-icon:hover::after {
   content: '退出';
   color: red;
   position: absolute;
-  top: 100%;
+  top: 35px;
   left: 38%;
   transform: translateX(-50%);
-  background-color: rgba(245, 245, 245, 0.8);
-  padding: 3px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
+  background-color: #282828;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
 @keyframes slideIn {

@@ -287,7 +287,7 @@ const changeSortBy = (type) => {
           <textarea placeholder="请输入您的评论..." v-model="comment" @input="adjustHeight"></textarea>
           <span
               class="custom-button"
-              style="color: white; font-size: 20px; position: absolute; bottom: 8px; right: 2%"
+              style="color: white; font-size: 20px; position: absolute; bottom: 14px; right: 2%"
               @click.stop="handleSubmit"
           >发布</span>
         </div>
@@ -356,43 +356,39 @@ const changeSortBy = (type) => {
           </div>
         </div>
         <div v-if="showDetail" class="song-info-container">
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.title">
             <div class="song-info-label">歌曲:</div>
             <div class="song-info-value">{{ state.song.title }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.artist">
             <div class="song-info-label">艺人:</div>
             <div class="song-info-value">{{ state.song.artist }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.album">
             <div class="song-info-label">专辑:</div>
             <div class="song-info-value">{{ state.song.album }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.lyricist">
             <div class="song-info-label">作词:</div>
-            <div class="song-info-value">未提供</div>
+            <div class="song-info-value">{{ state.song.lyricist }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.composer">
             <div class="song-info-label">作曲:</div>
-            <div class="song-info-value">未提供</div>
+            <div class="song-info-value">{{ state.song.composer }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.language">
             <div class="song-info-label">歌曲语种:</div>
-            <div class="song-info-value">未提供</div>
+            <div class="song-info-value">{{ state.song.language }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.genre">
             <div class="song-info-label">歌曲流派:</div>
-            <div class="song-info-value">未提供</div>
+            <div class="song-info-value">{{ state.song.genre }}</div>
           </div>
-          <div class="song-info-row">
-            <div class="song-info-label">原唱:</div>
-            <div class="song-info-value">未提供</div>
-          </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.recordCompany">
             <div class="song-info-label">唱片公司:</div>
-            <div class="song-info-value">未提供</div>
+            <div class="song-info-value">{{ state.song.recordCompany }}</div>
           </div>
-          <div class="song-info-row">
+          <div class="song-info-row" v-if="state.song.description">
             <div class="song-info-label">详细介绍:</div>
             <div class="song-info-value">{{ state.song.description }}</div>
           </div>
@@ -526,14 +522,16 @@ const changeSortBy = (type) => {
         padding: 10px;
         font-size: 15px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        background-color: rgba(0, 0, 0, 0.3);
+        background-color: rgba(0, 0, 0, 0.2);
         color: #fff;
         resize: none;
         outline: none;
+        backdrop-filter: blur(10px);
 
         &:focus {
-          border-color: rgba(255, 255, 255, 0.2); /* 输入时边框颜色稍微变亮 */
-          box-shadow: none; /* 移除默认的焦点阴影 */
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: none;
+          background-color: rgba(0, 0, 0, 0.15);
         }
 
         &::placeholder {
