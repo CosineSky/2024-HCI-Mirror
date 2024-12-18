@@ -481,16 +481,16 @@ onMounted(() => {
 			<left-side-bar class="left-side-bar" @setCurrentPlaylist="receivePlaylistId"/>
 			<div class="content" :class="{ 'full-width': !showRightContent }">
 				<div class="main-view" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px ;border-radius: 12px">
+					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 730px ;border-radius: 12px">
 						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
 					</el-container>
-					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
+					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 730px ;border-radius: 12px" >
 						<el-button class="exit-search"
                        :class="{ 'adjusted-position': showRightContent }"
                        @click="setMidComponents(1)"></el-button>
 						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 					</el-container>
-					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">
+					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 730px ;border-radius: 12px">
 						<el-button class="exit-search"
                        :class="{ 'adjusted-position': showRightContent }"
                        @click="setMidComponents(1)"></el-button>
@@ -521,7 +521,7 @@ onMounted(() => {
 								</div>
 							</div>
 						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 320px">
+						<el-container class="playlist-container" style="overflow: auto; height: 384px">
 							<div v-for="(song, index) in songs" class="playlist-item" style="display: flex; flex-direction: row">
 								<div @click="switchToSong(index)" style="cursor: pointer">
 									<img :src="song.picPath" alt=""
@@ -1071,7 +1071,7 @@ footer {
 	display: flex;
 	flex-direction: column;
 	border-radius: 12px;
-	padding: 30px 20px;
+	padding: 10px 20px 30px;
 	color: #e5e5e5;
 }
 
@@ -1772,6 +1772,11 @@ html, body {
 .playlist-item:hover img:not(.playing) {
 	transform: scale(1.05);
 	border-color: rgba(255, 255, 255, 0.8);
+}
+
+.comment-container {
+  position: relative;
+  background: transparent;
 }
 
 </style>

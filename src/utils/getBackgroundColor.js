@@ -39,7 +39,7 @@ function updateBackground (event) {
 }
 
 
-export {updateBackground, backgroundColor}
+export {getDominantColor, updateBackground, backgroundColor}
 
 
 
