@@ -42,7 +42,6 @@ function handleRegister() {
 		password: register_password.value,
 	}).then(res => {
 		if (res.data.code === '000' || res.data.code === '200') {
-
             let userForms = document.getElementById('user_options-forms')
             userForms.classList.remove('bounceLeft')
             userForms.classList.add('bounceRight')
@@ -91,6 +90,7 @@ onMounted(() => {
 			<source src="../assets/videos/1.mp4" type="video/mp4">
 			Your browser does not support the video tag.
 		</video>
+		<img class="logo" src="../assets/pictures/logos/logo1.png" alt="">
 		<section class="user">
 			<div class="user_options-container">
 				<div class="user_options-text">
@@ -178,6 +178,14 @@ body {
 	background-image: url("../assets/videos/1.mp4");
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+
+.logo {
+	position: absolute;
+	top: -10px;
+	left: -10px;
+	width: 150px;
+	height: 150px;
 }
 
 #video-background {
