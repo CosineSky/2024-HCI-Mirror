@@ -2,7 +2,6 @@
 
   <div id="opacity-bg" style="position: fixed; width: 100%; height: 100%; transition: 0.5s"></div>
   <div id="opacity-bg1" style="position: fixed; width: 100%; height: 100%; transition: 0.5s"></div>
-
   <router-view/>
 </template>
 

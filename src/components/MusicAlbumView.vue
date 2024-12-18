@@ -129,8 +129,24 @@ const handleResize = () => {
     headerAlbumName.style.marginBottom = "35px";
   }
 }
+
+const debounce = (fn, delay) => {
+  let timer
+  return (...args) => {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      fn(...args)
+    }, delay)
+  }
+}
+
+
+
+
 onMounted(()=>{
-  const resizeObserver = new ResizeObserver(handleResize);
+  const resizeObserver = new ResizeObserver(debounce(handleResize,50));
   nextTick(()=>{
     const albumContent = document.querySelector(".album-content");
     resizeObserver.observe(albumContent);

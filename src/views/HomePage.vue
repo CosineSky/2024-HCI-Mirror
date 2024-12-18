@@ -763,6 +763,7 @@ h1 {
   row-gap: 8px;
   column-gap: 8px;
   padding:8px;
+
 }
 /* HEADER */
 .header{
@@ -772,6 +773,7 @@ h1 {
 
 left-side-bar{
   grid-area: left-sideBar;
+
 }
 .content{
  grid-area: main-view;
@@ -1212,6 +1214,8 @@ footer {
 }
 
 /* MEDIA QUERIES */
+
+
 @media (max-width: 1500px) {
 	main {
 		grid-template-columns: 15% 85%;
@@ -1268,7 +1272,7 @@ footer {
 	}
 	
 	.main-view {
-		/* padding: 40px 20px 20px; */
+
 	}
 	
 	.swiper-slide {
@@ -1414,6 +1418,7 @@ footer {
 	}
 	
 }
+
 
 /* 动画：专辑列表移到顶部 */
 .move-up {
