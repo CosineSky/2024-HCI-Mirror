@@ -369,6 +369,7 @@ const switchSongs = (del) => {
 }
 
 const switchToSong = (index) => {
+	console.log(index, currentSongIndex.value)
 	if (index === currentSongIndex.value) {
 		return;
 	}
@@ -377,6 +378,7 @@ const switchToSong = (index) => {
 	currentSongId.value = songs.value[index].id;
 	
 	if (song) {
+		console.log("Hi")
 		controlIcons.forEach(controlIcon => {
 			controlIcon.src = PLAY;
 		});
@@ -388,6 +390,33 @@ const switchToSong = (index) => {
 		song.play();
 		theme.change(songs.value[index].picPath);
 	}
+}
+
+const switchToPlaylist = (playlist, songId) => {
+	currentPlaylist.value = playlist;
+	displayingPlaylist.value = playlist;
+	currentPlaylistId.value = playlist.id;
+	theme.change(currentPlaylist.value.picPath);
+
+	getSongsByPlaylist({
+		playlist_id: currentPlaylistId.value,
+	}).then((res) => {
+		songs.value = res.data.result;
+		displayingSongs.value = res.data.result;
+		currentSongId.value = songId;
+		for (let i = 0; i < songs.value.length; i++) {
+			if (songs.value[i].id === songId) {
+				switchToSong(i);
+				parseLrc(songs.value[i].lyricsPath).then(res => {
+					lyrics.value = res;
+				});
+				break;
+			}
+		}
+
+	}).catch(e => {
+		console.log("Error while switching playlists!");
+	});
 }
 
 
@@ -494,7 +523,8 @@ onMounted(() => {
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
 				<el-container v-if="midComponents == 1" class="playlist-container"
 				              style="overflow: auto; height: 698px ;border-radius: 12px">
-					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"/>
+					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
+						@switchSongs="switchToPlaylist"/>
 				</el-container>
 				<el-container v-if="midComponents == 2" class="playlist-container"
 				              style="overflow: auto; height: 668px">
@@ -527,11 +557,11 @@ onMounted(() => {
 							<img src="../assets/icons/add.png" alt="" style=""/>
 							<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
 								<p class="playlist-container-desc" style="
-												color: white;
-												font-size: 16px;
-												text-align: left;
-												margin-top: 16px;
-											">New Song</p>
+									color: white;
+									font-size: 16px;
+									text-align: left;
+									margin-top: 16px;
+								">New Song</p>
 							</div>
 						</div>
 					</el-container>
@@ -545,22 +575,22 @@ onMounted(() => {
 							</div>
 							<div style="display: flex; flex-direction: column; margin-left: 10px">
 								<p class="playlist-container-desc" style="
-												color: white;
-												font-size: 18px;
-												font-family: Candara, serif;
-												text-align: left;
-												overflow: auto;
-												width: 240px;
-												height: 24px;
-											">{{ songs[index].title }}</p>
+									color: white;
+									font-size: 18px;
+									font-family: Candara, serif;
+									text-align: left;
+									overflow: auto;
+									width: 240px;
+									height: 24px;
+								">{{ songs[index].title }}</p>
 								<p class="playlist-container-desc" style="
-												color: #949494;
-												font-size: 12px;
-												text-align: left;
-												overflow: auto;
-												width: 240px;
-												height: 18px
-											">{{ songs[index].artist }}</p>
+									color: #949494;
+									font-size: 12px;
+									text-align: left;
+									overflow: auto;
+									width: 240px;
+									height: 18px
+								">{{ songs[index].artist }}</p>
 							</div>
 						</div>
 					</el-container>

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {computed, defineEmits, nextTick, onMounted, onUnmounted, ref} from "vue";
 import playButton from "../icon/playButton.vue";
 import dots from "../icon/dots.vue";
 import checkMark from "../icon/checkMark.vue";
@@ -7,10 +7,16 @@ import {ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 
-
+const emit = defineEmits();
 const props = defineProps({
-	albumInfo: {},
-	musicList: {},
+	albumInfo: {
+		type: Object,
+		required: true,
+	},
+	musicList: {
+		type: Object,
+		required: true,
+	},
 });
 
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
@@ -19,7 +25,7 @@ const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundCol
 const recMusicList = ref([
 	{
 		id: 4,
-		number: 4,
+		number: 1,
 		name: "NightTheater",
 		author: "Wakadori",
 		img: require("../assets/pictures/songs/1.jpg"),
@@ -46,7 +52,6 @@ const handleResize = () => {
 	
 	// if (window.innerWidth > 0)
 	// 专辑隐藏
-	console.log(albumContent.clientWidth);
 	if (albumContent.clientWidth < 605) {
 		albums.forEach(album => {
 			album.style.visibility = "hidden";
@@ -148,7 +153,7 @@ const playFromId = (musicId) => {
 		musicPlayIndex = musicId;
 	}
 	musicPauseIndex = null;
-	
+	emit('switchSongs', props.albumInfo, musicHoveredIndex.value);
 }
 const addToFavorite = (musicId) => {
 }
@@ -327,8 +332,7 @@ const pauseMusic = (musicId) => {
 				<div style="margin-left:20px;margin-bottom:20px;">
 					<div style="display: flex;text-align: left;justify-content: center;flex-direction: column">
 						<span style="color:white;font-size: 30px;font-weight: bolder">推荐</span>
-						<span style="color:grey;font-size: 20px">根据此歌单包含的内容推荐
-            </span>
+						<span style="color:grey;font-size: 20px">根据此歌单包含的内容推荐</span>
 					</div>
 				</div>
 				
