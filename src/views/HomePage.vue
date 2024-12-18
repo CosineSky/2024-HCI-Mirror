@@ -564,7 +564,7 @@ onMounted(() => {
 							</div>
 						</div>
 					</el-container>
-					<el-container class="playlist-container" style="overflow: auto; height: 360px">
+					<el-container class="playlist-container" style="overflow: auto; height: 384px">
 						<div v-for="(song, index) in songs" class="playlist-item"
 						     style="display: flex; flex-direction: row">
 							<div @click="switchToSong(index)" style="cursor: pointer">
@@ -1139,7 +1139,7 @@ footer {
 	display: flex;
 	flex-direction: column;
 	border-radius: 12px;
-	padding: 10px 20px 30px;
+	padding: 10px 20px 20px;
 	color: #e5e5e5;
 }
 
