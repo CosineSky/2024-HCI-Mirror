@@ -43,7 +43,7 @@ const showDetail = ref(false)
 
 const sortBy = ref('Time') // 默认按时间排序
 /*
-更新
+覆盖仓库的Comment.vue
  */
 const backgroundColor = ref("#ffffff");
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
