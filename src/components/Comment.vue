@@ -409,14 +409,17 @@ const changeSortBy = (type) => {
   height: 100%;
 }
 .comment-wrapper {
-  background-attachment: fixed; /* 固定背景 */
-  padding: 10px;
+  min-height: 100%;
+  width: 100%;
+  background-attachment: fixed;
+  position: relative;
+  z-index: 1;
+  transition: background-color ease 0.6s;
 }
 .comment {
   height: 100%;
   width: 100%;
   margin: 0;
-  transition: background-color ease 0.6s;
   //position: fixed;
   //transform: translateY(100%);
   //background-color: @bgColor;
