@@ -95,14 +95,14 @@ onMounted(() => {
 			<div class="user_options-container">
 				<div class="user_options-text">
 					<div class="user_options-unregistered">
-						<h2 class="user_unregistered-title">Don't have an account?</h2>
-						<p class="user_unregistered-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab amet, aspernatur blanditiis incidunt officiis reprehenderit ullam vitae. Blanditiis deleniti earum et exercitationem iste, neque quae, quo quos ullam vel voluptas?</p>
+						<h2 class="user_registered-title">欢迎回来，音乐达人！</h2>
+						<p class="user_registered-text">输入你的账号和密码，继续跟随节拍前行。还记得你上次在“我的歌单”里收藏了哪些歌曲吗？快来和我们一起重温那些美妙的旋律吧！如果还没有账户，可以点击下方注册哦~</p>
 						<button class="user_unregistered-signup" id="signup-button">Sign up</button>
 					</div>
 
 					<div class="user_options-registered">
-						<h2 class="user_registered-title">Have an account?</h2>
-						<p class="user_registered-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto assumenda atque cupiditate dolorum eius est fuga minus, molestiae, nam non obcaecati odio officia optio pariatur recusandae repudiandae sit vel, vitae?</p>
+						<h2 class="user_unregistered-title">你和成为音乐达人只有一步之遥！</h2>
+						<p class="user_unregistered-text">注册一个账户，解锁无限曲库、个性化歌单和更多神奇功能！填写以下信息，马上开始你的音乐之旅！如果已有账户，点击下方登录吧！</p>
 						<button class="user_registered-login" id="login-button">Login</button>
 					</div>
 				</div>
@@ -121,7 +121,7 @@ onMounted(() => {
 							</fieldset>
                             <p style="font-family: 'Comic Sans MS', serif; color: red">{{ login_prompt }}</p>
 							<div class="forms_buttons">
-								<button type="button" class="forms_buttons-forgot">Forgot password?</button>
+								<button type="button" class="forms_buttons-forgot">忘记密码?</button>
 								<input @click="handleLogin" type="submit" value="Log In" class="forms_buttons-action">
 							</div>
 						</form>
