@@ -21,15 +21,12 @@ const handleTabClick = (tab) => {
 				class="tab-button"
 				:class="{ 'active': currentTab === 'songs' }"
 				@click="handleTabClick('songs')"
-			>💿歌曲</button>
+			>歌曲</button>
 			<button
 				class="tab-button"
 				:class="{ 'active': currentTab === 'playlists' }"
 				@click="handleTabClick('playlists')"
-			>📕歌单</button>
-			<button
-				class="tab-button"
-			>🙂用户</button>
+			>歌单</button>
 		</div>
 		<div class="search-results">
 			<ul v-if="currentTab === 'songs'">
@@ -180,4 +177,8 @@ const handleTabClick = (tab) => {
 	margin: 0;
 }
 
+.active {
+  background-color: #fff;
+  color: #000;
+}
 </style>
