@@ -334,6 +334,7 @@ const currentUserId = ref(userToken.value.id);
  */
 // Playing Status
 const songs = ref([]);
+const displayingSongs = ref([]);
 const isPaused = ref(false);
 const duration = ref(0);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
@@ -396,6 +397,7 @@ const switchToSong = (index) => {
 const playlists = ref([]);
 const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
+const displayingPlaylist = ref(2);
 const receivePlaylistId = (value) => {
 	currentPlaylist.value = value;
 	currentPlaylistId.value = value.id;
@@ -403,6 +405,16 @@ const receivePlaylistId = (value) => {
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
 		songs.value = res.data.result;
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
+};
+const receiveDisplayingPlaylist = (value) => {
+	displayingPlaylist.value = value;
+	getSongsByPlaylist({
+		playlist_id: value.id,
+	}).then((res) => {
+		displayingSongs.value = res.data.result;
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
@@ -447,12 +459,14 @@ onMounted(() => {
 	}).then((res) => {
 		playlists.value = res.data.result;
 		currentPlaylist.value = playlists.value[0];
+		displayingPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;
 		theme.change(currentPlaylist.value.picPath);
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
 			songs.value = res.data.result;
+			displayingSongs.value = res.data.result;
 			currentSongId.value = songs.value[0].id;
 			
 			// TODO: currentSongIndex != currentSongId ?
@@ -475,12 +489,12 @@ onMounted(() => {
 		<!-- MAIN & RIGHT CONTENT -->
 		<Header class="header" @headData="receiveDataFromHeader"/>
 		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
-		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receivePlaylistId"/>
+		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receiveDisplayingPlaylist"/>
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
 				<el-container v-if="midComponents == 1" class="playlist-container"
 				              style="overflow: auto; height: 698px ;border-radius: 12px">
-					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
+					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"/>
 				</el-container>
 				<el-container v-if="midComponents == 2" class="playlist-container"
 				              style="overflow: auto; height: 668px">
