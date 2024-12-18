@@ -511,6 +511,16 @@ const changeSortBy = (type) => {
 				background-color: rgba(0, 0, 0, 0.3);
 				color: #fff;
 				resize: none;
+        outline: none;
+
+        &:focus {
+          border-color: rgba(255, 255, 255, 0.2); /* 输入时边框颜色稍微变亮 */
+          box-shadow: none; /* 移除默认的焦点阴影 */
+        }
+
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
 			}
 			
 			.custom-button:focus,

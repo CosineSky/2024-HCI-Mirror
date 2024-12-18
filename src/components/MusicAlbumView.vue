@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch, onUnmounted} from "vue";
 import playButton from "../icon/playButton.vue";
 import dots from "../icon/dots.vue";
 import checkMark from "../icon/checkMark.vue";
@@ -89,23 +89,26 @@ let musicClickedIndex = ref(null);
 let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
+const resizeObserver = ref(null)
 
 // 放缩时的组件处理
 const handleResize = () => {
+  const albumContent = document.querySelector(".album-content");
+  if (!albumContent) return;
+
   const albums = document.querySelectorAll(".music-album-info");
   const albumText = document.querySelectorAll(".album-text");
-  const albumContent = document.querySelector(".album-content");
+  
   // if (window.innerWidth > 0)
   // 专辑隐藏
   console.log(albumContent.clientWidth);
-  if (albumContent.clientWidth< 605) {
+  if (albumContent.clientWidth < 605) {
     albums.forEach(album => {
       album.style.visibility = "hidden";
     });
     albumText.forEach(album => {
       album.style.visibility = "hidden";
     });
-
   } else {
     albums.forEach(album => {
       album.style.visibility = "visible";
@@ -114,19 +117,22 @@ const handleResize = () => {
       album.style.visibility = "visible";
     });
   }
+
   const albumImage = document.querySelector(".album-image");
   const headerAlbumName = document.querySelector(".header-album-name");
   // 歌单图片和文字缩放
-  if (albumContent.clientWidth < 420) {
-    albumImage.style.width = "140px";
-    albumImage.style.height = "140px";
-    headerAlbumName.style.fontSize = "60px";
-    headerAlbumName.style.marginBottom = "20px";
-  } else {
-    albumImage.style.width = "220px";
-    albumImage.style.height = "220px";
-    headerAlbumName.style.fontSize = "100px";
-    headerAlbumName.style.marginBottom = "35px";
+  if (albumImage && headerAlbumName) {
+    if (albumContent.clientWidth < 420) {
+      albumImage.style.width = "140px";
+      albumImage.style.height = "140px";
+      headerAlbumName.style.fontSize = "60px";
+      headerAlbumName.style.marginBottom = "20px";
+    } else {
+      albumImage.style.width = "220px";
+      albumImage.style.height = "220px";
+      headerAlbumName.style.fontSize = "100px";
+      headerAlbumName.style.marginBottom = "35px";
+    }
   }
 }
 
@@ -146,11 +152,20 @@ const debounce = (fn, delay) => {
 
 
 onMounted(()=>{
-  const resizeObserver = new ResizeObserver(debounce(handleResize,50));
+  resizeObserver.value = new ResizeObserver(debounce(handleResize,50));
+  console.log(resizeObserver.value)
   nextTick(()=>{
     const albumContent = document.querySelector(".album-content");
-    resizeObserver.observe(albumContent);
+    if (albumContent) {
+      resizeObserver.value.observe(albumContent);
+    }
   })
+})
+
+onUnmounted(() => {
+  if (resizeObserver.value) {
+    resizeObserver.value.disconnect();
+  }
 })
 
 window.onscroll = () => {

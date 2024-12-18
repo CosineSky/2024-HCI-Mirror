@@ -615,36 +615,27 @@ onMounted(() => {
 				</div>
 			</el-card>
 			
-			<div class="share-icon bottom-component" style="
-						position: absolute;
-						left: 92%;
-						transform: translateX(-50%);
-						color: white;
-						cursor: pointer;
-					">
-				<img src="../assets/icons/comment/share.png" alt="" style="width: 24px; height: 24px;"
-				     @click="">
-			</div>
-			<div class="comment-icon bottom-component" style="
-						position: absolute;
-						left: 95%;
-						transform: translateX(-50%);
-						color: white;
-						cursor: pointer;
-					">
-				<img src="../assets/icons/comment/comment.png" alt="" style="width: 24px; height: 24px;"
-				     @click="setMidComponents(2)">
-			</div>
-			<div class="queue-icon bottom-component" style="
-						position: absolute;
-						left: 98%;
-						transform: translateX(-50%);
-						color: white;
-						cursor: pointer;
-					">
-				<img src="../assets/icons/queue.png" alt="" style="width: 24px; height: 24px;"
-				     @click="showRightContent = !showRightContent">
-			</div>
+			<div class="right-controls">
+        <div class="feature-icon"
+             data-tooltip="分享"
+             :class="{ active: isSharing }">
+          <img src="../assets/icons/comment/share.png" alt="分享">
+        </div>
+
+        <div class="feature-icon"
+             data-tooltip="评论"
+             :class="{ active: midComponents === 2 }"
+             @click="setMidComponents(2)">
+          <img src="../assets/icons/comment/comment.png" alt="评论">
+        </div>
+
+        <div class="feature-icon"
+             data-tooltip="播放队列"
+             :class="{ active: showRightContent }"
+             @click="showRightContent = !showRightContent">
+          <img src="../assets/icons/queue.png" alt="播放队列">
+        </div>
+      </div>
 		</footer>
 	</div>
 
@@ -1510,7 +1501,7 @@ footer {
 		transform: translateY(0);
 	}
 }
-
+/**
 .share-icon,
 .queue-icon,
 .comment-icon {
@@ -1529,6 +1520,70 @@ footer {
 .comment-icon:hover {
 	background: rgba(255, 255, 255, 0.2);
 	transform: translateX(-50%) scale(1.1);
+}
+ */
+
+.right-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: absolute;
+  right: 80px;
+}
+
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.feature-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.feature-icon img {
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
+}
+
+.feature-icon:hover img {
+  filter: brightness(1.2);
+}
+
+.feature-icon[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.feature-icon.active {
+  background: #1db954;
+}
+
+.feature-icon.active img {
+  filter: brightness(0) invert(1);
+}
+
+.feature-icon.active:hover {
+  background: #1ed760;
 }
 
 /* 退出搜索图标 */
