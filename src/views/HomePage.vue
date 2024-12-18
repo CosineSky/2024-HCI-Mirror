@@ -472,6 +472,11 @@ const setMidComponents = (val) => {
 	midComponents.value = val;
 }
 
+/*
+    share_icon
+ */
+const isSharing = ref(false);
+
 onMounted(() => {
 	/*
         DOMS & EVENTS
