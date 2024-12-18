@@ -1,8 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {onMounted, ref, watch, computed} from "vue"
-import {router} from "../router";
+import {computed, onMounted, ref} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -21,10 +20,8 @@ import {getPlaylistsByUser} from "../api/playlist";
 
 // Others
 import {useTheme} from "../store/theme";
-import ColorThief from "colorthief";
-import {parseLrc, parseLrcOld} from "../utils/parseLyrics"
+import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
-
 
 
 /*
@@ -34,6 +31,7 @@ const textColor = ref("#000");
 const backgroundColor = ref("#ffffff");
 const gradientColor = computed(() => `linear-gradient(to top right, ${backgroundColor.value}, #000000)`)
 const isFullScreen = ref(false);
+
 function toggleFullScreen() {
 	isFullScreen.value = !isFullScreen.value;
 	if (isFullScreen.value) {
@@ -42,7 +40,6 @@ function toggleFullScreen() {
 		document.exitFullscreen();
 	}
 }
-
 
 
 /*
@@ -56,15 +53,18 @@ const isLyricsDisplaying = ref(true);
 function toggleLyrics() {
 	isLyricsDisplaying.value = !isLyricsDisplaying.value;
 }
+
 function formatTime(time) {
 	const minutes = Math.floor(time / 60);
 	const seconds = Math.floor(time % 60);
 	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
+
 function updateCurrentTime(event) {
 	currentTime.value = event.target.currentTime;
 	updateCurrentLine();
 }
+
 function updateCurrentLine() {
 	for (let i = 0; i < lyrics.value.length; i++) {
 		if (
@@ -343,7 +343,7 @@ const currentSongId = ref(1);
 const currentSongIndex = ref(0);
 const isPlayingPage = ref(false);
 const togglePlayingPage = () => {
-	isPlayingPage.value =!isPlayingPage.value;
+	isPlayingPage.value = !isPlayingPage.value;
 	registerDOMs();
 }
 const switchSongs = (del) => {
@@ -371,10 +371,10 @@ const switchToSong = (index) => {
 	if (index === currentSongIndex.value) {
 		return;
 	}
-
+	
 	currentSongIndex.value = index;
 	currentSongId.value = songs.value[index].id;
-
+	
 	if (song) {
 		controlIcons.forEach(controlIcon => {
 			controlIcon.src = PLAY;
@@ -397,15 +397,12 @@ const playlists = ref([]);
 const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
 const receivePlaylistId = (value) => {
-	console.log(value)
 	currentPlaylist.value = value;
 	currentPlaylistId.value = value.id;
-	console.log("Current Playlist Id:", currentPlaylistId.value)
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
 		songs.value = res.data.result;
-		console.log("Songs:", res.data.result);
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
@@ -457,7 +454,7 @@ onMounted(() => {
 		}).then((res) => {
 			songs.value = res.data.result;
 			currentSongId.value = songs.value[0].id;
-
+			
 			// TODO: currentSongIndex != currentSongId ?
 			parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
 				lyrics.value = res;
@@ -474,62 +471,66 @@ onMounted(() => {
 
 <template>
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
-
+		
 		<!-- MAIN & RIGHT CONTENT -->
 		<Header class="header" @headData="receiveDataFromHeader"/>
-
-			<left-side-bar class="left-side-bar" @setCurrentPlaylist="receivePlaylistId"/>
-			<div class="content" :class="{ 'full-width': !showRightContent }">
-				<div class="main-view" :class="{ 'expanded': !showRightContent }">
-					<el-container v-if="midComponents == 1" class="playlist-container" style="overflow: auto; height: 698px ;border-radius: 12px">
-						<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
-					</el-container>
-					<el-container v-if="midComponents == 2" class="playlist-container" style="overflow: auto; height: 668px">
-						<el-button class="exit-search"
-                       :class="{ 'adjusted-position': showRightContent }"
-                       @click="setMidComponents(1)"></el-button>
-						<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
-					</el-container>
-					<el-container v-if="midComponents == 3" class="playlist-container" style="overflow: auto; height: 698px">
-						<el-button class="exit-search"
-                       :class="{ 'adjusted-position': showRightContent }"
-                       @click="setMidComponents(1)"></el-button>
-						<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
-					</el-container>
-				</div>
-				<div v-if="showRightContent" class="right-content">
-					<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
-						<div class="album-cover" @click="togglePlayingPage">
-							<img :src="songs[currentSongIndex].picPath" id="rotatingImage" alt=""/>
-							<span class="point"></span>
-						</div>
-						<h2>{{songs[currentSongIndex].title}}</h2>
-						<p>{{songs[currentSongIndex].artist}}</p>
+		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
+		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receivePlaylistId"/>
+		<div class="content" :class="{ 'full-width': !showRightContent }">
+			<div class="main-view" :class="{ 'expanded': !showRightContent }">
+				<el-container v-if="midComponents == 1" class="playlist-container"
+				              style="overflow: auto; height: 698px ;border-radius: 12px">
+					<MusicAlbumView :album-info="currentPlaylist" :music-list="songs"/>
+				</el-container>
+				<el-container v-if="midComponents == 2" class="playlist-container"
+				              style="overflow: auto; height: 668px">
+					<el-button class="exit-search"
+					           :class="{ 'adjusted-position': showRightContent }"
+					           @click="setMidComponents(1)"></el-button>
+					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
+				</el-container>
+				<el-container v-if="midComponents == 3" class="playlist-container"
+				              style="overflow: auto; height: 698px">
+					<el-button class="exit-search"
+					           :class="{ 'adjusted-position': showRightContent }"
+					           @click="setMidComponents(1)"></el-button>
+					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
+				</el-container>
+			</div>
+			<div v-if="showRightContent" class="right-content">
+				<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
+					<div class="album-cover" @click="togglePlayingPage">
+						<img :src="songs[currentSongIndex].picPath" style="margin-top: 10px" id="rotatingImage" alt=""/>
+						<span class="point"></span>
 					</div>
-					
-					<div class="current-playlist" style="margin-top: 20px">
-						<el-container class="playlist-container" style="height: 64px">
-							<div class="playlist-item" style="display: flex; flex-direction: row">
-								<img src="../assets/icons/add.png" alt="" style=""/>
-								<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
-									<p class="playlist-container-desc" style="
+					<h2>{{ songs[currentSongIndex].title }}</h2>
+					<p>{{ songs[currentSongIndex].artist }}</p>
+				</div>
+				
+				<div class="current-playlist" style="margin-top: 20px">
+					<el-container class="playlist-container" style="height: 64px">
+						<div class="playlist-item" style="display: flex; flex-direction: row">
+							<img src="../assets/icons/add.png" alt="" style=""/>
+							<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
+								<p class="playlist-container-desc" style="
 												color: white;
 												font-size: 16px;
 												text-align: left;
 												margin-top: 16px;
 											">New Song</p>
-								</div>
 							</div>
-						</el-container>
-						<el-container class="playlist-container" style="overflow: auto; height: 320px">
-							<div v-for="(song, index) in songs" class="playlist-item" style="display: flex; flex-direction: row">
-								<div @click="switchToSong(index)" style="cursor: pointer">
-									<img :src="song.picPath" alt=""
-										 :class="{ 'playing': index === currentSongIndex }"
-									/>
-								</div>
-								<div style="display: flex; flex-direction: column; margin-left: 10px">
-									<p class="playlist-container-desc" style="
+						</div>
+					</el-container>
+					<el-container class="playlist-container" style="overflow: auto; height: 360px">
+						<div v-for="(song, index) in songs" class="playlist-item"
+						     style="display: flex; flex-direction: row">
+							<div @click="switchToSong(index)" style="cursor: pointer">
+								<img :src="song.picPath" alt=""
+								     :class="{ 'playing': index === currentSongIndex }"
+								/>
+							</div>
+							<div style="display: flex; flex-direction: column; margin-left: 10px">
+								<p class="playlist-container-desc" style="
 												color: white;
 												font-size: 18px;
 												font-family: Candara, serif;
@@ -538,7 +539,7 @@ onMounted(() => {
 												width: 240px;
 												height: 24px;
 											">{{ songs[index].title }}</p>
-									<p class="playlist-container-desc" style="
+								<p class="playlist-container-desc" style="
 												color: #949494;
 												font-size: 12px;
 												text-align: left;
@@ -546,14 +547,13 @@ onMounted(() => {
 												width: 240px;
 												height: 18px
 											">{{ songs[index].artist }}</p>
-								</div>
 							</div>
-						</el-container>
-					</div>
+						</div>
+					</el-container>
 				</div>
 			</div>
-
-
+		</div>
+		
 		
 		<!-- FOOTER -->
 		<footer>
@@ -580,12 +580,12 @@ onMounted(() => {
 				<div v-if="songs[currentSongIndex] !== undefined"
 				     style="display: flex; flex-direction: column; justify-content: center;">
 					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						{{songs[currentSongIndex].title}}</p>
+						{{ songs[currentSongIndex].title }}</p>
 					<p style="font-family: Consolas, serif; color: white; font-size: 16px; text-align: left; margin-left: 5px">
-						{{songs[currentSongIndex].artist}}</p>
+						{{ songs[currentSongIndex].artist }}</p>
 				</div>
 			</div>
-
+			
 			<el-card class="bottom-controller bottom-component" style="
 						position: absolute;
 					    left: 50%;
@@ -599,19 +599,22 @@ onMounted(() => {
 						<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
 					</button>
 					<button class="play-pause-btn" style="margin: 0 10px 0 10px">
-						<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+						<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png" alt=""
+						     style="width: 60%">
 					</button>
 					<button class="forward" style="margin: 0 10px 0 10px">
 						<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
 					</button>
 					<button class="play-mode-btn" style="margin: 0">
-						<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+						<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt=""
+						     style="width: 60%">
 					</button>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-top: 10px">
-					<p style="margin-right: 10px; margin-bottom: 10px; color: white">{{formatTime(currentTime)}}</p>
-					<input type="range" value="0" id="progress" class="idProgress" style="margin: 0 0 10px 0; width: 500px"/>
-					<p style="margin-left: 10px; color: white">{{formatTime(duration)}}</p>
+					<p style="margin-right: 10px; margin-bottom: 10px; color: white">{{ formatTime(currentTime) }}</p>
+					<input type="range" value="0" id="progress" class="idProgress"
+					       style="margin: 0 0 10px 0; width: 500px"/>
+					<p style="margin-left: 10px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
 			
@@ -638,45 +641,49 @@ onMounted(() => {
       </div>
 		</footer>
 	</div>
-
+	
 	
 	<!-- PLAYING PAGE -->
 	<div v-show="isPlayingPage" class="playing-page">
 		<div v-if="isLyricsDisplaying" class="lyrics-container">
-			<div
-				class="lyrics-lines"
-				:style="{ transform: `translateY(${-currentLineIndex * 40}px)` }"
-			>
+			<div class="lyrics-lines" :style="{ transform: `translateY(${-currentLineIndex * 40}px)` }">
 				<div
 					v-for="(line, index) in lyrics"
 					:key="index"
 					:class="{ active: index === currentLineIndex }"
 					class="lyrics-line"
 				>{{ line.text }}</div>
+				<h1 v-if="lyrics.length === 0" style="
+					font-size: 24px;
+					color: #9d9d9d;
+					margin-top: 240px;
+				    font-family: Consolas, 幼圆, serif;
+				">Ouch！该歌曲暂无歌词！</h1>
 			</div>
 		</div>
-
-<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
+		
 		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
-					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover" @load="updateBackground" />
+					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover"
+					     @load="updateBackground"/>
 				</div>
 				<div class="track-info-container">
-					<div v-if="songs[currentSongIndex] !== undefined" class="music-info" style="display: flex; flex-direction: column; justify-content: center;">
+					<div v-if="songs[currentSongIndex] !== undefined" class="music-info"
+					     style="display: flex; flex-direction: column; justify-content: center;">
 						<p style="
                             font-family: Consolas, serif;
                             color: white;
                             font-size: 32px;
                             text-align: left;
-                            margin: 0">{{songs[currentSongIndex].title}}</p>
+                            margin: 0">{{ songs[currentSongIndex].title }}</p>
 						<span style="
                             font-family: Consolas, serif;
                             color: white;
                             font-size: 16px;
                             text-align: left;
-                            margin: 0">{{songs[currentSongIndex].artist}}</span>
+                            margin: 0">{{ songs[currentSongIndex].artist }}</span>
 					</div>
 					<div class="bottom-controller bottom-component" style="
                         position: absolute;
@@ -692,19 +699,22 @@ onMounted(() => {
 								<img src="../assets/icons/controller/last.png" alt="" style="width: 60%">
 							</button>
 							<button class="play-pause-btn" style="margin: 0 10px 0 10px">
-								<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png" alt="" style="width: 60%">
+								<img id="controlIcon" class="idControlIcon" src="../assets/icons/controller/play.png"
+								     alt="" style="width: 60%">
 							</button>
 							<button class="forward" style="margin: 0 10px 0 10px">
 								<img src="../assets/icons/controller/next.png" alt="" style="width: 60%">
 							</button>
 							<button class="play-mode-btn" style="margin: 0">
-								<img id="playModeIcon" class="idPlayModeIcon" src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
+								<img id="playModeIcon" class="idPlayModeIcon"
+								     src="../assets/icons/controller/normal.png" alt="" style="width: 60%">
 							</button>
 						</div>
 						<div v-if="songs[currentSongIndex] !== undefined" style="display: flex; flex-direction: row;">
-							<p style="margin-right: 10px">{{formatTime(currentTime)}}</p>
-							<input type="range" value="0" id="progress" class="idProgress" style="margin: 20px 0 10px 0; width: 700px"/>
-							<p style="margin-left: 10px">{{formatTime(duration)}}</p>
+							<p style="margin-right: 10px">{{ formatTime(currentTime) }}</p>
+							<input type="range" value="0" id="progress" class="idProgress"
+							       style="margin: 20px 0 10px 0; width: 700px"/>
+							<p style="margin-left: 10px">{{ formatTime(duration) }}</p>
 						</div>
 					</div>
 				</div>
@@ -736,6 +746,15 @@ onMounted(() => {
 	margin: 0;
 }
 
+.logo {
+	position: absolute;
+	top: 0px;
+	left: -10px;
+	width: 8%;
+	height: 8%;
+	z-index: 114514;
+}
+
 nav {
 	user-select: none;
 	-webkit-user-select: none;
@@ -763,59 +782,64 @@ h1 {
 
 .body {
 	font-family: "Nunito", sans-serif;
-  height: 100%;
-  /*没用的样式*/
-  /*
-	align-items: center;
-	justify-content: space-between;
-	flex-direction: column;
-  */
+	height: 100%;
+	/*没用的样式*/
+	/*
+	  align-items: center;
+	  justify-content: space-between;
+	  flex-direction: column;
+	*/
 	min-height: 100vh;
 	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
-
-  /* 原先main中的内容
-  height: 700px;
-  width: 95%;
-  margin: 20px 0 0 0;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 15px;
-  box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
-  0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
-  z-index: 10;
-  */
-  display: grid;
-  grid-template-areas:
+	
+	/* 原先main中的内容
+	height: 700px;
+	width: 95%;
+	margin: 20px 0 0 0;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	border-radius: 15px;
+	box-shadow: 0 0.5px 0 1px rgba(255, 255, 255, 0.23) inset,
+	0 1px 0 0 rgba(255, 255, 255, 0.6) inset, 0 4px 16px rgba(0, 0, 0, 0.12);
+	z-index: 10;
+	*/
+	display: grid;
+	grid-template-areas:
         "global-nav global-nav global-nav"
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
-  grid-template-columns: auto 1fr ;
-  grid-template-rows: auto 1fr auto;
-  row-gap: 8px;
-  column-gap: 8px;
-  padding:8px;
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto 1fr auto;
+	row-gap: 8px;
+	column-gap: 8px;
+	padding: 8px;
+	overflow: hidden;
+}
 
-}
 /* HEADER */
-.header{
-  grid-area: global-nav;
-  z-index: 1000;
+.header {
+	grid-area: global-nav;
+	z-index: 1000;
 }
+
 /* TEMP */
 
-left-side-bar{
-  grid-area: left-sideBar;
+left-side-bar {
+	grid-area: left-sideBar;
+	
+}
 
+.content {
+	grid-area: main-view;
 }
-.content{
- grid-area: main-view;
+
+footer {
+	grid-area: now-playing-bar;
 }
-footer{
-  grid-area: now-playing-bar;
-}
+
 /* MAIN MENU */
 /*
 main {
@@ -905,19 +929,19 @@ footer {
 /* CONTENT 包含中间和右边栏 是grid布局*/
 .content {
 	display: grid;
-  grid-template-columns: 1fr auto;
+	grid-template-columns: 1fr auto;
 	transition: all 0.3s ease;
-  column-gap: 8px;
+	column-gap: 8px;
 }
 
 .content.full-width {
-	 grid-template-columns: 100% !important;
-
+	grid-template-columns: 100% !important;
+	
 }
 
 /* LEFT CONTENT */
 .main-view > {
-
+	
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -928,7 +952,7 @@ footer {
 }
 
 .main-view.expanded {
-
+	
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -1067,7 +1091,7 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
-  background-color: #171717;
+	background-color: #171717;
 	display: flex;
 	flex-direction: column;
 	border-radius: 12px;
@@ -1123,6 +1147,7 @@ footer {
 
 .music-player {
 	display: flex;
+	align-items: center;
 	flex-direction: column;
 	color: #fff;
 	background: rgba(188, 184, 198, 0.2);
@@ -1304,7 +1329,7 @@ footer {
 	}
 	
 	.main-view {
-
+	
 	}
 	
 	.swiper-slide {
@@ -1634,14 +1659,8 @@ footer {
 }
 
 .exit-search.adjusted-position {
-  right: calc(23%);
+	right: calc(23%);
 }
-
-
-
-
-
-
 
 
 html, body {
@@ -1737,7 +1756,7 @@ html, body {
 	overflow: hidden;
 	height: 440px;
 	position: absolute;
-	top: 40%;  /* 距离顶部50% */
+	top: 40%; /* 距离顶部50% */
 	left: 50%; /* 距离左边50% */
 	transform: translate(-50%, -50%); /* 偏移自身宽高的50%来实现完全居中 */
 }

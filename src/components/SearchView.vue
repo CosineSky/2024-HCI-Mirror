@@ -59,7 +59,8 @@ const handleTabClick = (tab) => {
 				</li>
 			</ul>
 		</div>
-		<div v-if="songResult.length === 0 && playlistResult.length === 0">
+		<div v-if="(songResult.length === 0 && currentTab === 'songs')
+			|| (playlistResult.length === 0 && currentTab === 'playlists')">
 			<Empty :magic="Math.floor(Math.random() * 8)"/>
 		</div>
 	</div>

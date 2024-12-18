@@ -5,7 +5,7 @@ const color = ref("#72d1fa")
 const magic = defineProps({
 	magic: {}
 });
-const emptyTitle = ref("歌曲未找到 :(")
+const emptyTitle = ref("未找到结果 :(")
 const emptyMessage = ref([
 	"抱歉，我们的数据库没跟上你的品味！",
 	"找不到歌曲，就像音符没有五线谱，太难了！",
