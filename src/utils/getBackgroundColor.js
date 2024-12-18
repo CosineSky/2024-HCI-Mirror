@@ -19,7 +19,7 @@ function getDominantColor(imageSrc, callback, alpha = 0.2) {
         const dominantColor = colorThief.getColor(img);
         if (dominantColor) {
             let [r, g, b] = dominantColor;
-            const whiteR = 150, whiteG = 150, whiteB = 150;
+            const whiteR = 255, whiteG = 255, whiteB = 255;
             r = Math.floor(r + alpha * (whiteR - r));
             g = Math.floor(g + alpha * (whiteG - g));
             b = Math.floor(b + alpha * (whiteB - b));

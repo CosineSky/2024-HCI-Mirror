@@ -1,8 +1,8 @@
 <script setup>
 import {nextTick, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {toggleImg} from '../utils'
-import {commentSong, getSongComments} from "../api/comment"
+import {parseTime, toggleImg} from '../utils'
+import {commentSong, getSongComments, getSongCommentsCount, likeComment} from "../api/comment"
 import {getSongById, getUserById} from "../api/resolve"
 import {ElMessage} from "element-plus"
 import defaultBg from '../assets/pictures/jj.png'
@@ -39,6 +39,8 @@ const bg = ref('')
 const comment = ref('')
 const showComment = ref(true)
 const showDetail = ref(false)
+
+const sortBy = ref('Time') // 默认按时间排序
 
 onMounted(() => {
 	watch(bg, (val) => {
@@ -112,20 +114,35 @@ onMounted(() => {
 		// }
 	}
 	
-	state.total = 0 // 总评论数
-	state.pageSize = 20 // 每页显示评论数
-	state.currentPage = 1 // 当前页码
-	
+	state.total = 0
+	state.pageSize = 20
+	state.currentPage = 1
+  getCommentCount(parseInt(songId))
 	getCommentMusicFn(parseInt(songId), page.value)
 })
+
+const getCommentCount = (id) => {
+  getSongCommentsCount({
+    song_id: id
+  }).then(res => {
+    state.total = res.data.result
+  })
+}
 
 const getCommentMusicFn = async (id, page) => {
 	getSongComments({
 		song_id: id,
-		page: page
+		page: page,
+    pageSize: state.pageSize,
+    sort: sortBy.value
 	}).then(res => {
-		state.comments = res.data.result;
-		state.total = state.comments.length;
+		state.comments = res.data.result.map(comment => ({
+			...comment,
+			isLiked: comment.likedUserIds ? comment.likedUserIds.includes(parseInt(userId)) : false
+		}));
+		
+		console.log("Processed comments:", state.comments);
+
 		for (let i = 0; i < state.comments.length; i++) {
 			getUserById({
 				user_id: state.comments[i].userId
@@ -163,14 +180,27 @@ const resetComments = () => {
 }
 
 const handleSubmit = () => {
+	if (!comment.value.replace(/(^\s*$) | (\s*$)/g, '')) {
+		ElMessage.warning("评论内容不能为空！");
+		return;
+	}
+
 	commentSong({
 		userId: parseInt(userId),
 		songId: parseInt(songId),
 		comment: comment.value,
 	}).then(() => {
-		ElMessage.success("评价成功！")
-		location.reload()
-	})
+		ElMessage.success("评论成功！");
+		
+		comment.value = "";
+		getCommentCount(parseInt(songId));
+		state.currentPage = 1;
+    sortBy.value = 'Time'
+		getCommentMusicFn(parseInt(songId), 1);
+	}).catch(error => {
+		ElMessage.error("发布评论失败，请稍后重试");
+		console.error("Submit comment failed:", error);
+	});
 }
 
 const showComments = () => {
@@ -198,12 +228,27 @@ function adjustHeight(event) {
 }
 
 const handleLike = (index) => {
-	state.comments[index].isLiked = !state.comments[index].isLiked
-	if (state.comments[index].isLiked) {
-		state.comments[index].likedCount++
-	} else {
-		state.comments[index].likedCount--
-	}
+	const comment = state.comments[index];
+	const newIsLiked = !comment.isLiked;
+	
+	likeComment({
+		userId: parseInt(userId),
+		commentId: comment.id,
+		isLike: newIsLiked
+	}).then(() => {
+		state.comments[index].isLiked = newIsLiked;
+		state.comments[index].likeCount = newIsLiked 
+			? comment.likeCount + 1 
+			: comment.likeCount - 1;
+	}).catch(error => {
+		ElMessage.error("点赞失败，请稍后重试");
+		console.error("Like failed:", error);
+	});
+}
+
+const changeSortBy = (type) => {
+  sortBy.value = type
+  getCommentMusicFn(parseInt(songId), page.value)
 }
 </script>
 
@@ -238,7 +283,20 @@ const handleLike = (index) => {
 			</div>
 			<div v-if="showComment" class="comment-content">
 				<div class="comment-content-box">
-					<div class="title">精彩评论</div>
+					<div class="title-container">
+						<div class="title">精彩评论</div>
+						<div class="sort-options">
+							<span 
+								:class="{ active: sortBy === 'Time' }"
+								@click="changeSortBy('Time')"
+							>最新</span>
+							<div class="divider"></div>
+							<span 
+								:class="{ active: sortBy === 'Hot' }"
+								@click="changeSortBy('Hot')"
+							>最热</span>
+						</div>
+					</div>
 					<div class="content" @wheel.stop>
 						<div v-for="i in state.comments.length" class="content-line">
 <!--							:style="{ backgroundImage: `url(${state.commenters[i - 1].avatarUrl})` }"-->
@@ -255,7 +313,7 @@ const handleLike = (index) => {
 									<div class="text">{{ state.comments[i - 1].comment }}</div>
 								</div>
 								<div class="handle-box">
-									<div class="time">{{ state.comments[i - 1].createTime }}</div>
+									<div class="time">{{ parseTime(state.comments[i - 1].createdAt) }}</div>
 									<div class="operation">
 										<img
 											:src="likeIcon"
@@ -265,10 +323,9 @@ const handleLike = (index) => {
 											@click="handleLike(i-1)"
 										/>
 										<span
-											v-if="state.comments[i-1].likedCount > 0"
 											:class="{ 'liked-count': state.comments[i-1].isLiked }"
-											style="font-size: 12px"
-										>{{ state.comments[i - 1].likedCount }}
+											style="font-size: 12px;color: white"
+										>{{ state.comments[i - 1].likeCount }}
 										</span>
 										<div class="operator-line"></div>
 									</div>
@@ -344,7 +401,7 @@ const handleLike = (index) => {
 .comment {
 	height: 100%;
 	width: 95%;
-	margin: 50px 0 0 0;
+	margin: 40px 0 0 0;
 	//position: fixed;
 	//transform: translateY(100%);
 	//background-color: @bgColor;
@@ -368,6 +425,7 @@ const handleLike = (index) => {
 				.song-name {
 					font-size: 30px;
 					margin-bottom: 20px;
+          color: white;
 					//margin-top: 10px;
 				}
 				
@@ -379,6 +437,7 @@ const handleLike = (index) => {
 						display: flex;
 						align-items: center;
 						margin-right: 20px;
+            color: white;
 					}
 				}
 			}
@@ -399,7 +458,6 @@ const handleLike = (index) => {
 			display: flex;
 			justify-content: flex-start;
 			padding: 10px 0;
-			margin-bottom: 30px;
 			//background-color: rgba(0, 0, 0, 0.1);
 			.nav-left {
 				cursor: pointer;
@@ -477,6 +535,7 @@ const handleLike = (index) => {
 				margin-bottom: 150px;
 				
 				.title {
+          color: white;
 					display: flex;
 					font-size: 18px;
 					margin-bottom: 5px;
@@ -534,6 +593,7 @@ const handleLike = (index) => {
 								}
 								
 								.text {
+                  color: white;
 								}
 							}
 							
@@ -542,6 +602,7 @@ const handleLike = (index) => {
 								justify-content: space-between;
 								
 								.time {
+                  color: white;
 									font-size: 13px;
 								}
 								
@@ -564,7 +625,7 @@ const handleLike = (index) => {
 									}
 									
 									.liked-count {
-										color: #ddc323;
+										color: #ddc323 !important;
 										text-shadow: 0 0 2px #ddc323;
 										margin-left: 4px;
 									}
@@ -623,6 +684,7 @@ const handleLike = (index) => {
 			
 			
 			.song-info-row {
+        color: white;
 				display: flex;
 				justify-content: flex-start;
 				margin-bottom: 20px;
@@ -645,6 +707,42 @@ const handleLike = (index) => {
 					max-width: calc(100% - 120px); /* 确保不会超出容器宽度 */
 				}
 			}
+		}
+	}
+}
+
+.title-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
+	
+	.sort-options {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-right: 35px;
+		
+		span {
+			color: #999;
+			font-size: 14px;
+			cursor: pointer;
+			transition: color 0.2s ease;
+			
+			&:hover {
+				color: #ddc323;
+			}
+			
+			&.active {
+				color: #ddc323;
+				font-weight: bold;
+			}
+		}
+		
+		.divider {
+			width: 1px;
+			height: 12px;
+			background-color: rgba(255, 255, 255, 0.2);
 		}
 	}
 }

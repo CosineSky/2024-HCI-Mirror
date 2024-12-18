@@ -1,9 +1,58 @@
 <script setup>
+import {useTheme} from "../store/theme";
+import {onMounted, ref} from "vue";
+const theme = useTheme()
+
+onMounted(() => {
+	theme.reset();
+})
+
+
+// 假设 albums 是从后端获取的用户最近播放的专辑封面 URL 列表
+const albums = ref([
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+	{ coverUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg" },
+]);
+
+// 获取随机位置的样式
+const getRandomPositionStyle = (index) => {
+	let xl = [100, 100, 100, 1300, 1300, 1300];
+	let yl = [50, 300, 550, 100, 350, 575]
+	let x = xl[index] + (Math.random() * 100 - 50);
+	let y = yl[index] + (Math.random() * 50 - 25);
+	
+	const rotation = Math.random() * 360; // 随机旋转角度
+	
+	return {
+		left: `${x}px`,
+		top: `${y}px`,
+		transform: `rotate(${rotation}deg)`,
+	};
+};
+
+// 可以在这里添加动态效果，定期更新封面位置
+onMounted(() => {
+	// 可使用定时器不断更新专辑封面的位置
+	setInterval(() => {
+		albums.value = albums.value.map((album) => ({
+			...album,
+			coverUrl: album.coverUrl, // 更新封面 URL 或其他内容
+		}));
+	}, 2000); // 每 2 秒更新位置
+});
 
 </script>
 
 <template>
 	<body>
+		<video autoplay muted loop id="video-background">
+			<source src="../assets/videos/2.mp4" type="video/mp4">
+			Your browser does not support the video tag.
+		</video>
 		<div class="content-profile-page">
 			<div class="profile-user-page card">
 				<div class="img-user-profile">
@@ -22,6 +71,17 @@
 				</ul>
 			</div>
 		</div>
+		<div class="album-container">
+			<img
+				v-for="(album, index) in albums"
+				:key="index"
+				:src="album.coverUrl"
+				class="album-cover"
+				:style="getRandomPositionStyle(index)"
+			    alt=""
+			/>
+			
+		</div>
 	</body>
 </template>
 
@@ -32,10 +92,21 @@ body {
 	align-items: center;
 	justify-content: center;
 	min-height: 100vh;
-	background-image: url("../assets/pictures/bg4.jpg");
+	background-image: url("../assets/videos/2.mp4");
 	background-repeat: no-repeat;
 	background-size: cover;
 }
+
+#video-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* 确保视频填充整个视口 */
+	z-index: -1; /* 将视频置于内容后面 */
+}
+
 a {
 	text-decoration: none;
 	color: #3498db;
@@ -180,5 +251,27 @@ footer h4 {
 footer h4 a {
 	text-decoration: none;
 	color: #3498db;
+}
+
+.album-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.album-cover {
+	z-index: -1;
+	position: absolute;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+	object-fit: cover;
+	transition: transform 0.5s ease-in-out; /* 动画效果 */
+	pointer-events: auto; /* 确保封面图可以响应用户交互 */
+	border: 2px solid white; /* 添加白色边框 */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 可选，增加阴影效果，让封面更加突出 */
 }
 </style>
