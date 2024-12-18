@@ -659,10 +659,10 @@ onMounted(() => {
 					</button>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-top: 10px">
-					<p style="margin-right: 10px; margin-bottom: 10px; color: white">{{ formatTime(currentTime) }}</p>
+					<p style="margin-right: 10px; padding-bottom: 40px; color: white">{{ formatTime(currentTime) }}</p>
 					<input type="range" value="0" id="progress" class="idProgress"
 					       style="margin: 0 0 10px 0; width: 500px"/>
-					<p style="margin-left: 10px; color: white">{{ formatTime(duration) }}</p>
+					<p style="margin-left: 10px; padding-bottom: 40px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
 			

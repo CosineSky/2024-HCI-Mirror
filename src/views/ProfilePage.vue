@@ -71,17 +71,16 @@ onMounted(() => {
 				</ul>
 			</div>
 		</div>
-		<div class="album-container">
-			<img
-				v-for="(album, index) in albums"
-				:key="index"
-				:src="album.coverUrl"
-				class="album-cover"
-				:style="getRandomPositionStyle(index)"
-			    alt=""
-			/>
-			
-		</div>
+<!--		<div class="album-container">-->
+<!--			<img-->
+<!--				v-for="(album, index) in albums"-->
+<!--				:key="index"-->
+<!--				:src="album.coverUrl"-->
+<!--				class="album-cover"-->
+<!--				:style="getRandomPositionStyle(index)"-->
+<!--			    alt=""-->
+<!--			/>-->
+<!--		</div>-->
 	</body>
 </template>
 

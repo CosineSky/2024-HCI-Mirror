@@ -129,6 +129,19 @@ defineProps({
 		     @mouseleave="()=>{hoverOnAlbum=false}"
 		     :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}">
 			
+			
+			<div class="musicAlbum-item">
+				<img
+					src="../assets/icons/heart.png"
+					alt="playlist"
+					class="musicAlbum-image"
+					:style="{opacity: 1}"
+				/>
+				<div class="musicAlbum-description">
+					<p style="padding-bottom: 5px;font-size: 18px">我喜欢的歌曲</p>
+					<p style="color: #b2b2b2;font-size: 13px">默认收藏夹</p>
+				</div>
+			</div>
 			<div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
 			     :key="album.id"
 			     @mouseenter="()=>{albumHoveredIndex = album.id}"
