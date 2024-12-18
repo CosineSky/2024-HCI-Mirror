@@ -811,6 +811,7 @@ h1 {
 /* HEADER */
 .header{
   grid-area: global-nav;
+  z-index: 1000;
 }
 /* TEMP */
 
@@ -1533,7 +1534,7 @@ footer {
 /* 退出搜索图标 */
 .exit-search {
 	position: absolute;
-	top: 10px;
+	top: 90px;
 	right: 10px;
 	width: 30px;
 	height: 30px;
