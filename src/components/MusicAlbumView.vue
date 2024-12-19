@@ -6,6 +6,7 @@ import checkMark from "../icon/checkMark.vue";
 import {ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
+import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 
 const emit = defineEmits();
 const props = defineProps({
@@ -142,7 +143,12 @@ const enterPersonalSpace = () => {
 }
 const editAlbumDescription = () => {
 }
-const removeAlbum = () => {
+const removeAlbum = (albumId) => {
+	removePlaylist({
+		playlist_id: albumId,
+	}).then(res => {
+		console.log("Hi")
+	})
 }
 
 const playFromId = (musicId) => {
@@ -157,8 +163,11 @@ const playFromId = (musicId) => {
 }
 const addToFavorite = (musicId) => {
 }
-const removeMusicFromAlbum = (musicId) => {
-
+const removeMusicFromAlbum = (albumId, songId) => {
+	removeSongFromPlaylist({
+		playlist_id: albumId,
+		song_id: songId,
+	})
 }
 const enterMusicDescription = (musicId) => {
 }
@@ -207,7 +216,7 @@ const pauseMusic = (musicId) => {
 					</template>
 					<ul>
 						<li @click="editAlbumDescription">编辑歌单详情</li>
-						<li @click="removeAlbum">删除歌单</li>
+						<li @click="removeAlbum(albumInfo.id)">删除歌单</li>
 					</ul>
 				</el-popover>
 			</div>
@@ -316,7 +325,7 @@ const pauseMusic = (musicId) => {
 								<dots class="music-more-info"/>
 							</template>
 							<ul>
-								<li @click="removeMusicFromAlbum(music.id)">删除歌曲</li>
+								<li @click="removeMusicFromAlbum(albumInfo.id, music.id)">删除歌曲</li>
 							</ul>
 						</el-popover>
 					

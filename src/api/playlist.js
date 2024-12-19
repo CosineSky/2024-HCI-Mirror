@@ -52,8 +52,23 @@ export const addSongToPlaylist = (songInfo) => {
     - playlist_id: number
  */
 export const removePlaylist = (removePlaylistInfo) => {
-    return axios.post(`${PLAYLIST_MODULE}/remove`, removePlaylistInfo,
-        { headers: { 'Content-Type': 'application/json' } })
+    console.log(removePlaylistInfo)
+    return axios.post(`${PLAYLIST_MODULE}/delete`, null,
+        { params: removePlaylistInfo })
+        .then(res => {
+            return res;
+        });
+}
+
+/*
+    // TODO - newly added
+    - playlist_id: number
+    - song_id: number
+ */
+export const removeSongFromPlaylist = (removeSongFromPlaylistInfo) => {
+    console.log(removeSongFromPlaylistInfo)
+    return axios.post(`${PLAYLIST_MODULE}/removeSong`, null,
+        { params: removeSongFromPlaylistInfo })
         .then(res => {
             return res;
         });
