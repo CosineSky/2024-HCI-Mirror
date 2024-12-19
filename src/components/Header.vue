@@ -6,6 +6,12 @@ import {searchSongByKeyword, searchPlaylistByKeyword} from "../api/search";
 const router = useRouter();
 const emit = defineEmits(['headData']);
 
+const props = defineProps({
+	allowSearch: {
+		type: Boolean,
+	},
+});
+
 /*
  *  Search
  */
@@ -81,7 +87,7 @@ function callSearch() {
 		<div style="display: flex; flex-direction: row"></div>
 		
 		
-		<div class="search-box">
+		<div v-if="allowSearch" class="search-box">
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
 			     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
 			     class="feather feather-search"

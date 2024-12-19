@@ -189,9 +189,12 @@ const pauseMusic = (musicId) => {
 				<p class="header-album-name" style="font-weight: bolder;font-size:100px;margin:10px 0 35px 10px;">
 					{{ albumInfo.title }}</p>
 				<div class="header-content-detail">
+					<p style="margin-left:6px">{{ musicList.length }} 首歌曲</p>
+					<p style="margin: 0 9px 0 6px"> • </p>
+					<p v-if="albumInfo.updateTime !== undefined">
+						{{ albumInfo.updateTime.substring(0, 10) }} </p>
+					<p style="margin: 0 6px 0 9px"> • </p>
 					<p class="header-creator" @click="enterPersonalSpace">{{ albumInfo.description }}</p>
-					<p>•</p>
-					<p style="margin-left:6px">歌曲数量: {{ musicList.length }}</p>
 				</div>
 			</div>
 		</div>
@@ -237,7 +240,7 @@ const pauseMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:55px">时间</p>
+				<p style="margin-left: auto; margin-right:100px">时间</p>
 			</div>
 			<div class="fixed-tips">
 				<p style="position:absolute; left:45px">#</p>
@@ -261,9 +264,7 @@ const pauseMusic = (musicId) => {
 					
 					<div
 						:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
-						{{
-							music.number
-						}}
+						{{music.number}}
 					</div>
 					<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 					             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
@@ -293,9 +294,11 @@ const pauseMusic = (musicId) => {
 								{{ music.artist }}</p>
 						</div>
 					</div>
-					
 					<div class="music-album-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 						{{ music.album }}
+					</div>
+					<div class="music-time-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+<!--						{{ music.uploadTime.substring(0, 10) }}-->
 					</div>
 					<div class="music-right-info">
 						<el-popover class="music-dropdown-options"
@@ -668,6 +671,12 @@ p {
 .music-album-info:hover {
 	cursor: pointer;
 	text-decoration: underline;
+}
+
+.music-time-info {
+	position: absolute;
+	left: 85%;
+	color: #b2b2b2;
 }
 
 /*右侧信息*/

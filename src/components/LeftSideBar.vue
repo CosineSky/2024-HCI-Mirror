@@ -153,7 +153,7 @@ defineProps({
 				
 				<div class="musicAlbum-description">
 					<p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>
-					<p v-if="album.title !== '我喜欢的歌曲'" style="color: #b2b2b2;font-size: 13px">歌单 • {{ user }}</p>
+					<p v-if="album.title !== '我喜欢的歌曲'" style="color: #b2b2b2;font-size: 13px">歌单 • {{ userToken.username }}</p>
 					<p v-else style="color: #b2b2b2;font-size: 13px">默认收藏夹</p>
 				</div>
 			</div>

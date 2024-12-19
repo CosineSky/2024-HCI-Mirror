@@ -439,6 +439,7 @@ const receivePlaylistId = (value) => {
 	});
 };
 const receiveDisplayingPlaylist = (value) => {
+	setMidComponents(1);
 	displayingPlaylist.value = value;
 	getSongsByPlaylist({
 		playlist_id: value.id,
@@ -523,7 +524,7 @@ onMounted(() => {
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
 
 		<!-- MAIN & RIGHT CONTENT -->
-		<Header class="header" @headData="receiveDataFromHeader"/>
+		<Header class="header" @headData="receiveDataFromHeader" allow-search></Header>
 		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
 		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receiveDisplayingPlaylist"/>
 		<div class="content" :class="{ 'full-width': !showRightContent }">

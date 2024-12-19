@@ -33,8 +33,8 @@ const handleTabClick = (tab) => {
 				<li v-for="(song, index) in songResult" :key="song.id">
 					<div class="song-item">
 						<span class="song-index">{{ index + 1 }}</span>
-						<img :src="song.picPath" class="song-pic" alt=""/>
-						<div class="song-info">
+						<img :src="song.picPath" class="song-pic pic" alt=""/>
+						<div class="song-info info">
 							<h3 class="song-title">{{ song.title }}</h3>
 							<p class="song-artist">{{ song.artist }}</p>
 							<p class="song-album">{{ song.album }}</p>
@@ -47,10 +47,10 @@ const handleTabClick = (tab) => {
 				<li v-for="(playlist, index) in playlistResult" :key="playlist.id">
 					<div class="playlist-item">
 						<span class="song-index">{{ index + 1 }}</span>
-						<img :src="playlist.picPath" class="playlist-pic" alt=""/>
-						<div class="playlist-info">
+						<img :src="playlist.picPath" class="playlist-pic pic" alt=""/>
+						<div class="playlist-info info">
 							<h3 class="playlist-title">{{ playlist.title }}</h3>
-							<p class="playlist-username">{{ playlist.username }}</p>
+							<p class="playlist-username">歌曲数: {{ playlist.songNum }} • {{ playlist.description }}</p>
 						</div>
 					</div>
 				</li>
@@ -100,6 +100,22 @@ const handleTabClick = (tab) => {
 	padding: 0;
 }
 
+.info h3 {
+	font-size: 18px;
+	color: #e7e7e7;
+}
+
+.info p {
+	font-size: 14px;
+	color: #a9a9a9;
+}
+
+.pic:hover {
+	filter: brightness(1.05);
+	border-color: #ddc323;
+	box-shadow: 0 0 10px rgba(221, 195, 35, 0.5);
+	transform: scale(1.03);
+}
 
 .song-item {
 	display: flex;

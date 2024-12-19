@@ -1,7 +1,15 @@
 <script setup>
 import {useTheme} from "../store/theme";
 import {onMounted, ref} from "vue";
+import Header from "../components/Header.vue";
+import {calculateDaysDifference} from "../utils/formatTime";
 const theme = useTheme()
+
+/*
+    USER
+ */
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 onMounted(() => {
 	theme.reset();
@@ -49,6 +57,8 @@ onMounted(() => {
 
 <template>
 	<body>
+		<Header class="header" @headData="receiveDataFromHeader"/>
+		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
 		<video autoplay muted loop id="video-background">
 			<source src="../assets/videos/2.mp4" type="video/mp4">
 			Your browser does not support the video tag.
@@ -65,12 +75,30 @@ onMounted(() => {
 				</div>
 				<div class="description-profile">Country | Rock | Jazz</div>
 				<ul class="data-user">
-					<li><a><strong>11</strong><span>Posts</span></a></li>
-					<li><a><strong>45</strong><span>Followers</span></a></li>
-					<li><a><strong>14</strong><span>Following</span></a></li>
+					<li>
+						<a>
+							<strong>11</strong>
+							<span class="large">总听歌数</span>
+						</a>
+					</li>
+					<li>
+						<a>
+							<strong>4.5</strong>
+							<span class="large">总听歌时长</span>
+							<span class="small">/小时</span>
+						</a>
+					</li>
+					<li>
+						<a>
+							<strong>{{calculateDaysDifference(userToken.createTime)}}</strong>
+							<span class="large">总活跃</span>
+							<span class="small">/天</span>
+						</a>
+					</li>
 				</ul>
 			</div>
 		</div>
+		<h1></h1>
 <!--		<div class="album-container">-->
 <!--			<img-->
 <!--				v-for="(album, index) in albums"-->
@@ -88,12 +116,24 @@ onMounted(() => {
 body {
 	font-family: "Open sans", sans-serif;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
 	min-height: 100vh;
 	background-image: url("../assets/videos/2.mp4");
 	background-repeat: no-repeat;
 	background-size: cover;
+	height: 100%;
+	overflow: hidden;
+}
+
+.logo {
+	position: absolute;
+	top: 0px;
+	left: -10px;
+	width: 8%;
+	height: 8%;
+	z-index: 114514;
 }
 
 #video-background {
@@ -219,15 +259,20 @@ a {
 	padding: .93em 0;
 	color: #46494c;
 }
-.profile-user-page .data-user li a strong, .profile-user-page .data-user li a span {
+.profile-user-page .data-user li a strong,
+.profile-user-page .data-user li a span {
 	font-weight: 600;
 	line-height: 1;
 }
 .profile-user-page .data-user li a strong {
 	font-size: 2em;
 }
-.profile-user-page .data-user li a span {
+.profile-user-page .data-user li a .large {
 	color: #717a7e;
+}
+.profile-user-page .data-user li a .small {
+	color: #717a7e;
+	font-size: 10px;
 }
 .profile-user-page .data-user li a:hover {
 	background: rgba(0, 0, 0, 0.05);
