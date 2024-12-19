@@ -8,6 +8,7 @@ import { PLAYLIST_MODULE } from './_prefix';
     + user_id: number
  */
 export const getPlaylistsByUser = (userInfo) => {
+    console.log(userInfo)
     return axios.get(`${PLAYLIST_MODULE}/fetch`, { params: userInfo })
         .then(res => {
             return res;

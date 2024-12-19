@@ -330,6 +330,7 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 
+
 /*
     SONGS
  */
@@ -487,10 +488,12 @@ onMounted(() => {
 	/*
 		API
 	 */
+	console.log("L: ", currentUserId.value)
 	getPlaylistsByUser({
 		user_id: currentUserId.value,
 	}).then((res) => {
 		playlists.value = res.data.result;
+		console.log("playlists: ", playlists.value);
 		currentPlaylist.value = playlists.value[0];
 		displayingPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;

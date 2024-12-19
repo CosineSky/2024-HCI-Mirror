@@ -21,6 +21,12 @@ const criticalWidth = 180;
 const maximumWidth = 310;
 const minWidth = 75;
 
+/*
+    USER
+ */
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
+
 function toggleSideBar() {
 	isSideBarOpen = !isSideBarOpen;
 	sideBarWidth.value = isSideBarOpen ? criticalWidth : minWidth;
@@ -77,7 +83,7 @@ function searchAlbum() {
 
 onMounted(() => {
 	getPlaylistsByUser({
-		user_id: 1,
+		user_id: currentUserId.value
 	}).then(res => {
 		musicAlbums.value = res.data.result || []
 	}).catch(e => {
@@ -130,18 +136,6 @@ defineProps({
 		     :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}">
 			
 			
-			<div class="musicAlbum-item">
-				<img
-					src="../assets/icons/heart.png"
-					alt="playlist"
-					class="musicAlbum-image"
-					:style="{opacity: 1}"
-				/>
-				<div class="musicAlbum-description">
-					<p style="padding-bottom: 5px;font-size: 18px">我喜欢的歌曲</p>
-					<p style="color: #b2b2b2;font-size: 13px">默认收藏夹</p>
-				</div>
-			</div>
 			<div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
 			     :key="album.id"
 			     @mouseenter="()=>{albumHoveredIndex = album.id}"
@@ -159,7 +153,8 @@ defineProps({
 				
 				<div class="musicAlbum-description">
 					<p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>
-					<p style="color: #b2b2b2;font-size: 13px">歌单 • {{ user }}</p>
+					<p v-if="album.title !== '我喜欢的歌曲'" style="color: #b2b2b2;font-size: 13px">歌单 • {{ user }}</p>
+					<p v-else style="color: #b2b2b2;font-size: 13px">默认收藏夹</p>
 				</div>
 			</div>
 		</div>
