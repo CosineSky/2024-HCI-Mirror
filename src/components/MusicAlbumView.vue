@@ -141,8 +141,8 @@ window.onscroll = () => {
 //TODO:
 const enterPersonalSpace = () => {
 }
-const editAlbumDescription = () => {
-}
+// const editAlbumDescription = () => {
+// }
 const removeAlbum = (albumId) => {
 	removePlaylist({
 		playlist_id: albumId,
@@ -176,6 +176,15 @@ const enterAuthorDescription = (authorName) => {
 
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
+}
+
+const editAlbumDescription = (albumId) => {
+	const editDesc = document.querySelector(".edit-desc");
+	editDesc.style.visibility = "visible";
+}
+const quitEdit = () => {
+	const editDesc = document.querySelector(".edit-desc");
+	editDesc.style.visibility = "hidden";
 }
 
 </script>
@@ -241,6 +250,70 @@ const pauseMusic = (musicId) => {
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
 				<p style="margin-left: auto; margin-right:100px">时间</p>
+			</div>
+			<div class="edit-desc" @blur="quitEdit">
+				<div data-testid="playlist-edit-details-modal" class="main-edit-desc">
+					<div class="edit-desc-header">
+						<h1 class="encore-text encore-text-title-small" data-encore-id="text">编辑详情</h1>
+						<button class="edit-desc-header-button" @click="quitEdit">
+							<svg data-encore-id="icon" role="img" aria-label="关闭" aria-hidden="false" viewBox="0 0 16 16"
+							     class="small-svg">
+								<path
+									d="M2.47 2.47a.75.75 0 0 1 1.06 0L8 6.94l4.47-4.47a.75.75 0 1 1 1.06 1.06L9.06 8l4.47 4.47a.75.75 0 1 1-1.06 1.06L8 9.06l-4.47 4.47a.75.75 0 0 1-1.06-1.06L6.94 8 2.47 3.53a.75.75 0 0 1 0-1.06Z"></path>
+							</svg>
+						</button>
+					</div>
+					<div class="edit-desc-text">
+						<!--              <input accept="image/.jpg, image/.jpeg, image/.png" type="file" data-testid="image-file-picker" class="wcftliF4QjZKB1CYgEON">-->
+						<div class="edit-desc-img">
+							<div class="edit-desc-img-1" draggable="false">
+								<div class="edit-desc-img-1-1 edit-desc-img-1">
+									<svg data-encore-id="icon" role="img" aria-hidden="true" data-testid="playlist" viewBox="0 0 24 24"
+									     class="large-svg">
+										<path
+											d="M6 3h15v15.167a3.5 3.5 0 1 1-3.5-3.5H19V5H8v13.167a3.5 3.5 0 1 1-3.5-3.5H6V3zm0 13.667H4.5a1.5 1.5 0 1 0 1.5 1.5v-1.5zm13 0h-1.5a1.5 1.5 0 1 0 1.5 1.5v-1.5z"></path>
+									</svg>
+								</div>
+							</div>
+							<div class="edit-desc-img-2">
+								<div class="edit-desc-img-2-1">
+									<button data-testid="edit-image-button" class="edit-desc-img-2-button" aria-haspopup="true"
+									        type="button">
+										<div class="edit-desc-img-2-1-1 icon">
+											<svg data-encore-id="icon" role="img" aria-hidden="true" viewBox="0 0 24 24" class="large-svg">
+												<path
+													d="M17.318 1.975a3.329 3.329 0 1 1 4.707 4.707L8.451 20.256c-.49.49-1.082.867-1.735 1.103L2.34 22.94a1 1 0 0 1-1.28-1.28l1.581-4.376a4.726 4.726 0 0 1 1.103-1.735L17.318 1.975zm3.293 1.414a1.329 1.329 0 0 0-1.88 0L5.159 16.963c-.283.283-.5.624-.636 1l-.857 2.372 2.371-.857a2.726 2.726 0 0 0 1.001-.636L20.611 5.268a1.329 1.329 0 0 0 0-1.879z"></path>
+											</svg>
+											<span class="encore-text encore-text-body-medium" data-encore-id="text">选择照片</span></div>
+									</button>
+								</div>
+							</div>
+							<div class="edit-desc-img-3">
+								<button class="edit-desc-img-3-button" type="button">
+									<svg data-encore-id="icon" role="img" aria-hidden="true" viewBox="0 0 16 16" class="small-svg">
+										<path
+											d="M3 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm6.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM16 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"></path>
+									</svg>
+									<span class="hidden-visually">编辑照片</span></button>
+							</div>
+						</div>
+						<div class="edit-desc-input-name">
+							<input data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f" type="text"
+							       class="edit-desc-input-name-1" placeholder="添加名称" value="我的 #9 歌单">
+						</div>
+						<div class="edit-desc-input-desc">
+              <textarea data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1"
+                        placeholder="添加简介"></textarea>
+						</div>
+						<div class="edit-desc-button">
+							<button data-testid="playlist-edit-details-save-button" data-encore-id="buttonPrimary"
+							        class="edit-desc-button-1 encore-text-body-medium-bold"><span
+								class="edit-desc-button-1-1">收藏</span></button>
+						</div>
+						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意
+							Spotify 获取你选择上传的图像。请确保你有上传此图像的权利。</p>
+					</div>
+				</div>
 			</div>
 			<div class="fixed-tips">
 				<p style="position:absolute; left:45px">#</p>
@@ -483,6 +556,7 @@ p {
 
 
 .header {
+	z-index:0;
 	display: flex;
 	flex-direction: row;
 }
@@ -745,4 +819,289 @@ li:hover {
 	margin-top: 20px;
 }
 
+/* new-elements */
+.edit-desc {
+	visibility: hidden;
+	z-index: 1919810;
+	background-color: rgba(0, 0, 0, .7);
+	bottom: 0;
+	display: flex;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	overflow: hidden;
+}
+.main-edit-desc {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	background-color: #282828;
+	border-radius: 8px;
+	-webkit-box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
+	box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
+	color: #fff;
+	-ms-flex-direction: column;
+	flex-direction: column;
+	min-height: 384px;
+	width: 524px;
+}
+.edit-desc-header {
+	display: flex;
+	-webkit-box-pack: justify;
+	-ms-flex-pack: justify;
+	justify-content: space-between;
+	padding: 24px;
+}
+.edit-desc-header-button {
+	align-self: end;
+	background-color: transparent;
+	border: 0;
+	border-radius: 32px;
+	color: hsla(0, 0%, 100%, .7);
+	grid-area: close-button;
+	height: 32px;
+	margin-top: -8px;
+	width: 32px;
+	-webkit-margin-end: -8px;
+	margin-inline-end: -8px;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+}
+.edit-desc-text {
+	display: grid;
+	grid-template: 32px 132px 32px auto / 180px 1fr;
+	grid-template-areas:
+        "album-image title"
+        "album-image description"
+        ". save-button"
+        "disclaimer disclaimer";
+	grid-gap: 16px;
+	padding: 0 24px 24px;
+}
+.edit-desc-img {
+	grid-area: album-image;
+	height: 180px;
+	margin: 0;
+	position: relative;
+	/* width: 180px; */
+}
+.edit-desc-img-1 {
+	border-radius: 4px;
+	height: 100%;
+	width: 100%;
+}
+.edit-desc-img-1-1 {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	background-color: #282828;
+	color: #7f7f7f;
+	justify-content: center;
+	-webkit-box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
+	box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
+	&:hover {
+		display: none;
+	}
+}
+.large-svg {
+	fill: currentcolor;
+	width: 48px;
+	height: 48px;
+}
+.edit-desc-img-2 {
+	bottom: 0;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.edit-desc-img-2-1 {
+	height: 100%;
+	width: 100%;
+}
+.edit-desc-img-2-button {
+	background-color: #282828;
+	color: #fff;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	text-align: center;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	border: none;
+	border-radius: 4px;
+	justify-content: center;
+	opacity: 0;
+	padding: 0;
+}
+.edit-desc-img-2-1-1 {
+	margin-top: 16px;
+	-webkit-transition: opacity .2s;
+	transition: opacity .2s;
+}
+.edit-desc-img-3 {
+	right: 8px;
+	height: 32px;
+	position: absolute;
+	top: 8px;
+	width: 32px;
+}
+@media (hover: hover) {
+	.edit-desc-img-3-button:not([data-context-menu-open=true]) {
+		opacity: 0;
+		pointer-events: none;
+		position: unset;
+	}
+}
+.edit-desc-img-3-button {
+	background-color: rgba(0, 0, 0, .3);
+	border: none;
+	border-radius: 500px;
+	color: #b3b3b3;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	padding: 8px;
+	text-decoration: none;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	&:hover {
+		opacity: 0;
+		pointer-events: none;
+		position: unset;
+	}
+}
+.small-svg {
+	height: 16px;
+	width: 16px;
+}
+.edit-desc-input-name {
+	grid-area: title;
+	position: relative;
+	margin-right: 8px;
+}
+.edit-desc-input-name-1 {
+	background: hsla(0, 0%, 100%, .1);
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: #fff;
+	font-family: inherit;
+	font-size: 14px;
+	height: 40px;
+	padding: 0 12px;
+	width: 100%;
+	-webkit-box-shadow: inset 0 -2px #343030;
+	box-shadow: inset 0 -2px 0 0 #343030;
+}
+.edit-desc-input-desc {
+	grid-area: description;
+	margin-top: 8px;
+	position: relative;
+}
+.edit-desc-input-desc-1 {
+	background: hsla(0, 0%, 100%, .1);
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: #fff;
+	font-family: inherit;
+	font-size: 14px;
+	padding: 8px 8px 28px;
+	resize: none;
+	width: 100%;
+	height: 70%;
+}
+.edit-desc-button {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	grid-area: save-button;
+	justify-self: flex-end;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+}
+.edit-desc-button-1 {
+	box-sizing: border-box;
+	-webkit-tap-highlight-color: transparent;
+	background-color: transparent;
+	border: 0;
+	border-radius: 9999px;
+	cursor: pointer;
+	display: inline-block;
+	position: relative;
+	text-align: center;
+	text-decoration: none;
+	text-transform: none;
+	touch-action: manipulation;
+	transition-duration: 33ms;
+	transition-property: background-color, border-color, color, box-shadow, filter, transform;
+	user-select: none;
+	vertical-align: middle;
+	transform: translate3d(0px, 0px, 0px);
+	padding: 0px;
+	min-inline-size: 0px;
+	align-self: center;
+}
+.edit-desc-button-1-1 {
+	box-sizing: border-box;
+	-webkit-tap-highlight-color: transparent;
+	position: relative;
+	background-color: #ffffff;
+	color: #000000;
+	display: flex;
+	border-radius: 9999px;
+	font-size: inherit;
+	min-block-size: 48px;
+	-webkit-box-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	justify-content: center;
+	padding-block: 8px;
+	padding-inline: 32px;
+	transition-property: background-color, transform;
+	transition-duration: 33ms;
+}
+.encore-text {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-tap-highlight-color: transparent;
+	color: inherit;
+	margin-block: 0;
+	font-size: 13px;
+	white-space: normal;
+}
+.encore-text-title-small {
+	font-size: 1.5rem;
+}
+.final-tip {
+	grid-area: disclaimer;
+}
+.encore-text-marginal-bold {
+	font-weight: 700;
+}
 </style>
