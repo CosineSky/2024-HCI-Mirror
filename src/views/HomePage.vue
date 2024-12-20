@@ -11,6 +11,7 @@ import {LOOP_MODE, NORMAL_MODE, PAUSE, PLAY, RANDOM_MODE} from "../assets/base64
 // Components
 import Header from "../components/Header";
 import Comment from "../components/Comment";
+import MainView from "../components/MainView.vue";
 import LeftSideBar from "../components/LeftSideBar";
 import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
@@ -469,7 +470,7 @@ function receiveDataFromHeader(data) {
     2 - Comments
     3 - Search Results
  */
-const midComponents = ref(1);
+const midComponents = ref(0);
 const setMidComponents = (val) => {
 	midComponents.value = val;
 }
@@ -529,6 +530,10 @@ onMounted(() => {
 		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receiveDisplayingPlaylist"/>
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
+				<el-container v-if="midComponents == 0" class="playlist-container"
+				              style="overflow: auto; height: 730px ;border-radius: 12px">
+					<MainView/>
+				</el-container>
 				<el-container v-if="midComponents == 1" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
@@ -539,7 +544,7 @@ onMounted(() => {
 					<el-button class="exit-search"
 					           data-tooltip="退出"
 					           :class="{ 'adjusted-position': showRightContent }"
-					           @click="setMidComponents(1)"></el-button>
+					           @click="setMidComponents(0)"></el-button>
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 				</el-container>
 				<el-container v-if="midComponents == 3" class="playlist-container"
@@ -547,7 +552,7 @@ onMounted(() => {
 					<el-button class="exit-search"
 					           data-tooltip="退出"
 					           :class="{ 'adjusted-position': showRightContent }"
-					           @click="setMidComponents(1)"></el-button>
+					           @click="setMidComponents(0)"></el-button>
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
 				</el-container>
 			</div>
