@@ -40,7 +40,7 @@ getSongsByPlaylist({
 				<div v-for="song in songs"
 				     :key="song.id"
 				     class="song">
-					<img :src="song.picPath" alt="">
+					<img class="recommend-song-img" :src="song.picPath" alt="">
 					<h2>{{ song.title }}</h2>
 					<p>{{ song.artist }}</p>
 				</div>
@@ -125,5 +125,9 @@ getSongsByPlaylist({
 .active {
 	background-color: #fff;
 	color: #000;
+}
+
+.recommend-song-img:hover {
+	transform: rotate(3deg) scale(1.02);
 }
 </style>

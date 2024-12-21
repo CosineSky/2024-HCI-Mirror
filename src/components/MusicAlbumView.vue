@@ -6,7 +6,7 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 
 const emit = defineEmits();
 const props = defineProps({
@@ -22,8 +22,9 @@ const props = defineProps({
 	currentSongId: Number
 });
 
-const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
-
+const edit_title = ref("");
+const edit_description = ref("");
+const edit_cover_path = ref("");
 
 const recMusicList = ref([
 	{
@@ -43,7 +44,7 @@ let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
 const resizeObserver = ref(null)
-
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -237,6 +238,17 @@ const editAlbumDescription = (albumId) => {
 	editDesc.style.visibility = "visible";
 }
 
+const confirmEdit = (albumId) => {
+	modifyPlaylist({
+		id: albumId,
+		title: edit_title.value,
+		description: edit_description.value,
+		picPath: "",
+	}).then(() => {
+	
+	})
+}
+
 const quitEdit = () => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "hidden";
@@ -377,18 +389,17 @@ const addRecommendMusic = (musicId) => {
 							</div>
 						</div>
 						<div class="edit-desc-input-name">
-							<input data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f"
-							       type="text"
-							       class="edit-desc-input-name-1" placeholder="添加名称" value="我的 #9 歌单">
+							<input v-model="edit_title" data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1" placeholder="添加名称">
 						</div>
 						<div class="edit-desc-input-desc">
-              <textarea data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1"
-                        placeholder="添加简介"></textarea>
+                            <textarea v-model="edit_description" data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1" placeholder="添加简介"/>
 						</div>
 						<div class="edit-desc-button">
-							<button data-testid="playlist-edit-details-save-button" data-encore-id="buttonPrimary"
-							        class="edit-desc-button-1 encore-text-body-medium-bold"><span
-								class="edit-desc-button-1-1">收藏</span></button>
+							<button @click="confirmEdit(albumInfo.id)" data-testid="playlist-edit-details-save-button"
+							        data-encore-id="buttonPrimary"
+							        class="edit-desc-button-1 encore-text-body-medium-bold">
+								<span class="edit-desc-button-1-1">收藏</span>
+							</button>
 						</div>
 						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意
 							Spotify 获取你选择上传的图像。请确保你有上传此图像的权利。</p>
@@ -415,11 +426,7 @@ const addRecommendMusic = (musicId) => {
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }"> <!--@click事件写在script中的函数里 无法及时触发:style中的样式!!!-->
 					
-					<div
-						:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
-						{{
-							musicList.indexOf(music) + 1
-						}}
+					<div :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">{{ musicList.indexOf(music) + 1 }}
 					</div>
 					<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 					             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"

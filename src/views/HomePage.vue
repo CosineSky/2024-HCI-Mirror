@@ -479,7 +479,7 @@ function receiveDataFromHome() {
     2 - Comments
     3 - Search Results
  */
-const midComponents = ref(1);
+const midComponents = ref(0);
 const setMidComponents = (val) => {
 	midComponents.value = val;
 }
@@ -592,7 +592,8 @@ let playFromLeftBarAlbum = ref(null);
 							</div>
 						</div>
 					</el-container>
-					<el-container class="playlist-container" style="overflow: auto; height: 384px; display: flex; flex-direction: column">
+					<el-container class="playlist-container"
+					              style="overflow: auto; height: 384px; display: flex; flex-direction: column">
 						<div v-for="(song, index) in songs" class="playlist-item"
 						     style="display: flex; flex-direction: row">
 							<div @click="switchToSong(index, false)" style="cursor: pointer">
@@ -1698,7 +1699,7 @@ footer {
 /* 退出搜索图标 */
 .exit-search {
 	position: absolute;
-	top: 110px;
+	top: 120px;
 	right: 10px;
 	width: 30px;
 	height: 30px;
