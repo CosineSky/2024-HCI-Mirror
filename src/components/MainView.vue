@@ -1,4 +1,3 @@
-@@ -0,0 +1,126 @@
 <script setup>
 import {ref} from "vue"
 import {getSongsByPlaylist} from "@/api/song";
@@ -25,12 +24,14 @@ getSongsByPlaylist({
 				class="tab-button"
 				:class="{ 'active': currentTab === 'all' }"
 				@click="handleTabClick('all')"
-			>全部</button>
+			>全部
+			</button>
 			<button
 				class="tab-button"
 				:class="{ 'active': currentTab === 'songs' }"
 				@click="handleTabClick('songs')"
-			>音乐</button>
+			>音乐
+			</button>
 		</div>
 		
 		<div class="recommendations">
@@ -120,6 +121,7 @@ getSongsByPlaylist({
 	border-radius: 20px;
 	margin-right: 20px;
 }
+
 .active {
 	background-color: #fff;
 	color: #000;

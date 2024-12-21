@@ -1,8 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {onMounted, ref, watch, computed} from "vue"
-import {router} from "../router";
+import {computed, onMounted, ref} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -11,10 +10,10 @@ import {LOOP_MODE, NORMAL_MODE, PAUSE, PLAY, RANDOM_MODE} from "../assets/base64
 // Components
 import Header from "../components/Header";
 import Comment from "../components/Comment";
-import MainView from "../components/MainView.vue";
 import LeftSideBar from "../components/LeftSideBar";
 import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
+import MainView from "../components/MainView.vue";
 
 // APIs
 import {getSongsByPlaylist} from "../api/song";
@@ -331,7 +330,6 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 
-
 /*
     SONGS
  */
@@ -371,14 +369,14 @@ const switchSongs = (del) => {
 	currentSongId.value = songs.value[currentSongIndex.value].id;
 }
 
-const switchToSong = (index) => {
-	if (index === currentSongIndex.value) {
+const switchToSong = (index, isDiffPlaylist) => {
+	if (index === currentSongIndex.value && !isDiffPlaylist) {
 		return;
 	}
-
+	
 	currentSongIndex.value = index;
 	currentSongId.value = songs.value[index].id;
-
+	
 	if (song) {
 		controlIcons.forEach(controlIcon => {
 			controlIcon.src = PLAY;
@@ -394,11 +392,13 @@ const switchToSong = (index) => {
 }
 
 const switchToPlaylist = (playlist, songId) => {
+	console.log(playlist, songId)
+	
 	currentPlaylist.value = playlist;
 	displayingPlaylist.value = playlist;
 	currentPlaylistId.value = playlist.id;
 	theme.change(currentPlaylist.value.picPath);
-
+	
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
@@ -407,14 +407,14 @@ const switchToPlaylist = (playlist, songId) => {
 		currentSongId.value = songId;
 		for (let i = 0; i < songs.value.length; i++) {
 			if (songs.value[i].id === songId) {
-				switchToSong(i);
+				switchToSong(i, true);
 				parseLrc(songs.value[i].lyricsPath).then(res => {
 					lyrics.value = res;
 				});
 				break;
 			}
 		}
-
+		
 	}).catch(e => {
 		console.log("Error while switching playlists!");
 	});
@@ -429,8 +429,10 @@ const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
 const displayingPlaylist = ref(2);
 const receivePlaylistId = (value) => {
+	console.log(value)
 	currentPlaylist.value = value;
 	currentPlaylistId.value = value.id;
+	console.log("Current Playlist Id:", currentPlaylistId.value)
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
@@ -470,7 +472,7 @@ function receiveDataFromHeader(data) {
     2 - Comments
     3 - Search Results
  */
-const midComponents = ref(0);
+const midComponents = ref(1);
 const setMidComponents = (val) => {
 	midComponents.value = val;
 }
@@ -506,7 +508,7 @@ onMounted(() => {
 			songs.value = res.data.result;
 			displayingSongs.value = res.data.result;
 			currentSongId.value = songs.value[0].id;
-
+			
 			// TODO: currentSongIndex != currentSongId ?
 			parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
 				lyrics.value = res;
@@ -519,28 +521,31 @@ onMounted(() => {
 	});
 	
 })
+let playFromLeftBarAlbum = ref(null);
 </script>
 
 <template>
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
-
+		
 		<!-- MAIN & RIGHT CONTENT -->
 		<Header class="header" @headData="receiveDataFromHeader" allow-search></Header>
 		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
-		<left-side-bar class="left-side-bar" @setCurrentPlaylist="receiveDisplayingPlaylist"/>
+		<left-side-bar class="left-side-bar" @playFromLeftBar="(id)=>{playFromLeftBarAlbum = id }"
+		               @setCurrentPlaylist="receiveDisplayingPlaylist"/>
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
 				<el-container v-if="midComponents == 0" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<MainView/>
 				</el-container>
-				<el-container v-if="midComponents == 1" class="playlist-container"
-				              style="overflow: auto; height: 730px ;border-radius: 12px">
+				<!--height: 730px -->
+				<div v-if="midComponents == 1" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
 					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
-						@switchSongs="switchToPlaylist"/>
-				</el-container>
+					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum"/>
+				</div>
 				<el-container v-if="midComponents == 2" class="playlist-container"
-				              style="overflow: auto; height: 730px ;border-radius: 12px" >
+				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
 					           data-tooltip="退出"
 					           :class="{ 'adjusted-position': showRightContent }"
@@ -565,7 +570,7 @@ onMounted(() => {
 					<h2>{{ songs[currentSongIndex].title }}</h2>
 					<p>{{ songs[currentSongIndex].artist }}</p>
 				</div>
-
+				
 				<div class="current-playlist" style="margin-top: 20px">
 					<el-container class="playlist-container" style="height: 64px">
 						<div class="playlist-item" style="display: flex; flex-direction: row">
@@ -580,10 +585,10 @@ onMounted(() => {
 							</div>
 						</div>
 					</el-container>
-					<el-container class="playlist-container" style="overflow: auto; height: 384px">
+					<el-container class="playlist-container" style="overflow: auto; height: 384px; display: flex; flex-direction: column">
 						<div v-for="(song, index) in songs" class="playlist-item"
 						     style="display: flex; flex-direction: row">
-							<div @click="switchToSong(index)" style="cursor: pointer">
+							<div @click="switchToSong(index, false)" style="cursor: pointer">
 								<img :src="song.picPath" alt=""
 								     :class="{ 'playing': index === currentSongIndex }"
 								/>
@@ -612,7 +617,7 @@ onMounted(() => {
 				</div>
 			</div>
 		</div>
-
+		
 		
 		<!-- FOOTER -->
 		<footer>
@@ -644,7 +649,7 @@ onMounted(() => {
 						{{ songs[currentSongIndex].artist }}</p>
 				</div>
 			</div>
-
+			
 			<el-card class="bottom-controller bottom-component" style="
 						position: absolute;
 					    left: 50%;
@@ -678,29 +683,29 @@ onMounted(() => {
 			</el-card>
 			
 			<div class="right-controls">
-        <div class="feature-icon"
-             data-tooltip="分享"
-             :class="{ active: isSharing }">
-          <img src="../assets/icons/comment/share.png" alt="分享">
-        </div>
-
-        <div class="feature-icon"
-             data-tooltip="评论"
-             :class="{ active: midComponents === 2 }"
-             @click="setMidComponents(2)">
-          <img src="../assets/icons/comment/comment.png" alt="评论">
-        </div>
-
-        <div class="feature-icon"
-             data-tooltip="播放队列"
-             :class="{ active: showRightContent }"
-             @click="showRightContent = !showRightContent">
-          <img src="../assets/icons/queue.png" alt="播放队列">
-        </div>
-      </div>
+				<div class="feature-icon"
+				     data-tooltip="分享"
+				     :class="{ active: isSharing }">
+					<img src="../assets/icons/comment/share.png" alt="分享">
+				</div>
+				
+				<div class="feature-icon"
+				     data-tooltip="评论"
+				     :class="{ active: midComponents === 2 }"
+				     @click="setMidComponents(2)">
+					<img src="../assets/icons/comment/comment.png" alt="评论">
+				</div>
+				
+				<div class="feature-icon"
+				     data-tooltip="播放队列"
+				     :class="{ active: showRightContent }"
+				     @click="showRightContent = !showRightContent">
+					<img src="../assets/icons/queue.png" alt="播放队列">
+				</div>
+			</div>
 		</footer>
 	</div>
-
+	
 	
 	<!-- PLAYING PAGE -->
 	<div v-show="isPlayingPage" class="playing-page">
@@ -711,7 +716,8 @@ onMounted(() => {
 					:key="index"
 					:class="{ active: index === currentLineIndex }"
 					class="lyrics-line"
-				>{{ line.text }}</div>
+				>{{ line.text }}
+				</div>
 				<h1 v-if="lyrics.length === 0" style="
 					font-size: 24px;
 					color: #9d9d9d;
@@ -720,8 +726,8 @@ onMounted(() => {
 				">Ouch！该歌曲暂无歌词！</h1>
 			</div>
 		</div>
-
-<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
+		
+		<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
 		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
@@ -853,7 +859,7 @@ h1 {
 	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
-
+	
 	/* 原先main中的内容
 	height: 700px;
 	width: 95%;
@@ -872,8 +878,9 @@ h1 {
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
 	grid-template-columns: auto 1fr;
-	grid-template-rows: auto 1fr auto;
-	row-gap: 8px;
+	grid-template-rows: 10% 80% 10%;
+	grid-auto-rows: min-content;
+	
 	column-gap: 8px;
 	padding: 8px;
 	overflow: hidden;
@@ -889,15 +896,17 @@ h1 {
 
 left-side-bar {
 	grid-area: left-sideBar;
-
+	
 }
 
 .content {
 	grid-area: main-view;
+	
 }
 
 footer {
 	grid-area: now-playing-bar;
+	
 }
 
 /* MAIN MENU */
@@ -923,7 +932,6 @@ footer {
 	justify-content: space-between;
 	height: 75px;
 	width: 100%;
-	margin: 20px 0 0 0;
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 }
@@ -988,20 +996,26 @@ footer {
 
 /* CONTENT 包含中间和右边栏 是grid布局*/
 .content {
+	height: 100%;
 	display: grid;
 	grid-template-columns: 1fr auto;
+	grid-template-rows: 100%;
 	transition: all 0.3s ease;
 	column-gap: 8px;
+	
 }
 
 .content.full-width {
 	grid-template-columns: 100% !important;
-
+	
 }
 
 /* LEFT CONTENT */
-.main-view > {
+.main-view {
+	overflow: scroll;
+}
 
+.main-view > {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -1012,7 +1026,7 @@ footer {
 }
 
 .main-view.expanded {
-
+	
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -1121,6 +1135,7 @@ footer {
 }
 
 /* Containers Scrollbar Style */
+/*
 .playlist-container::-webkit-scrollbar {
 	height: 10px;
 	display: none;
@@ -1130,6 +1145,7 @@ footer {
 	height: 10px;
 	display: none;
 }
+*/
 
 .album-container::-webkit-scrollbar {
 	height: 10px;
@@ -1389,7 +1405,7 @@ footer {
 	}
 	
 	.main-view {
-
+	
 	}
 	
 	.swiper-slide {
@@ -1425,7 +1441,7 @@ footer {
 	}
 	
 	.main-view {
-		padding: 30px 20px 20px;
+		/*padding: 30px 20px 20px;*/
 	}
 	
 	.swiper-slide img {
@@ -1586,6 +1602,7 @@ footer {
 		transform: translateY(0);
 	}
 }
+
 /**
 .share-icon,
 .queue-icon,
@@ -1609,66 +1626,66 @@ footer {
  */
 
 .right-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: absolute;
-  right: 80px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	position: absolute;
+	right: 80px;
 }
 
 .feature-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
-  position: relative;
-  cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.1);
+	transition: all 0.2s ease;
+	position: relative;
+	cursor: pointer;
 }
 
 .feature-icon:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+	background: rgba(255, 255, 255, 0.2);
+	transform: translateY(-2px);
 }
 
 .feature-icon img {
-  width: 16px;
-  height: 16px;
-  transition: all 0.2s ease;
+	width: 16px;
+	height: 16px;
+	transition: all 0.2s ease;
 }
 
 .feature-icon:hover img {
-  filter: brightness(1.2);
+	filter: brightness(1.2);
 }
 
 .feature-icon[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: attr(data-tooltip);
+	position: absolute;
+	top: -25px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .feature-icon.active {
-  background: #1db954;
+	background: #1db954;
 }
 
 .feature-icon.active img {
-  filter: brightness(0) invert(1);
+	filter: brightness(0) invert(1);
 }
 
 .feature-icon.active:hover {
-  background: #1ed760;
+	background: #1ed760;
 }
 
 /* 退出搜索图标 */
@@ -1721,19 +1738,14 @@ footer {
 }
 
 
-
-
-
-
-
-
+/* 没必要 在app中写过了
 html, body {
 	margin: 0;
 	padding: 0;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-}
+}*/
 
 .player {
 	position: relative;
@@ -1858,8 +1870,8 @@ html, body {
 }
 
 .comment-container {
-  position: relative;
-  background: transparent;
+	position: relative;
+	background: transparent;
 }
 
 </style>
