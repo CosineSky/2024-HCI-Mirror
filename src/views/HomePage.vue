@@ -467,7 +467,14 @@ function receiveDataFromHeader(data) {
 }
 
 /*
+    HOME
+ */
+function receiveDataFromHome() {
+	setMidComponents(0);
+}
+/*
     MID COMPONENTS
+    0 - Main View
     1 - Music Albums
     2 - Comments
     3 - Search Results
@@ -528,7 +535,7 @@ let playFromLeftBarAlbum = ref(null);
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
 		
 		<!-- MAIN & RIGHT CONTENT -->
-		<Header class="header" @headData="receiveDataFromHeader" allow-search></Header>
+		<Header class="header" @headData="receiveDataFromHeader" @home="receiveDataFromHome" allow-search></Header>
 		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
 		<left-side-bar class="left-side-bar" @playFromLeftBar="(id)=>{playFromLeftBarAlbum = id }"
 		               @setCurrentPlaylist="receiveDisplayingPlaylist"/>
@@ -1691,7 +1698,7 @@ footer {
 /* 退出搜索图标 */
 .exit-search {
 	position: absolute;
-	top: 90px;
+	top: 110px;
 	right: 10px;
 	width: 30px;
 	height: 30px;

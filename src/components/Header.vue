@@ -4,7 +4,7 @@ import {ref} from "vue";
 import {searchSongByKeyword, searchPlaylistByKeyword} from "../api/search";
 
 const router = useRouter();
-const emit = defineEmits(['headData']);
+const emit = defineEmits(['headData','home']);
 
 const props = defineProps({
 	allowSearch: {
@@ -80,6 +80,10 @@ function callSearch() {
 		console.log("Failed to fetch playlists!")
 	})
 }
+
+function callHome() {
+	emit('home');
+}
 </script>
 
 <template>
@@ -105,14 +109,14 @@ function callSearch() {
 					      d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"></path>
 				</svg>
 			</router-link>
-			<router-link to="/home" class="home-btn">
+			<div @click="callHome" class="home-btn">
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
 				     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
 				     class="feather feather-home">
 					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
 					<polyline points="9 22 9 12 15 12 15 22"></polyline>
 				</svg>
-			</router-link>
+			</div>
 			<div @click="toggleIcons" class="more-btn">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
 					<path fill="currentColor"
