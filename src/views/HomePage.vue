@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref} from "vue"
+import {computed, onMounted, ref, watch} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -599,7 +599,7 @@ let playFromLeftBarAlbum = ref(null);
 				<!--height: 730px -->
 				<div v-if="midComponents == 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
+					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
 					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum"/>
 				</div>
 				<el-container v-if="midComponents == 2" class="playlist-container"

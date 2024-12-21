@@ -57,8 +57,8 @@ export const modifyPlaylist = (playlistModifyInfo) => {
     + song_id: number
  */
 export const addSongToPlaylist = (songInfo) => {
-    return axios.post(`${PLAYLIST_MODULE}/addSong`, songInfo,
-        { headers: { 'Content-Type': 'application/json' } })
+    return axios.post(`${PLAYLIST_MODULE}/addSong`, null,
+        { params: songInfo })
         .then(res => {
             return res;
         });

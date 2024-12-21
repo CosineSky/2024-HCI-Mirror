@@ -6,24 +6,31 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+
+
+/*
+    USER
+ */
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 const emit = defineEmits();
 const props = defineProps({
-  albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
-    type: Object,
-    required: true,
-  },
-  playList:{
-    type: Array,
-    required: true,
-  },
-  musicList: {//  类型 ：id ,title, artist, album,description, picPath,uploadTime
-    type: Object,
-    required: true,
-  },
-  playFromLeftBar: null,
-  currentSongId: Number,
+	albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
+		type: Object,
+		required: true,
+	},
+	playList: {
+		type: Array,
+		required: true,
+	},
+	musicList: {//  类型 ：id ,title, artist, album,description, picPath,uploadTime
+		type: Object,
+		required: true,
+	},
+	playFromLeftBar: null,
+	currentSongId: Number,
 });
 
 const edit_title = ref("");
@@ -52,48 +59,48 @@ const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundCol
 
 // 放缩时的组件处理
 const handleResize = () => {
-  const albums = document.querySelectorAll(".music-album-info");
-  const albumText = document.querySelectorAll(".album-text");
-  const albumContent = document.querySelector(".album-content");
-  // if (window.innerWidth > 0)
-  // 专辑隐藏
-  console.log(albumContent.clientWidth);
-  if (albumContent.clientWidth < 605) {
-    albums.forEach(album => {
-      album.style.visibility = "hidden";
-    });
-    albumText.forEach(album => {
-      album.style.visibility = "hidden";
-    });
-
-  } else {
-    albums.forEach(album => {
-      album.style.visibility = "visible";
-    });
-    albumText.forEach(album => {
-      album.style.visibility = "visible";
-    });
-  }
-  const albumImage = document.querySelector(".album-image");
-  const headerAlbumName = document.querySelector(".header-album-name");
-  // 歌单图片和文字缩放
-  if (albumContent.clientWidth < 420) {
-    albumImage.style.width = "120px";
-    albumImage.style.height = "120px";
-    headerAlbumName.style.fontSize = "40px";
-    headerAlbumName.style.marginBottom = "20px";
-  } else {
-    albumImage.style.width = "160px";
-    albumImage.style.height = "160px";
-    headerAlbumName.style.fontSize = "80px";
-    headerAlbumName.style.marginBottom = "35px";
-  }
-
-  //🙏 权宜之计
-  const fixedTipArea = document.querySelector(".fixed-tips");
-  const fixedPlayArea = document.querySelector(".fixed-play-area");
-  fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
-  fixedTipArea.style.width = (albumContent.clientWidth - 16) + "px";
+	const albums = document.querySelectorAll(".music-album-info");
+	const albumText = document.querySelectorAll(".album-text");
+	const albumContent = document.querySelector(".album-content");
+	// if (window.innerWidth > 0)
+	// 专辑隐藏
+	console.log(albumContent.clientWidth);
+	if (albumContent.clientWidth < 605) {
+		albums.forEach(album => {
+			album.style.visibility = "hidden";
+		});
+		albumText.forEach(album => {
+			album.style.visibility = "hidden";
+		});
+		
+	} else {
+		albums.forEach(album => {
+			album.style.visibility = "visible";
+		});
+		albumText.forEach(album => {
+			album.style.visibility = "visible";
+		});
+	}
+	const albumImage = document.querySelector(".album-image");
+	const headerAlbumName = document.querySelector(".header-album-name");
+	// 歌单图片和文字缩放
+	if (albumContent.clientWidth < 420) {
+		albumImage.style.width = "120px";
+		albumImage.style.height = "120px";
+		headerAlbumName.style.fontSize = "40px";
+		headerAlbumName.style.marginBottom = "20px";
+	} else {
+		albumImage.style.width = "160px";
+		albumImage.style.height = "160px";
+		headerAlbumName.style.fontSize = "80px";
+		headerAlbumName.style.marginBottom = "35px";
+	}
+	
+	//🙏 权宜之计
+	const fixedTipArea = document.querySelector(".fixed-tips");
+	const fixedPlayArea = document.querySelector(".fixed-play-area");
+	fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
+	fixedTipArea.style.width = (albumContent.clientWidth - 16) + "px";
 }
 
 const debounce = (fn, delay) => {
@@ -201,18 +208,21 @@ const playFromId = (musicId) => {
 	musicPauseIndex = null;
 }
 
-const addToFavorite = (musicId,albumId) => {
-  //TODO:调用接口添加歌曲到指定歌单，并设置elmessage提示信息
-
-  ElMessage({
-        message: "添加至: " + props.albumInfo.title,
-        grouping: true,
-        type: 'info',
-        offset: 16,
-        customClass: "reco-message",
-        duration: 4000,
-      }
-  )
+const addToFavorite = (musicId, albumId) => {
+	addSongToPlaylist({
+		user_id: currentUserId.value,
+		playlist_id: albumId,
+		song_id: musicId,
+	}).then(() => {
+		ElMessage({
+			message: "添加至: " + props.albumInfo.title,
+			grouping: true,
+			type: 'info',
+			offset: 16,
+			customClass: "reco-message",
+			duration: 4000,
+		})
+	})
 }
 const removeMusicFromAlbum = (albumId, songId) => {
 	removeSongFromPlaylist({
@@ -241,7 +251,7 @@ const confirmEdit = (albumId) => {
 		description: edit_description.value,
 		picPath: "",
 	}).then(() => {
-
+	
 	})
 }
 
@@ -385,10 +395,13 @@ const addRecommendMusic = (musicId) => {
 							</div>
 						</div>
 						<div class="edit-desc-input-name">
-							<input v-model="edit_title" data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1" placeholder="添加名称">
+							<input v-model="edit_title" data-testid="playlist-edit-details-name-input"
+							       id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1"
+							       placeholder="添加名称">
 						</div>
 						<div class="edit-desc-input-desc">
-                            <textarea v-model="edit_description" data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1" placeholder="添加简介"/>
+							<textarea v-model="edit_description" data-testid="playlist-edit-details-description-input"
+							          class="edit-desc-input-desc-1" placeholder="添加简介"/>
 						</div>
 						<div class="edit-desc-button">
 							<button @click="confirmEdit(albumInfo.id)" data-testid="playlist-edit-details-save-button"
@@ -421,104 +434,120 @@ const addRecommendMusic = (musicId) => {
 				     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }"> <!--@click事件写在script中的函数里 无法及时触发:style中的样式!!!-->
-
-          <div
-              :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
-            {{
-              musicList.indexOf(music) + 1
-            }}
-          </div>
-          <play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
-                       v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
-                       :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
-
-          <pause-button @click="pauseMusic(music.id)"
-                        style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
-                        v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
-          <img width="17" height="17" alt=""
-               style="position: absolute;left: 24px;"
-               v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
-               src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
-
-          <div class="music-detailed-info">
-            <img class="music-image"
-                 :src="music.picPath"
-                 alt="歌曲图片"/>
-            <div class="music-name-author" style="padding-left: 5px;">
-              <p @click="enterMusicDescription(music.id)" class="music-name"
-                 :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
-                 :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
-              >{{ music.title }}</p>
-
-              <p @click="enterAuthorDescription(music.artist)" class="music-author"
-                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-                {{ music.artist }}</p>
-            </div>
-          </div>
-
-          <div class="music-album-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-            {{ music.album }}
-          </div>
-          <div class="music-right-info">
-            <el-popover
-                :ref="getPopoverIndex"
-                class="music-dropdown-options"
-                popper-class="my-popover"
-                :width="400"
-                trigger="click"
-                :hide-after=0
-
-                >
-              <template #reference>
-                <check-mark class="check-mark"
-                            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
-              </template>
-
-              <ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
-                <div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">选择歌单收藏</div>
-                <hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);" >
-
-                <li class="album-to-add" @click="addToFavorite(music.id,album.id)" v-for="album in playList">
-                  <div style="height:40px;display: flex;align-items: center;font-size: 20px;font-weight:400">
-                    <img :src="album.picPath" style="height: 32px;width:32px;border-radius: 4px" alt=""/>
-                    <div style="margin-left: 30px">{{album.title}} </div>
-                  </div>
-
-                </li>
-              </ul>
-            </el-popover>
-<!--            这里原本想写歌曲时长，但是没有 只能留空-->
-            <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{}}
-            </div>
-            <el-popover
-                :ref="getPopoverIndex"
-                class="music-dropdown-options"
-                popper-class="my-popover"
-                :width="400"
-                trigger="click"
-                :hide-after=0
-            >
-              <template #reference>
-                <dots class="music-more-info"/>
-              </template>
-              <ul @click="closePopover">
-                <li @click="removeMusicFromAlbum(music.id)">删除歌曲</li>
-              </ul>
-            </el-popover>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!--TODO:推荐歌曲的细节处理-->
-      <div class="other-info">
-        <div style="margin-left:20px;margin-bottom:20px;">
-          <div style="display: flex;text-align: left;justify-content: center;flex-direction: column">
-            <span style="color:white;font-size: 30px;font-weight: bolder">推荐</span>
-            <span style="color:grey;font-size: 20px">根据此歌单包含的内容推荐
+					
+					<div
+						:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
+						{{
+							musicList.indexOf(music) + 1
+						}}
+					</div>
+					<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
+					             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
+					             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
+					
+					<pause-button @click="pauseMusic(music.id)"
+					              style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
+					              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
+					<img width="17" height="17" alt=""
+					     style="position: absolute;left: 24px;"
+					     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
+					     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
+					
+					<div class="music-detailed-info">
+						<img class="music-image"
+						     :src="music.picPath"
+						     alt="歌曲图片"/>
+						<div class="music-name-author" style="padding-left: 5px;">
+							<p @click="enterMusicDescription(music.id)" class="music-name"
+							   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
+							   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
+							>{{ music.title }}</p>
+							
+							<p @click="enterAuthorDescription(music.artist)" class="music-author"
+							   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+								{{ music.artist }}</p>
+						</div>
+					</div>
+					
+					<div class="music-album-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+						{{ music.album }}
+					</div>
+					<div class="music-right-info">
+						<el-popover
+							:ref="getPopoverIndex"
+							class="music-dropdown-options"
+							popper-class="my-popover"
+							:width="400"
+							trigger="click"
+							:hide-after=0
+						
+						>
+							<template #reference>
+								<check-mark class="check-mark"
+								            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
+							</template>
+							
+							<ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
+								<div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">
+									选择歌单收藏
+								</div>
+								<hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
+								
+								<li class="album-to-add" @click="addToFavorite(music.id,album.id)"
+								    v-for="album in playList">
+									<div style="
+										height:40px;
+										display: flex;
+										align-items: center;
+										justify-content: space-between;
+										font-size: 20px;
+										font-weight:400"
+									>
+										<div style="display: flex; flex-direction: row">
+											<img :src="album.picPath" style="height: 40px; width:40px; border-radius: 4px" alt=""/>
+											<div style="
+												margin-left: 10px;
+												font-size: 18px;
+											">{{ album.title }}</div>
+										</div>
+										<div style="font-size: 14px; color: #a4a4a4">{{ album.songNum }}首</div>
+									</div>
+								
+								</li>
+							</ul>
+						</el-popover>
+						<!--            这里原本想写歌曲时长，但是没有 只能留空-->
+						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
+						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{}}
+						</div>
+						<el-popover
+							:ref="getPopoverIndex"
+							class="music-dropdown-options"
+							popper-class="my-popover"
+							:width="400"
+							trigger="click"
+							:hide-after=0
+						>
+							<template #reference>
+								<dots class="music-more-info"/>
+							</template>
+							<ul @click="closePopover">
+								<li @click="removeMusicFromAlbum(albumInfo.id, music.id)">删除歌曲</li>
+							</ul>
+						</el-popover>
+					
+					</div>
+				
+				</div>
+			
+			</div>
+			
+			<!--TODO:推荐歌曲的细节处理-->
+			<div class="other-info">
+				<div style="margin-left:20px;margin-bottom:20px;">
+					<div style="display: flex;text-align: left;justify-content: center;flex-direction: column">
+						<span style="color:white;font-size: 30px;font-weight: bolder">推荐</span>
+						<span style="color:grey;font-size: 20px">根据此歌单包含的内容推荐
             </span>
 					</div>
 				</div>
@@ -535,57 +564,58 @@ const addRecommendMusic = (musicId) => {
 					     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
-
-
-            <div
-                :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
-              {{
-                recMusicList.indexOf(music) + 1
-              }}
-            </div>
-            <play-button @click="playFromId(music.id)" style="position: absolute;left: 33px;cursor: pointer"
-                         v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
-                         :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
-            <pause-button @click="pauseMusic(music.id)"
-                          style="color:#1ed660 ;position: absolute;left: 37px;cursor: pointer"
-                          v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
-            <img width="17" height="17" alt=""
-                 style="position: absolute;left: 42px;"
-                 v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
-                 src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
-
-            <div class="music-detailed-info">
-              <img class="music-image"
-                   :src="music.picPath"
-                   alt="歌曲图片"/>
-              <div class="music-name-author" style="padding-left: 5px;">
-                <p @click="enterMusicDescription(music.id)" class="music-name"
-                   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
-                   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
-                >{{ music.title }}</p>
-
-                <p @click="enterAuthorDescription(music.artist)" class="music-author"
-                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-                  {{ music.artist }}</p>
-              </div>
-            </div>
-
-            <div class="music-album-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-              {{ music.album }}
-            </div>
-            <div class="music-right-info">
-              <button class="reco-add-button" @click="addRecommendMusic(music.id)">添加</button>
-
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-
-  </div>
+						
+						
+						<div
+							:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
+							{{
+								recMusicList.indexOf(music) + 1
+							}}
+						</div>
+						<play-button @click="playFromId(music.id)" style="position: absolute;left: 33px;cursor: pointer"
+						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
+						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
+						<pause-button @click="pauseMusic(music.id)"
+						              style="color:#1ed660 ;position: absolute;left: 37px;cursor: pointer"
+						              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
+						<img width="17" height="17" alt=""
+						     style="position: absolute;left: 42px;"
+						     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
+						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
+						
+						<div class="music-detailed-info">
+							<img class="music-image"
+							     :src="music.picPath"
+							     alt="歌曲图片"/>
+							<div class="music-name-author" style="padding-left: 5px;">
+								<p @click="enterMusicDescription(music.id)" class="music-name"
+								   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
+								   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
+								>{{ music.title }}</p>
+								
+								<p @click="enterAuthorDescription(music.artist)" class="music-author"
+								   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+									{{ music.artist }}</p>
+							</div>
+						</div>
+						
+						<div class="music-album-info"
+						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+							{{ music.album }}
+						</div>
+						<div class="music-right-info">
+							<button class="reco-add-button" @click="addRecommendMusic(music.id)">添加</button>
+						
+						</div>
+					
+					</div>
+				
+				</div>
+			</div>
+		
+		</div>
+	
+	</div>
 </template>
 
 <style scoped>
@@ -857,8 +887,9 @@ p {
 .check-mark:focus {
 	outline: none;
 }
-.album-to-add{
-  padding: 8px;
+
+.album-to-add {
+	padding: 8px;
 }
 
 .music-more-info {
