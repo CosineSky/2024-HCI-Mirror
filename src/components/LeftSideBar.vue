@@ -28,35 +28,35 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 function toggleSideBar() {
-	isSideBarOpen = !isSideBarOpen;
-	sideBarWidth.value = isSideBarOpen ? criticalWidth : minWidth;
+  isSideBarOpen = !isSideBarOpen;
+  sideBarWidth.value = isSideBarOpen ? criticalWidth : minWidth;
 }
 
 function startResizing(event) {
-	event.preventDefault();
-	const initialWidth = sideBarWidth.value;
-	const initialMouseX = event.clientX;
-	
-	const onMouseMove = (moveEvent) => {
-		sideBarWidth.value = initialWidth + (moveEvent.clientX - initialMouseX);
-		// 确保宽度不小于最小值
-		if (sideBarWidth.value <= criticalWidth) {
-			isSideBarOpen = false;
-			sideBarWidth.value = minWidth;
-		}
-		// 确保宽度不大于最大值
-		else if (sideBarWidth.value >= maximumWidth) {
-			sideBarWidth.value = maximumWidth;
-		} else
-			isSideBarOpen = true;
-	};
-	
-	const onMouseUp = () => {
-		window.removeEventListener('mousemove', onMouseMove);
-		window.removeEventListener('mouseup', onMouseUp);
-	};
-	window.addEventListener('mousemove', onMouseMove);
-	window.addEventListener('mouseup', onMouseUp);
+  event.preventDefault();
+  const initialWidth = sideBarWidth.value;
+  const initialMouseX = event.clientX;
+
+  const onMouseMove = (moveEvent) => {
+    sideBarWidth.value = initialWidth + (moveEvent.clientX - initialMouseX);
+    // 确保宽度不小于最小值
+    if (sideBarWidth.value <= criticalWidth) {
+      isSideBarOpen = false;
+      sideBarWidth.value = minWidth;
+    }
+    // 确保宽度不大于最大值
+    else if (sideBarWidth.value >= maximumWidth) {
+      sideBarWidth.value = maximumWidth;
+    } else
+      isSideBarOpen = true;
+  };
+
+  const onMouseUp = () => {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  };
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
 }
 
 function addAlbum() {
@@ -91,6 +91,12 @@ onMounted(() => {
 	})
 })
 
+const popover1 = ref(null)
+
+const closePopover = () => {
+  popover1.value.hide();
+}
+
 defineProps({
 	callParentFunction: Function
 })
@@ -107,15 +113,17 @@ defineProps({
 			</div>
 			
 			<el-popover v-if="isSideBarOpen" class="dropdown-options"
+                  ref="popover1"
 			            :width="200"
 			            trigger="click"
-			            :hide-after=0>
+			            :hide-after=0
+                  popper-class="left-popover">
 				<template #reference>
 					<div class="add-album">
 						<plus-icon class="plus-icon"/>
 					</div>
 				</template>
-				<ul>
+				<ul @click="closePopover">
 					<li @click="addAlbum">添加歌单</li>
 				</ul>
 			</el-popover>
@@ -133,22 +141,24 @@ defineProps({
 		<div class="musicAlbums"
 		     @mouseenter="()=>{hoverOnAlbum=true}"
 		     @mouseleave="()=>{hoverOnAlbum=false}"
-		     :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}">
-			
+		     :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}"
+          >
+
 			
 			<div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
 			     :key="album.id"
 			     @mouseenter="()=>{albumHoveredIndex = album.id}"
 			     @mouseleave="()=>{albumHoveredIndex = null}"
 			     :style="{backgroundColor: albumHoveredIndex === album.id ? '#1F1F1F' : '#171717' }"
-			     class="musicAlbum-item">
+           @click="emit('setCurrentPlaylist', album);"
+           class="musicAlbum-item">
 				<img
 					:src="album.picPath"
 					alt="playlist"
 					class="musicAlbum-image"
 					:style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"
 				/>
-				<play-button @click="emit('setCurrentPlaylist', album);" v-if="albumHoveredIndex === album.id"
+				<play-button @click="" v-if="albumHoveredIndex === album.id"
 				             class="play-button"/>
 				
 				<div class="musicAlbum-description">
@@ -178,12 +188,13 @@ ul {
 	list-style-type: none;
 	margin: 0;
 	border-radius: 10px;
-	padding: 12px 8px;
+	padding: 5px;
 }
 
 li {
 	color: white;
 	padding: 10px 12px;
+  border-radius: 10px;
 }
 
 li:hover {

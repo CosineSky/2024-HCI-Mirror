@@ -1,4 +1,4 @@
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import ColorThief from "colorthief";
 
 
@@ -31,9 +31,8 @@ function getDominantColor(imageSrc, callback, alpha = 0.2) {
     };
 }
 
-function updateBackground (event) {
-    const imageSrc = event.target.src;
-    getDominantColor(imageSrc, (color) => {
+function updateBackground (path) {
+    getDominantColor(path, (color) => {
         backgroundColor.value = color;
     });
 }

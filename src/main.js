@@ -4,7 +4,8 @@ import App from './App.vue'
 import axios from 'axios'
 import ElementPlus from 'element-plus'
 import pinia from './store/store'
-
+import 'element-plus/dist/index.css'
+import '@/style/ElStyle.css'
 // const { app, BrowserWindow } = require('electron');
 // // const path = require('path');
 //
