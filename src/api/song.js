@@ -27,3 +27,14 @@ export const removeSongFromPlaylist = (removeSongInfo) => {
             return res;
         });
 }
+
+/*
+    // TODO - newly added
+    + episode_id: number
+ */
+export const getSongsByEpisode = (episodeInfo) => {
+    return axios.get(`${SONG_MODULE}/fetchByEpisode`, { params: episodeInfo })
+        .then(res => {
+            return res;
+        });
+}

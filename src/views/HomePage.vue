@@ -14,9 +14,10 @@ import LeftSideBar from "../components/LeftSideBar";
 import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
 import MainView from "../components/MainView.vue";
+import EpisodeView from "@/components/EpisodeView.vue";
 
 // APIs
-import {getSongsByPlaylist} from "../api/song";
+import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
 import {getPlaylistsByUser} from "../api/playlist";
 
 // Others
@@ -420,7 +421,34 @@ const switchToPlaylist = (playlist, songId) => {
 	});
 }
 
+const switchToEpisode = (episode, songId) => {
+  console.log(episode, songId)
 
+  currentEpisode.value = episode;
+  displayingEpisode.value = episode;
+  currentEpisodeId.value = episode.id;
+  theme.change(currentEpisode.value.picPath);
+
+  getSongsByEpisode({
+    episode_id: currentEpisodeId.value,
+  }).then((res) => {
+    songs.value = res.data.result;
+    displayingSongs.value = res.data.result;
+    currentSongId.value = songId;
+    for (let i = 0; i < songs.value.length; i++) {
+      if (songs.value[i].id === songId) {
+        switchToSong(i, true);
+        parseLrc(songs.value[i].lyricsPath).then(res => {
+          lyrics.value = res;
+        });
+        break;
+      }
+    }
+
+  }).catch(e => {
+    console.log("Error while switching episodes!");
+  });
+}
 /*
     PLAYLISTS
  */
@@ -453,7 +481,24 @@ const receiveDisplayingPlaylist = (value) => {
 	});
 };
 
-
+/*
+    EPISODES
+ */
+const episodes = ref([]);
+const currentEpisode = ref(2);
+const currentEpisodeId = ref(2);
+const displayingEpisode = ref(2);
+const receiveDisplayingEpisode = (value) => {
+  setMidComponents(4);
+  displayingEpisode.value = value;
+  getSongsByEpisode({
+    episode_id: value.id,
+  }).then((res) => {
+    displayingSongs.value = res.data.result;
+  }).catch(e => {
+    console.log("Failed to get songs!");
+  });
+};
 /*
     SEARCH
  */
@@ -478,6 +523,7 @@ function receiveDataFromHome() {
     1 - Music Albums
     2 - Comments
     3 - Search Results
+    4 - Episodes
  */
 const midComponents = ref(1);
 const setMidComponents = (val) => {
@@ -555,6 +601,7 @@ let playFromLeftBarAlbum = ref(null);
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
 					           data-tooltip="退出"
+
 					           :class="{ 'adjusted-position': showRightContent }"
 					           @click="setMidComponents(0)"></el-button>
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
@@ -567,6 +614,11 @@ let playFromLeftBarAlbum = ref(null);
 					           @click="setMidComponents(0)"></el-button>
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
 				</el-container>
+        <div v-if="midComponents == 4" class="playlist-container"
+             style="overflow: scroll; border-radius: 12px">
+          <EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
+                       @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
+        </div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
