@@ -854,6 +854,10 @@ let playFromLeftBarAlbum = ref(null);
 					</div>
 				</div>
 			</div>
+			<div class="volumn-control-playing" style="display: flex; flex-direction: row; align-items: center">
+				<h1 style="margin: 0">🔈</h1>
+				<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
 					<span v-if="isLyricsDisplaying" style="text-decoration: underline">A</span>
@@ -1879,6 +1883,12 @@ html, body {
 .time-info {
 	margin-top: 10px;
 	font-size: 1rem;
+}
+
+.volumn-control-playing {
+	position: absolute;
+	bottom: 20px;
+	right: 200px;
 }
 
 .corner-buttons {
