@@ -350,7 +350,6 @@ const addRecommendMusic = (musicId) => {
 						</button>
 					</div>
 					<div class="edit-desc-text">
-						<!--              <input accept="image/.jpg, image/.jpeg, image/.png" type="file" data-testid="image-file-picker" class="wcftliF4QjZKB1CYgEON">-->
 						<div class="edit-desc-img">
 							<div class="edit-desc-img-1" draggable="false">
 								<div class="edit-desc-img-1-1 edit-desc-img-1">

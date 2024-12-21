@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref} from "vue"
+import {computed, onMounted, ref, watch} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -336,6 +336,10 @@ const currentUserId = ref(userToken.value.id);
  */
 // Playing Status
 const songs = ref([]);
+const volumn = ref(1);
+watch(volumn, (newValue) => {
+	song.volume = newValue;
+});
 const displayingSongs = ref([]);
 const isPaused = ref(false);
 const duration = ref(0);
@@ -422,32 +426,32 @@ const switchToPlaylist = (playlist, songId) => {
 }
 
 const switchToEpisode = (episode, songId) => {
-  console.log(episode, songId)
-
-  currentEpisode.value = episode;
-  displayingEpisode.value = episode;
-  currentEpisodeId.value = episode.id;
-  theme.change(currentEpisode.value.picPath);
-
-  getSongsByEpisode({
-    episode_id: currentEpisodeId.value,
-  }).then((res) => {
-    songs.value = res.data.result;
-    displayingSongs.value = res.data.result;
-    currentSongId.value = songId;
-    for (let i = 0; i < songs.value.length; i++) {
-      if (songs.value[i].id === songId) {
-        switchToSong(i, true);
-        parseLrc(songs.value[i].lyricsPath).then(res => {
-          lyrics.value = res;
-        });
-        break;
-      }
-    }
-
-  }).catch(e => {
-    console.log("Error while switching episodes!");
-  });
+	console.log(episode, songId)
+	
+	currentEpisode.value = episode;
+	displayingEpisode.value = episode;
+	currentEpisodeId.value = episode.id;
+	theme.change(currentEpisode.value.picPath);
+	
+	getSongsByEpisode({
+		episode_id: currentEpisodeId.value,
+	}).then((res) => {
+		songs.value = res.data.result;
+		displayingSongs.value = res.data.result;
+		currentSongId.value = songId;
+		for (let i = 0; i < songs.value.length; i++) {
+			if (songs.value[i].id === songId) {
+				switchToSong(i, true);
+				parseLrc(songs.value[i].lyricsPath).then(res => {
+					lyrics.value = res;
+				});
+				break;
+			}
+		}
+		
+	}).catch(e => {
+		console.log("Error while switching episodes!");
+	});
 }
 /*
     PLAYLISTS
@@ -489,15 +493,15 @@ const currentEpisode = ref(2);
 const currentEpisodeId = ref(2);
 const displayingEpisode = ref(2);
 const receiveDisplayingEpisode = (value) => {
-  setMidComponents(4);
-  displayingEpisode.value = value;
-  getSongsByEpisode({
-    episode_id: value.id,
-  }).then((res) => {
-    displayingSongs.value = res.data.result;
-  }).catch(e => {
-    console.log("Failed to get songs!");
-  });
+	setMidComponents(4);
+	displayingEpisode.value = value;
+	getSongsByEpisode({
+		episode_id: value.id,
+	}).then((res) => {
+		displayingSongs.value = res.data.result;
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
 };
 /*
     SEARCH
@@ -517,6 +521,7 @@ function receiveDataFromHeader(data) {
 function receiveDataFromHome() {
 	setMidComponents(0);
 }
+
 /*
     MID COMPONENTS
     0 - Main View
@@ -601,7 +606,7 @@ let playFromLeftBarAlbum = ref(null);
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
 					           data-tooltip="退出"
-
+					           
 					           :class="{ 'adjusted-position': showRightContent }"
 					           @click="setMidComponents(0)"></el-button>
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
@@ -614,11 +619,11 @@ let playFromLeftBarAlbum = ref(null);
 					           @click="setMidComponents(0)"></el-button>
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
 				</el-container>
-        <div v-if="midComponents == 4" class="playlist-container"
-             style="overflow: scroll; border-radius: 12px">
-          <EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
-                       @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
-        </div>
+				<div v-if="midComponents == 4" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
+					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
+					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
+				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
@@ -742,7 +747,12 @@ let playFromLeftBarAlbum = ref(null);
 				</div>
 			</el-card>
 			
+			
 			<div class="right-controls">
+				<div class="volumn-control" style="display: flex; flex-direction: row; align-items: center">
+					<h1 style="margin: 0">🔈</h1>
+					<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+				</div>
 				<div class="feature-icon"
 				     data-tooltip="分享"
 				     :class="{ active: isSharing }">
@@ -787,7 +797,6 @@ let playFromLeftBarAlbum = ref(null);
 			</div>
 		</div>
 		
-		<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
 		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
@@ -938,7 +947,7 @@ h1 {
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
 	grid-template-columns: auto 1fr;
-	grid-template-rows: 10% 80% 10%;
+	grid-template-rows: 10% 81% 9%;
 	grid-auto-rows: min-content;
 	
 	column-gap: 8px;
@@ -1934,4 +1943,46 @@ html, body {
 	background: transparent;
 }
 
+/* 设置整个页面的输入范围滑条样式 */
+#volumeControl {
+	-webkit-appearance: none;  /* 去掉默认样式 */
+	appearance: none;
+	width: 120px;              /* 设置宽度 */
+	height: 10px;              /* 设置高度 */
+	background: #ddd;          /* 设置默认背景颜色 */
+	border-radius: 5px;        /* 设置圆角 */
+	outline: none;             /* 去除焦点时的轮廓 */
+	transition: background 0.3s; /* 背景色平滑过渡 */
+}
+
+/* 设置滑条（轨道）的样式 */
+#volumeControl::-webkit-slider-runnable-track {
+	height: 10px;  /* 设置轨道高度 */
+	border-radius: 5px;  /* 圆角 */
+	background: #1ed760;   /* 设置轨道颜色为绿色 */
+}
+
+/* 设置滑块的样式 */
+#volumeControl::-webkit-slider-thumb {
+	-webkit-appearance: none;  /* 去掉默认样式 */
+	appearance: none;
+	width: 20px;   /* 设置滑块宽度 */
+	height: 20px;  /* 设置滑块高度 */
+	margin-top: -5px;
+	border-radius: 50%;  /* 圆形滑块 */
+	background: #fff;    /* 设置滑块背景颜色为白色 */
+	border: 2px solid green;  /* 设置滑块边框颜色为绿色 */
+	cursor: pointer;  /* 设置鼠标悬停时的指针样式 */
+}
+
+/* 鼠标悬浮时改变轨道背景颜色 */
+#volumeControl:hover {
+	background: #ccc;  /* 改变背景颜色 */
+}
+
+/* 设置滑块被点击时的样式 */
+#volumeControl:active::-webkit-slider-thumb {
+	background: #8bc34a;  /* 点击时滑块的背景颜色 */
+	border-color: #66bb6a;  /* 点击时滑块边框颜色 */
+}
 </style>
