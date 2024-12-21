@@ -6,6 +6,10 @@ import ElementPlus from 'element-plus'
 import pinia from './store/store'
 import 'element-plus/dist/index.css'
 import '@/style/ElStyle.css'
+
+import 'tippy.js/dist/tippy.css';
+import VueTippy from 'vue-tippy'
+
 // const { app, BrowserWindow } = require('electron');
 // // const path = require('path');
 //
@@ -48,4 +52,20 @@ axios.defaults.baseURL = ("http://localhost:8081")
 // axios.defaults.baseURL = ("http://172.29.4.13:8081")
 axios.defaults.timeout = 30000;
 
-createApp(App).use(ElementPlus).use(router).use(pinia).mount('#app')
+createApp(App)
+    .use(ElementPlus).use(
+    VueTippy,
+    // optional
+    {
+        directive: 'tippy', // => v-tippy
+        componentSingleton: 'tippy-singleton', // => <tippy-singleton/>,
+        defaultProps: {
+            placement: 'top',
+            allowHTML: true,
+            arrow: false,
+        }, // => Global default options * see all props
+    }
+)
+    .use(router)
+    .use(pinia)
+    .mount('#app')

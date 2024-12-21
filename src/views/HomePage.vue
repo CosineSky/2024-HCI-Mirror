@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref} from "vue"
+import {computed, onMounted, ref, watch} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -353,6 +353,7 @@ const togglePlayingPage = () => {
 	isPlayingPage.value = !isPlayingPage.value;
 	registerDOMs();
 }
+
 const switchSongs = (del) => {
 	console.log(playingMode.value, currentSongIndex.value, songs.value.length)
 	switch (playingMode.value) {
@@ -515,13 +516,10 @@ function receiveDataFromHeader(data) {
 	setMidComponents(3);
 }
 
-/*
-    HOME
- */
+/*HOME*/
 function receiveDataFromHome() {
 	setMidComponents(0);
 }
-
 /*
     MID COMPONENTS
     0 - Main View
@@ -600,7 +598,7 @@ let playFromLeftBarAlbum = ref(null);
 				<div v-if="midComponents == 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
 					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
-					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum"/>
+					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum" :play-list="playlists"/>
 				</div>
 				<el-container v-if="midComponents == 2" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
@@ -952,7 +950,7 @@ h1 {
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
 	grid-template-columns: auto 1fr;
-	grid-template-rows: 10% 81% 9%;
+	grid-template-rows: 10% 80% 10%;
 	grid-auto-rows: min-content;
 	
 	column-gap: 8px;

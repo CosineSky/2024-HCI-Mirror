@@ -24,9 +24,11 @@
     "element-plus": "^2.8.2",
     "pinia": "^2.2.2",
     "swiper": "^11.1.14",
+    "tippy.js": "^6.3.7",
     "uuid": "^11.0.3",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue-tippy": "^6.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

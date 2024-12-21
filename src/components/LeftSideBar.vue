@@ -8,8 +8,10 @@ import playButton from "../icon/playButton.vue";
 import {createPlaylist, getPlaylistsByUser} from "../api/playlist";
 import {ElPopover} from "element-plus";
 
-const emit = defineEmits();
 
+
+
+const emit = defineEmits();
 const musicAlbums = ref([]);
 
 let albumHoveredIndex = ref(null);
@@ -108,17 +110,22 @@ const closePopover = () => {
 	popover1.value.hide();
 }
 
+
 defineProps({
 	callParentFunction: Function
 })
+
+
+
+
 </script>
 
 <template>
-	<nav class="main-menu resizable-box" :style="{ width: sideBarWidth + 'px'}">
+	<nav class="main-menu resizable-box"  :style="{ width: sideBarWidth + 'px'}">
 		<div class="top-control">
 			<div class="toggle-button" @click="toggleSideBar">
-				<music-album-opened v-if="isSideBarOpen"/>
-				<music-album-closed v-if="!isSideBarOpen"/>
+				<music-album-opened v-tippy="{ content: '打开音乐库' }"   v-if="isSideBarOpen"/>
+				<music-album-closed v-tippy="{ content: '折叠音乐库' }" v-if="!isSideBarOpen"/>
 				<p style="margin-left: 15px;font:normal small-caps bold 20px Arial, sans-serif ;" v-if="isSideBarOpen">
 					音乐库</p>
 			</div>
@@ -131,7 +138,7 @@ defineProps({
 			            popper-class="left-popover">
 				<template #reference>
 					<div class="add-album">
-						<plus-icon class="plus-icon"/>
+						<plus-icon v-tippy="{ content: '创建新歌单' }" class="plus-icon"/>
 					</div>
 				</template>
 				<ul @click="closePopover">
@@ -142,7 +149,7 @@ defineProps({
 		</div>
 		<div class="search-container">
 			<div class="search-album" v-if="isSideBarOpen" @click="toggleSearchBar">
-				<search-icon class="search-icon"/>
+				<search-icon v-tippy="{ content: '搜索歌单' }" class="search-icon"/>
 			</div>
 			<input type="text" class="search-input" placeholder="输入搜索歌单" @keydown.enter="searchAlbum"
 			       @blur="blurSearchBar"/>
@@ -169,7 +176,7 @@ defineProps({
 					class="musicAlbum-image"
 					:style="{opacity:albumHoveredIndex === album.id ? 0.4 :1}"
 				/>
-				<play-button @click="" v-if="albumHoveredIndex === album.id"
+				<play-button v-tippy="{ content: '从头播放音乐' }"  @click="" v-if="albumHoveredIndex === album.id"
 				             class="play-button"/>
 				
 				<div class="musicAlbum-description">

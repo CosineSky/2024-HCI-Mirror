@@ -7,6 +7,8 @@ import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import tippy from 'tippy.js';
+
 
 const emit = defineEmits();
 const props = defineProps({
@@ -176,7 +178,10 @@ const closePopover = (e) => {
 		item.hide();
 	})
 }
-
+// 鼠标悬停提示
+tippy('#myButton', {
+  content: "I'm a Tippy tooltip!",
+});
 
 //TODO:
 const enterPersonalSpace = () => {
@@ -304,7 +309,7 @@ const addRecommendMusic = (musicId) => {
 					:ref="getPopoverIndex"
 					:hide-after=0>
 					<template #reference>
-						<dots class="more-info"/>
+						<dots v-tippy="'歌单详情'" class="more-info"/>
 					</template>
 					<ul @click="closePopover">
 						<li @click="()=>{editAlbumDescription(albumInfo.id)}">编辑歌单详情</li>
@@ -330,7 +335,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:55px">时间</p>
+				<p style="margin-left: auto; margin-right:20px">详情</p> <!--时间变为详细信息-->
 			</div>
 			<div class="edit-desc" @blur="quitEdit">
 				<div data-testid="playlist-edit-details-modal" class="main-edit-desc">
@@ -470,7 +475,7 @@ const addRecommendMusic = (musicId) => {
 
                 >
               <template #reference>
-                <check-mark class="check-mark"
+                <check-mark class="check-mark" v-tippy="'加入歌单'"
                             :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
               </template>
 
@@ -500,7 +505,7 @@ const addRecommendMusic = (musicId) => {
                 :hide-after=0
             >
               <template #reference>
-                <dots class="music-more-info"/>
+                <dots v-tippy="'歌曲详情'" class="music-more-info"/>
               </template>
               <ul @click="closePopover">
                 <li @click="removeMusicFromAlbum(music.id)">删除歌曲</li>
