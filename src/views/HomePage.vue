@@ -1173,6 +1173,7 @@ footer {
 	border-radius: 12px;
 	padding: 10px 20px 20px;
 	color: #e5e5e5;
+  overflow: scroll;
 }
 
 /* SONGS */

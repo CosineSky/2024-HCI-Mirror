@@ -318,7 +318,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:55px">时间</p>
+				<p style="margin-left: auto; margin-right:20px">详情</p> <!--时间变为详细信息-->
 			</div>
 			<div class="edit-desc" @blur="quitEdit">
 				<div data-testid="playlist-edit-details-modal" class="main-edit-desc">
@@ -395,7 +395,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:75px">时间</p>
+				<p style="margin-left: auto; margin-right:20px">详情</p><!--时间变为详细信息-->
 			</div>
 
 			<div class="musicList">
@@ -476,10 +476,9 @@ const addRecommendMusic = (musicId) => {
                 </li>
               </ul>
             </el-popover>
-
+<!--            这里原本想写歌曲时长，但是没有 只能留空-->
             <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{ music.upload_time }}
-              <!--TODO: 解决播放时间问题-->
+                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{}}
             </div>
             <el-popover
                 :ref="getPopoverIndex"
@@ -544,7 +543,6 @@ const addRecommendMusic = (musicId) => {
                  src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
 
             <div class="music-detailed-info">
-              <!--TODO: img src to be changed-->
               <img class="music-image"
                    :src="music.picPath"
                    alt="歌曲图片"/>
