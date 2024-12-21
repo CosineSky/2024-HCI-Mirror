@@ -6,7 +6,7 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 
 const emit = defineEmits();
 const props = defineProps({
@@ -26,8 +26,9 @@ const props = defineProps({
   currentSongId: Number,
 });
 
-const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
-
+const edit_title = ref("");
+const edit_description = ref("");
+const edit_cover_path = ref("");
 
 const recMusicList = ref([
 	{
@@ -47,7 +48,7 @@ let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
 const resizeObserver = ref(null)
-
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -121,59 +122,59 @@ onMounted(() => {
 
 onUnmounted(() => {
 	if (resizeObserver.value) {
-    resizeObserver.value.disconnect();
-  }
-  popovers.value=null;
+		resizeObserver.value.disconnect();
+	}
+	popovers.value = null;
 })
 
 const handelScroll = (event) => {
-
-  const playArea = document.querySelector(".play-area");
-  const fixedPlayArea = document.querySelector(".fixed-play-area");
-  const tipArea = document.querySelector(".tips");
-  const fixedTipArea = document.querySelector(".fixed-tips");
-  const albumContent = document.querySelector(".album-content");
-
-  const offsetHeight =albumContent.offsetTop;
-  const stickyPlayY = playArea.offsetTop - offsetHeight;
-  const stickyTipY = tipArea.offsetTop - offsetHeight;
-  const curOffset =offsetHeight-albumContent.getBoundingClientRect().top;
-
-  console.log(stickyPlayY,stickyTipY);
-  if (curOffset >= stickyPlayY) {
-    fixedPlayArea.style.opacity = "1";
-    fixedPlayArea.style.top =offsetHeight  + "px";
-
-
-    fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
-  } else {
-    fixedPlayArea.style.opacity = "0";
-  }
-  if (curOffset + fixedPlayArea.scrollHeight >= stickyTipY) {
-    fixedTipArea.style.display = "flex";
-    fixedTipArea.style.top = offsetHeight+ fixedPlayArea.scrollHeight + 'px';
-
-  } else {
-    fixedTipArea.style.display = "none";
-  }
+	
+	const playArea = document.querySelector(".play-area");
+	const fixedPlayArea = document.querySelector(".fixed-play-area");
+	const tipArea = document.querySelector(".tips");
+	const fixedTipArea = document.querySelector(".fixed-tips");
+	const albumContent = document.querySelector(".album-content");
+	
+	const offsetHeight = albumContent.offsetTop;
+	const stickyPlayY = playArea.offsetTop - offsetHeight;
+	const stickyTipY = tipArea.offsetTop - offsetHeight;
+	const curOffset = offsetHeight - albumContent.getBoundingClientRect().top;
+	
+	console.log(stickyPlayY, stickyTipY);
+	if (curOffset >= stickyPlayY) {
+		fixedPlayArea.style.opacity = "1";
+		fixedPlayArea.style.top = offsetHeight + "px";
+		
+		
+		fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
+	} else {
+		fixedPlayArea.style.opacity = "0";
+	}
+	if (curOffset + fixedPlayArea.scrollHeight >= stickyTipY) {
+		fixedTipArea.style.display = "flex";
+		fixedTipArea.style.top = offsetHeight + fixedPlayArea.scrollHeight + 'px';
+		
+	} else {
+		fixedTipArea.style.display = "none";
+	}
 }
 
 
 watch(props.playFromLeftBar, () => {
-  playFromId(props.playFromLeftBar)
+	playFromId(props.playFromLeftBar)
 })
 
 
 const popovers = ref([])
-const  getPopoverIndex= (popover) => {
-  if (popover) {
-    popovers.value.push(popover);
-  }
+const getPopoverIndex = (popover) => {
+	if (popover) {
+		popovers.value.push(popover);
+	}
 }
 const closePopover = (e) => {
-  popovers.value.forEach((item) => {
-    item.hide();
-  })
+	popovers.value.forEach((item) => {
+		item.hide();
+	})
 }
 
 
@@ -196,8 +197,8 @@ const playFromId = (musicId) => {
 	} else {
 		musicPlayIndex.value = musicId;
 	}
-	musicPauseIndex = null;
 	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
+	musicPauseIndex = null;
 }
 
 const addToFavorite = (musicId,albumId) => {
@@ -231,6 +232,17 @@ const pauseMusic = (musicId) => {
 const editAlbumDescription = (albumId) => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "visible";
+}
+
+const confirmEdit = (albumId) => {
+	modifyPlaylist({
+		id: albumId,
+		title: edit_title.value,
+		description: edit_description.value,
+		picPath: "",
+	}).then(() => {
+
+	})
 }
 
 const quitEdit = () => {
@@ -272,7 +284,7 @@ const addRecommendMusic = (musicId) => {
 				</div>
 			</div>
 		</div>
-
+		
 		<div class="content">
 			<div class="play-area">
 				<div class="play-button">
@@ -300,7 +312,7 @@ const addRecommendMusic = (musicId) => {
 					</ul>
 				</el-popover>
 			</div>
-
+			
 			<div class="fixed-play-area" :style="{background :`${backgroundColor}`}">
 				<div class="opacity-wrapper">
 					<div class="play-button">
@@ -318,7 +330,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:20px">详情</p> <!--时间变为详细信息-->
+				<p style="margin-left: auto; margin-right:55px">时间</p>
 			</div>
 			<div class="edit-desc" @blur="quitEdit">
 				<div data-testid="playlist-edit-details-modal" class="main-edit-desc">
@@ -373,18 +385,17 @@ const addRecommendMusic = (musicId) => {
 							</div>
 						</div>
 						<div class="edit-desc-input-name">
-							<input data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f"
-							       type="text"
-							       class="edit-desc-input-name-1" placeholder="添加名称" value="我的 #9 歌单">
+							<input v-model="edit_title" data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1" placeholder="添加名称">
 						</div>
 						<div class="edit-desc-input-desc">
-              <textarea data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1"
-                        placeholder="添加简介"></textarea>
+                            <textarea v-model="edit_description" data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1" placeholder="添加简介"/>
 						</div>
 						<div class="edit-desc-button">
-							<button data-testid="playlist-edit-details-save-button" data-encore-id="buttonPrimary"
-							        class="edit-desc-button-1 encore-text-body-medium-bold"><span
-								class="edit-desc-button-1-1">收藏</span></button>
+							<button @click="confirmEdit(albumInfo.id)" data-testid="playlist-edit-details-save-button"
+							        data-encore-id="buttonPrimary"
+							        class="edit-desc-button-1 encore-text-body-medium-bold">
+								<span class="edit-desc-button-1-1">收藏</span>
+							</button>
 						</div>
 						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意
 							Spotify 获取你选择上传的图像。请确保你有上传此图像的权利。</p>
@@ -397,7 +408,7 @@ const addRecommendMusic = (musicId) => {
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
 				<p style="margin-left: auto; margin-right:20px">详情</p><!--时间变为详细信息-->
 			</div>
-
+			
 			<div class="musicList">
 				<div class="music-item"
 				     v-for="music in musicList"
@@ -509,21 +520,22 @@ const addRecommendMusic = (musicId) => {
             <span style="color:white;font-size: 30px;font-weight: bolder">推荐</span>
             <span style="color:grey;font-size: 20px">根据此歌单包含的内容推荐
             </span>
-          </div>
-        </div>
-
-        <div class="recMusicList">
-          <div class="music-item"
-               v-for="music in recMusicList"
-               :key="music.id"
-               :aria-selected="musicClickedIndex === music.id ? 'True':'False'"
-               @mouseenter="()=>{musicHoveredIndex = music.id;}"
-               @mouseleave="()=>{musicHoveredIndex = null}"
-               @click="musicClickedIndex=music.id"
-               @dblclick="playFromId(music.id)"
-               :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
+					</div>
+				</div>
+				
+				<div class="recMusicList">
+					<div class="music-item"
+					     v-for="music in recMusicList"
+					     :key="music.id"
+					     :aria-selected="musicClickedIndex === music.id ? 'True':'False'"
+					     @mouseenter="()=>{musicHoveredIndex = music.id;}"
+					     @mouseleave="()=>{musicHoveredIndex = null}"
+					     @click="musicClickedIndex=music.id"
+					     @dblclick="playFromId(music.id)"
+					     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
+
 
             <div
                 :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
@@ -578,51 +590,50 @@ const addRecommendMusic = (musicId) => {
 
 <style scoped>
 li {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	
 }
 
 li:hover {
-  background-color: #363636;
-  border-radius: 12px;
+	background-color: #363636;
+	border-radius: 12px;
 }
-
 
 
 p {
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin: 0;
 }
 
 .header, .play-area, .tips, .musicList, .other-info {
-  z-index: 0;
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  user-select:none;
+	z-index: 0;
+	padding: 20px;
+	width: 100%;
+	box-sizing: border-box;
+	user-select: none;
 }
 
 .album-content {
-  margin: 0;
-  padding: 0;
-  color: white;
-  background-color: rgb(31, 31, 31);
-  transition: background-color ease 0.6s;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow-x: auto; /*千万不能删，不然背景黑一半*/
+	margin: 0;
+	padding: 0;
+	color: white;
+	background-color: rgb(31, 31, 31);
+	transition: background-color ease 0.6s;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	overflow-x: auto; /*千万不能删，不然背景黑一半*/
 }
 
 
 .header {
-  display: flex;
-  flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
 .content {
@@ -631,189 +642,189 @@ p {
 }
 
 .album-image {
-  border-radius: 6%;
-  width: 160px;
-  height: 160px;
-  margin-top: 30px;
-  margin-left: 15px;
-  margin-right: 20px;
+	border-radius: 6%;
+	width: 160px;
+	height: 160px;
+	margin-top: 30px;
+	margin-left: 15px;
+	margin-right: 20px;
 }
 
 .header-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  position: relative;
-  flex-grow: 1;
-  min-width: 0;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	position: relative;
+	flex-grow: 1;
+	min-width: 0;
 }
 
 .header-content-detail {
-  padding: 10px;
-  align-items: center;
-  display: flex;
-  flex-direction: row;
+	padding: 10px;
+	align-items: center;
+	display: flex;
+	flex-direction: row;
 }
 
 .header-creator {
-  margin: 0 6px;
-  cursor: pointer;
-  font-weight: bolder
+	margin: 0 6px;
+	cursor: pointer;
+	font-weight: bolder
 }
 
 .header-creator:hover {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 .play-area {
-  position: relative;
+	position: relative;
 }
 
 .more-info {
-  font-size: 35px;
-  position: absolute;
-  z-index: 13;
-  top: 33px;
-  left: 160px;
-  transition: width 0.1s ease-in-out;
+	font-size: 35px;
+	position: absolute;
+	z-index: 13;
+	top: 33px;
+	left: 160px;
+	transition: width 0.1s ease-in-out;
 }
 
 .more-info:focus {
-  outline: none;
-
+	outline: none;
+	
 }
 
 .more-info:hover {
-  cursor: pointer;
-  transform: scale(1.15);
+	cursor: pointer;
+	transform: scale(1.15);
 }
 
 .fixed-play-area {
-  top: 0;
-  z-index: 11;
-  opacity: 0;
-  transition: opacity 0.2s ease-out;
-  border-radius: 12px 12px 0 0;
-  position: fixed; /**/
-  display: flex;
-  padding: 10px 0 10px 20px;
-  width: inherit;
-
+	top: 0;
+	z-index: 11;
+	opacity: 0;
+	transition: opacity 0.2s ease-out;
+	border-radius: 12px 12px 0 0;
+	position: fixed; /**/
+	display: flex;
+	padding: 10px 0 10px 20px;
+	width: inherit;
+	
 }
 
 .opacity-wrapper {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  margin: -10px 0 -10px -20px;
-  padding: 10px 0 10px 20px;
-  background-color: rgba(0, 0, 0, 0.50);
+	display: flex;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	margin: -10px 0 -10px -20px;
+	padding: 10px 0 10px 20px;
+	background-color: rgba(0, 0, 0, 0.50);
 }
 
 .play-button {
-  margin-left: 40px;
-  background-color: #1ed660;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  position: relative;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.1s;
+	margin-left: 40px;
+	background-color: #1ed660;
+	border-radius: 50%;
+	width: 60px;
+	height: 60px;
+	position: relative;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.1s;
 }
 
 .play-button:hover {
-  cursor: pointer;
-  transform: scale(1.05);
-  background-color: #1ed683;
+	cursor: pointer;
+	transform: scale(1.05);
+	background-color: #1ed683;
 }
 
 
 .tips {
-  z-index: 0;
-  display: flex;
-  position: relative;
-  padding: 5px 8px 5px 8px;
+	z-index: 0;
+	display: flex;
+	position: relative;
+	padding: 5px 8px 5px 8px;
 }
 
 .fixed-tips {
-
-  z-index: 11;
-  width: 100%;
-  justify-content: space-between;
-  display: none;
-  padding: 10px 8px 10px 8px;
-  position: fixed;
-  background-color: #1f1f1f;
-  border-bottom: 1px solid #363636;
+	
+	z-index: 11;
+	width: 100%;
+	justify-content: space-between;
+	display: none;
+	padding: 10px 8px 10px 8px;
+	position: fixed;
+	background-color: #1f1f1f;
+	border-bottom: 1px solid #363636;
 }
 
 .musicList, .other-info {
-  border-top: 1px solid #363636;
-  margin-top: 10px;
+	border-top: 1px solid #363636;
+	margin-top: 10px;
 }
 
 /*每行音乐的样式*/
 .music-item {
-  position: relative;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  padding: 10px 0 10px 25px;
-  flex-grow: 1;
-  min-width: 0;
+	position: relative;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	padding: 10px 0 10px 25px;
+	flex-grow: 1;
+	min-width: 0;
 }
 
 /*音乐被点击后的样式*/
 .music-after-click {
-  color: #1ed660;
+	color: #1ed660;
 }
 
 /*左侧信息*/
 .music-detailed-info {
-  display: flex;
-  flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
 .music-image {
-  padding-left: 30px;
-  height: 50px;
-  width: 50px; /* Adjust as needed */
-  border-radius: 10px;
+	padding-left: 30px;
+	height: 50px;
+	width: 50px; /* Adjust as needed */
+	border-radius: 10px;
 }
 
 .music-name {
-  padding-bottom: 5px;
-  font-size: 18px
+	padding-bottom: 5px;
+	font-size: 18px
 }
 
 .music-name:hover {
-  cursor: pointer;
-  text-decoration: underline;
+	cursor: pointer;
+	text-decoration: underline;
 }
 
 .music-author {
-  color: #b2b2b2;
-  font-size: 15px
+	color: #b2b2b2;
+	font-size: 15px
 }
 
 .music-author:hover {
-  cursor: pointer;
-  text-decoration: underline;
+	cursor: pointer;
+	text-decoration: underline;
 }
 
 /*专辑信息*/
 .music-album-info {
-  position: absolute;
-  left: 60%;
-  color: #b2b2b2;
-  text-overflow: ellipsis;
+	position: absolute;
+	left: 60%;
+	color: #b2b2b2;
+	text-overflow: ellipsis;
 }
 
 .music-album-info:hover {
-  cursor: pointer;
-  text-decoration: underline;
+	cursor: pointer;
+	text-decoration: underline;
 }
 
 .music-time-info {
@@ -824,136 +835,136 @@ p {
 
 /*右侧信息*/
 .music-right-info {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  flex-direction: row;
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	flex-direction: row;
 }
 
 .check-mark {
-  width: 20px;
-  height: auto;
-  margin-right: 40px;
-  color: black;
-  font-weight: bolder;
-  border-radius: 50%;
+	width: 20px;
+	height: auto;
+	margin-right: 40px;
+	color: black;
+	font-weight: bolder;
+	border-radius: 50%;
 }
 
 .check-mark:hover {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .check-mark:focus {
-  outline: none;
+	outline: none;
 }
 .album-to-add{
   padding: 8px;
 }
 
 .music-more-info {
-  margin-right: 14px;
-  font-size: 22px;
-  transition: width 0.1s ease-in-out;
+	margin-right: 14px;
+	font-size: 22px;
+	transition: width 0.1s ease-in-out;
 }
 
 .music-more-info:focus {
-  outline: none;
-  transform: scale(1.05);
+	outline: none;
+	transform: scale(1.05);
 }
 
 .music-more-info:hover {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .music-dropdown-options {
-  border-radius: 6px;
+	border-radius: 6px;
 }
 
 ul {
-  background-color: #282828;
-  list-style-type: none;
-  padding: 10px ;
-  margin: 0;
-  border-radius: 10px;
+	background-color: #282828;
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+	border-radius: 10px;
 }
 
 li {
-  color: white;
-  padding: 15px 12px;
+	color: white;
+	padding: 15px 12px;
 }
 
 li:hover {
-  cursor: pointer;
-  text-decoration: underline;
+	cursor: pointer;
+	text-decoration: underline;
 }
 
 .other-info {
-  margin-top: 20px;
+	margin-top: 20px;
 }
 
 .reco-add-button {
-  color: white;
-  margin-right: 16px;
-  box-sizing: border-box;
-  background-color: transparent;
-  border-radius: 9999px;
-  cursor: pointer;
-  position: relative;
-  text-align: center;
-  transition-duration: 33ms;
-  transition-property: background-color, border-color, color, box-shadow, filter, transform;
-  user-select: none;
-  vertical-align: middle;
-  transform: translate3d(0px, 0px, 0px);
-  padding-block: 3px;
-  padding-inline: 15px;
-  border: 1px solid #818181;
-  min-inline-size: 0;
-  min-block-size: 32px;
-  display: inline-flex;
-  align-items: center;
-
-  &:hover {
-    border: 1px solid #f5f5f5;
-    scale: 1.1;
-  }
+	color: white;
+	margin-right: 16px;
+	box-sizing: border-box;
+	background-color: transparent;
+	border-radius: 9999px;
+	cursor: pointer;
+	position: relative;
+	text-align: center;
+	transition-duration: 33ms;
+	transition-property: background-color, border-color, color, box-shadow, filter, transform;
+	user-select: none;
+	vertical-align: middle;
+	transform: translate3d(0px, 0px, 0px);
+	padding-block: 3px;
+	padding-inline: 15px;
+	border: 1px solid #818181;
+	min-inline-size: 0;
+	min-block-size: 32px;
+	display: inline-flex;
+	align-items: center;
+	
+	&:hover {
+		border: 1px solid #f5f5f5;
+		scale: 1.1;
+	}
 }
 
 /* new-elements */
 .edit-desc {
-  visibility: hidden;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, .7);
-  bottom: 0;
-  display: flex;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  overflow: hidden;
+	visibility: hidden;
+	z-index: 1000;
+	background-color: rgba(0, 0, 0, .7);
+	bottom: 0;
+	display: flex;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	overflow: hidden;
 }
 
 .main-edit-desc {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  background-color: #282828;
-  border-radius: 8px;
-  -webkit-box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
-  box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
-  color: #fff;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  min-height: 384px;
-  width: 524px;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	background-color: #282828;
+	border-radius: 8px;
+	-webkit-box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
+	box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
+	color: #fff;
+	-ms-flex-direction: column;
+	flex-direction: column;
+	min-height: 384px;
+	width: 524px;
 }
 
 .edit-desc-header {
@@ -1024,7 +1035,7 @@ li:hover {
 	justify-content: center;
 	-webkit-box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
 	box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
-
+	
 	&:hover {
 		display: none;
 	}
@@ -1106,7 +1117,7 @@ li:hover {
 	-webkit-box-pack: center;
 	-ms-flex-pack: center;
 	justify-content: center;
-
+	
 	&:hover {
 		opacity: 0;
 		pointer-events: none;

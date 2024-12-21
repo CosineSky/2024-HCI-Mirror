@@ -18,13 +18,30 @@ export const getPlaylistsByUser = (userInfo) => {
 /*
     // TODO - modified
     - user_name: string
-    playlist_name: string
+    - playlist_name: string
     + user_id: number
-    + playlist_description: string
+    - playlist_description: string
  */
 export const createPlaylist = (playlistCreateInfo) => {
-    return axios.post(`${PLAYLIST_MODULE}/create`, playlistCreateInfo,
-        { headers: { 'Content-Type': 'application/json' } })
+    console.log(playlistCreateInfo)
+    return axios.post(`${PLAYLIST_MODULE}/create`, null,
+        { params: playlistCreateInfo })
+        .then(res => {
+            return res;
+        });
+}
+
+/*
+    // TODO - modified
+    + id: number
+    + title: string
+    + description: string
+    + picPath: string
+ */
+export const modifyPlaylist = (playlistModifyInfo) => {
+    console.log(playlistModifyInfo)
+    return axios.post(`${PLAYLIST_MODULE}/modify`, playlistModifyInfo,
+        {headers: {'Content-Type': 'application/json'}})
         .then(res => {
             return res;
         });

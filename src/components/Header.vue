@@ -1,10 +1,10 @@
 <script setup>
 import {useRouter} from "vue-router";
 import {ref} from "vue";
-import {searchSongByKeyword, searchPlaylistByKeyword} from "../api/search";
+import {searchPlaylistByKeyword, searchSongByKeyword} from "../api/search";
 
 const router = useRouter();
-const emit = defineEmits(['headData']);
+const emit = defineEmits(['headData','home']);
 
 const props = defineProps({
 	allowSearch: {
@@ -54,7 +54,7 @@ function callSearch() {
 	songResult.value = [];
 	playlistResult.value = [];
 	showSearch.value = true
-
+	
 	searchSongByKeyword({
 		keyword: searchInput.value
 	}).then(res => {
@@ -80,6 +80,10 @@ function callSearch() {
 		console.log("Failed to fetch playlists!")
 	})
 }
+
+function callHome() {
+	emit('home');
+}
 </script>
 
 <template>
@@ -91,11 +95,12 @@ function callSearch() {
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
 			     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
 			     class="feather feather-search"
-           @click="callSearch">
+			     @click="callSearch">
 				<circle cx="11" cy="11" r="8"></circle>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 			</svg>
-			<input type="text" v-model="searchInput" :placeholder="searchPlaceHolders[Math.floor(Math.random() * 5)]" @keyup.enter="callSearch"/>
+			<input type="text" v-model="searchInput" :placeholder="searchPlaceHolders[Math.floor(Math.random() * 5)]"
+			       @keyup.enter="callSearch"/>
 		</div>
 		
 		<div style="display: flex; flex-direction: row">
@@ -105,14 +110,14 @@ function callSearch() {
 					      d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"></path>
 				</svg>
 			</router-link>
-			<router-link to="/home" class="home-btn">
+			<div @click="callHome" class="home-btn">
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
 				     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
 				     class="feather feather-home">
 					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
 					<polyline points="9 22 9 12 15 12 15 22"></polyline>
 				</svg>
-			</router-link>
+			</div>
 			<div @click="toggleIcons" class="more-btn">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
 					<path fill="currentColor"
@@ -166,9 +171,9 @@ function callSearch() {
 	margin-right: 10px;
 	color: #fff;
 	text-decoration: none;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .home-btn svg {
@@ -178,22 +183,22 @@ function callSearch() {
 }
 
 .home-btn:hover {
-  transform: translateY(-2px);
+	transform: translateY(-2px);
 }
 
 .home-btn:hover::after {
-  content: '回到主页';
-  position: absolute;
-  top: 35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '回到主页';
+	position: absolute;
+	top: 35px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .manage-btn {
@@ -202,9 +207,9 @@ function callSearch() {
 	margin-right: 10px;
 	color: #fff;
 	text-decoration: none;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .manage-btn svg {
@@ -214,25 +219,25 @@ function callSearch() {
 }
 
 .manage-btn:hover {
-  transform: translateY(-2px);
+	transform: translateY(-2px);
 }
 
 /*
 添加悬停样式
  */
 .manage-btn:hover::after {
-  content: '增加歌曲';
-  position: absolute;
-  top: 35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '增加歌曲';
+	position: absolute;
+	top: 35px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .search-box {
@@ -279,39 +284,39 @@ input[type="text"]:focus {
 }
 
 .more-btn {
-  display: flex;
-  align-items: center;
-  margin-right: 10px;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	display: flex;
+	align-items: center;
+	margin-right: 10px;
+	color: #fff;
+	text-decoration: none;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .more-btn svg {
-  width: 32px;
-  height: 32px;
-  margin-right: 10px;
+	width: 32px;
+	height: 32px;
+	margin-right: 10px;
 }
 
 .more-btn:hover {
-  transform: scale(1.1);
+	transform: scale(1.1);
 }
 
 .more-btn:hover::after {
-  content: '更多';
-  position: absolute;
-  top: 32px;
-  left: 38%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '更多';
+	position: absolute;
+	top: 32px;
+	left: 38%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .role-icon {
@@ -319,9 +324,9 @@ input[type="text"]:focus {
 	opacity: 0;
 	transform: translateX(-20px); /* 初始位置稍微偏左 */
 	animation: slideIn 0.5s forwards;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .role-icon svg {
@@ -332,95 +337,95 @@ input[type="text"]:focus {
 }
 
 .role-icon svg:hover {
-  transform: translateY(-2px);
+	transform: translateY(-2px);
 }
 
 .role-icon:hover::after {
-  content: '个人主页';
-  position: absolute;
-  top: 35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '个人主页';
+	position: absolute;
+	top: 35px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .set-icon {
-  margin: 10px 0;
-  opacity: 0;
-  transform: translateX(-20px); /* 初始位置稍微偏左 */
-  animation: slideIn 0.5s forwards;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	margin: 10px 0;
+	opacity: 0;
+	transform: translateX(-20px); /* 初始位置稍微偏左 */
+	animation: slideIn 0.5s forwards;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .set-icon svg {
-  color: #d5d5d5;
-  width: 32px;
-  height: 32px;
-  margin-right: 10px;
+	color: #d5d5d5;
+	width: 32px;
+	height: 32px;
+	margin-right: 10px;
 }
 
 .set-icon svg:hover {
-  transform: translateY(-2px);
+	transform: translateY(-2px);
 }
 
 .set-icon:hover::after {
-  content: '设置';
-  position: absolute;
-  top: 35px;
-  left: 38%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '设置';
+	position: absolute;
+	top: 35px;
+	left: 38%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 .exit-icon {
-  margin: 10px 0;
-  opacity: 0;
-  transform: translateX(-20px); /* 初始位置稍微偏左 */
-  animation: slideIn 0.5s forwards;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: width, color, background-color ease-in-out 0.2s;
+	margin: 10px 0;
+	opacity: 0;
+	transform: translateX(-20px); /* 初始位置稍微偏左 */
+	animation: slideIn 0.5s forwards;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: width, color, background-color ease-in-out 0.2s;
 }
 
 .exit-icon svg {
-  color: #d5d5d5;
-  width: 32px;
-  height: 32px;
-  margin-right: 10px;
+	color: #d5d5d5;
+	width: 32px;
+	height: 32px;
+	margin-right: 10px;
 }
 
 .exit-icon svg:hover {
-  color: red;
-  transform: translateY(-2px);
+	color: red;
+	transform: translateY(-2px);
 }
 
 .exit-icon:hover::after {
-  content: '退出';
-  color: red;
-  position: absolute;
-  top: 35px;
-  left: 38%;
-  transform: translateX(-50%);
-  background-color: #282828;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
+	content: '退出';
+	color: red;
+	position: absolute;
+	top: 35px;
+	left: 38%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
 }
 
 @keyframes slideIn {

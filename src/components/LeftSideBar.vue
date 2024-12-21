@@ -5,7 +5,7 @@ import musicAlbumClosed from "../icon/musicAlbumClosed.vue";
 import searchIcon from "../icon/searchIcon.vue";
 import plusIcon from "../icon/plusIcon.vue";
 import playButton from "../icon/playButton.vue";
-import {getPlaylistsByUser} from "../api/playlist";
+import {createPlaylist, getPlaylistsByUser} from "../api/playlist";
 import {ElPopover} from "element-plus";
 
 const emit = defineEmits();
@@ -28,39 +28,50 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 function toggleSideBar() {
-  isSideBarOpen = !isSideBarOpen;
-  sideBarWidth.value = isSideBarOpen ? criticalWidth : minWidth;
+	isSideBarOpen = !isSideBarOpen;
+	sideBarWidth.value = isSideBarOpen ? criticalWidth : minWidth;
 }
 
 function startResizing(event) {
-  event.preventDefault();
-  const initialWidth = sideBarWidth.value;
-  const initialMouseX = event.clientX;
-
-  const onMouseMove = (moveEvent) => {
-    sideBarWidth.value = initialWidth + (moveEvent.clientX - initialMouseX);
-    // 确保宽度不小于最小值
-    if (sideBarWidth.value <= criticalWidth) {
-      isSideBarOpen = false;
-      sideBarWidth.value = minWidth;
-    }
-    // 确保宽度不大于最大值
-    else if (sideBarWidth.value >= maximumWidth) {
-      sideBarWidth.value = maximumWidth;
-    } else
-      isSideBarOpen = true;
-  };
-
-  const onMouseUp = () => {
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-  };
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+	event.preventDefault();
+	const initialWidth = sideBarWidth.value;
+	const initialMouseX = event.clientX;
+	
+	const onMouseMove = (moveEvent) => {
+		sideBarWidth.value = initialWidth + (moveEvent.clientX - initialMouseX);
+		// 确保宽度不小于最小值
+		if (sideBarWidth.value <= criticalWidth) {
+			isSideBarOpen = false;
+			sideBarWidth.value = minWidth;
+		}
+		// 确保宽度不大于最大值
+		else if (sideBarWidth.value >= maximumWidth) {
+			sideBarWidth.value = maximumWidth;
+		} else
+			isSideBarOpen = true;
+	};
+	
+	const onMouseUp = () => {
+		window.removeEventListener('mousemove', onMouseMove);
+		window.removeEventListener('mouseup', onMouseUp);
+	};
+	window.addEventListener('mousemove', onMouseMove);
+	window.addEventListener('mouseup', onMouseUp);
 }
 
 function addAlbum() {
-	//TODO：添加新的空歌单
+	console.log("Hi")
+	createPlaylist({
+		user_id: currentUserId.value,
+	}).then(() => {
+		getPlaylistsByUser({
+			user_id: currentUserId.value
+		}).then(res => {
+			musicAlbums.value = res.data.result || []
+		}).catch(e => {
+		
+		})
+	})
 }
 
 function toggleSearchBar() {
@@ -94,7 +105,7 @@ onMounted(() => {
 const popover1 = ref(null)
 
 const closePopover = () => {
-  popover1.value.hide();
+	popover1.value.hide();
 }
 
 defineProps({
@@ -113,11 +124,11 @@ defineProps({
 			</div>
 			
 			<el-popover v-if="isSideBarOpen" class="dropdown-options"
-                  ref="popover1"
+			            ref="popover1"
 			            :width="200"
 			            trigger="click"
 			            :hide-after=0
-                  popper-class="left-popover">
+			            popper-class="left-popover">
 				<template #reference>
 					<div class="add-album">
 						<plus-icon class="plus-icon"/>
@@ -142,16 +153,16 @@ defineProps({
 		     @mouseenter="()=>{hoverOnAlbum=true}"
 		     @mouseleave="()=>{hoverOnAlbum=false}"
 		     :style="{ scrollbarWidth : hoverOnAlbum? 'auto':'none'}"
-          >
-
+		>
+			
 			
 			<div v-if="musicAlbums !== undefined" v-for="album in musicAlbums"
 			     :key="album.id"
 			     @mouseenter="()=>{albumHoveredIndex = album.id}"
 			     @mouseleave="()=>{albumHoveredIndex = null}"
 			     :style="{backgroundColor: albumHoveredIndex === album.id ? '#1F1F1F' : '#171717' }"
-           @click="emit('setCurrentPlaylist', album);"
-           class="musicAlbum-item">
+			     @click="emit('setCurrentPlaylist', album);"
+			     class="musicAlbum-item">
 				<img
 					:src="album.picPath"
 					alt="playlist"
@@ -163,7 +174,8 @@ defineProps({
 				
 				<div class="musicAlbum-description">
 					<p style="padding-bottom: 5px;font-size: 18px">{{ album.title }}</p>
-					<p v-if="album.title !== '我喜欢的歌曲'" style="color: #b2b2b2;font-size: 13px">歌单 • {{ userToken.username }}</p>
+					<p v-if="album.title !== '我喜欢的歌曲'" style="color: #b2b2b2;font-size: 13px">歌单 •
+						{{ userToken.username }}</p>
 					<p v-else style="color: #b2b2b2;font-size: 13px">默认收藏夹</p>
 				</div>
 			</div>
@@ -194,7 +206,7 @@ ul {
 li {
 	color: white;
 	padding: 10px 12px;
-  border-radius: 10px;
+	border-radius: 10px;
 }
 
 li:hover {

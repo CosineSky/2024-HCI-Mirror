@@ -1,8 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {onMounted, ref, watch, computed, nextTick} from "vue"
-import {router} from "../router";
+import {computed, onMounted, ref} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -15,9 +14,10 @@ import LeftSideBar from "../components/LeftSideBar";
 import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
 import MainView from "../components/MainView.vue";
+import EpisodeView from "@/components/EpisodeView.vue";
 
 // APIs
-import {getSongsByPlaylist} from "../api/song";
+import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
 import {getPlaylistsByUser} from "../api/playlist";
 
 // Others
@@ -80,7 +80,7 @@ function updateCurrentLine() {
 }
 
 setInterval(() => {
-  // console.log(progresses.length, controlIcons.length, playModeIcons.length);
+	// console.log(progresses.length, controlIcons.length, playModeIcons.length);
 }, 1000);
 
 
@@ -128,7 +128,7 @@ const registerDOMs = () => {
 	 */
 	const navItems = document.querySelectorAll(".nav-item");
 	const containers = document.querySelectorAll(".containers");
-
+	
 	navItems.forEach((navItem) => {
 		navItem.addEventListener("click", () => {
 			navItems.forEach((item) => {
@@ -141,7 +141,7 @@ const registerDOMs = () => {
 		let isDragging = false;
 		let startX;
 		let scrollLeft;
-
+		
 		container.addEventListener("mousedown", (e) => {
 			isDragging = true;
 			startX = e.pageX - container.offsetLeft;
@@ -152,7 +152,7 @@ const registerDOMs = () => {
 				return;
 			}
 			e.preventDefault();
-
+			
 			const x = e.pageX - container.offsetLeft;
 			const step = (x - startX) * 0.6;
 			container.scrollLeft = scrollLeft - step;
@@ -167,7 +167,7 @@ const registerDOMs = () => {
 			container.scrollLeft += e.deltaY / 2;
 		});
 	});
-
+	
 	/*
         Songs Related
 	 */
@@ -177,11 +177,11 @@ const registerDOMs = () => {
 	backwardButtons = document.querySelectorAll(".controls button.backward");
 	playModeButtons = document.querySelectorAll(".play-mode-btn");
 	shareButtons = document.querySelectorAll(".share-btn");
-
+	
 	progresses = document.querySelectorAll('.idProgress');
 	controlIcons = document.querySelectorAll('.idControlIcon');
 	playModeIcons = document.querySelectorAll('.idPlayModeIcon');
-
+	
 	function updateSongInfo() {
 		try {
 			if (songs.value[currentSongIndex.value]) {
@@ -200,11 +200,11 @@ const registerDOMs = () => {
 			console.log("Uncaught Error in updateSongInfo!", e);
 		}
 	}
-
+	
 	function shareSong() {
 		console.log("Hello!");
 	}
-
+	
 	function playPause() {
 		isPaused.value = !isPaused.value;
 		try {
@@ -223,7 +223,7 @@ const registerDOMs = () => {
 			console.log("Uncaught Error in playPause!", e);
 		}
 	}
-
+	
 	function switchPlayMode() {
 		playingMode.value = (playingMode.value + 1) % 3
 		switch (playingMode.value) {
@@ -246,7 +246,7 @@ const registerDOMs = () => {
 				break;
 		}
 	}
-
+	
 	song.addEventListener("loadedmetadata", function () {
 		progresses.forEach(progress => {
 			duration.value = song.duration;
@@ -265,7 +265,7 @@ const registerDOMs = () => {
 			});
 		}
 	});
-
+	
 	playPauseButtons.forEach(playPauseButton => {
 		if (!playPauseButton._hasClickListener) {
 			playPauseButton.addEventListener("click", playPause);
@@ -302,7 +302,7 @@ const registerDOMs = () => {
 			backwardButton._hasClickListener = true;
 		}
 	});
-
+	
 	progresses.forEach(progress => {
 		progress.addEventListener("input", function () {
 			if (!song.paused) {
@@ -319,7 +319,7 @@ const registerDOMs = () => {
 			}
 		});
 	});
-
+	
 	// updateSongInfo();
 }
 
@@ -331,12 +331,15 @@ const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
 
-
 /*
     SONGS
  */
 // Playing Status
 const songs = ref([]);
+const volumn = ref(1);
+watch(volumn, (newValue) => {
+	song.volume = newValue;
+});
 const displayingSongs = ref([]);
 const isPaused = ref(false);
 const duration = ref(0);
@@ -375,10 +378,10 @@ const switchToSong = (index, isDiffPlaylist) => {
 	if (index === currentSongIndex.value && !isDiffPlaylist) {
 		return;
 	}
-
+	
 	currentSongIndex.value = index;
 	currentSongId.value = songs.value[index].id;
-
+	
 	if (song) {
 		controlIcons.forEach(controlIcon => {
 			controlIcon.src = PLAY;
@@ -395,12 +398,12 @@ const switchToSong = (index, isDiffPlaylist) => {
 
 const switchToPlaylist = (playlist, songId) => {
 	console.log(playlist, songId)
-
+	
 	currentPlaylist.value = playlist;
 	displayingPlaylist.value = playlist;
 	currentPlaylistId.value = playlist.id;
 	theme.change(currentPlaylist.value.picPath);
-
+	
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
@@ -416,13 +419,40 @@ const switchToPlaylist = (playlist, songId) => {
 				break;
 			}
 		}
-
+		
 	}).catch(e => {
 		console.log("Error while switching playlists!");
 	});
 }
 
+const switchToEpisode = (episode, songId) => {
+	console.log(episode, songId)
 
+	currentEpisode.value = episode;
+	displayingEpisode.value = episode;
+	currentEpisodeId.value = episode.id;
+	theme.change(currentEpisode.value.picPath);
+
+	getSongsByEpisode({
+		episode_id: currentEpisodeId.value,
+	}).then((res) => {
+		songs.value = res.data.result;
+		displayingSongs.value = res.data.result;
+		currentSongId.value = songId;
+		for (let i = 0; i < songs.value.length; i++) {
+			if (songs.value[i].id === songId) {
+				switchToSong(i, true);
+				parseLrc(songs.value[i].lyricsPath).then(res => {
+					lyrics.value = res;
+				});
+				break;
+			}
+		}
+
+	}).catch(e => {
+		console.log("Error while switching episodes!");
+	});
+}
 /*
     PLAYLISTS
  */
@@ -431,17 +461,17 @@ const currentPlaylist = ref(2);
 const currentPlaylistId = ref(2);
 const displayingPlaylist = ref(2);
 const receivePlaylistId = (value) => {
-  console.log(value)
-  currentPlaylist.value = value;
-  currentPlaylistId.value = value.id;
-  console.log("Current Playlist Id:", currentPlaylistId.value)
-  getSongsByPlaylist({
-    playlist_id: currentPlaylistId.value,
-  }).then((res) => {
-    songs.value = res.data.result;
-  }).catch(e => {
-    console.log("Failed to get songs!");
-  });
+	console.log(value)
+	currentPlaylist.value = value;
+	currentPlaylistId.value = value.id;
+	console.log("Current Playlist Id:", currentPlaylistId.value)
+	getSongsByPlaylist({
+		playlist_id: currentPlaylistId.value,
+	}).then((res) => {
+		songs.value = res.data.result;
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
 };
 const receiveDisplayingPlaylist = (value) => {
 	setMidComponents(1);
@@ -455,7 +485,24 @@ const receiveDisplayingPlaylist = (value) => {
 	});
 };
 
-
+/*
+    EPISODES
+ */
+const episodes = ref([]);
+const currentEpisode = ref(2);
+const currentEpisodeId = ref(2);
+const displayingEpisode = ref(2);
+const receiveDisplayingEpisode = (value) => {
+	setMidComponents(4);
+	displayingEpisode.value = value;
+	getSongsByEpisode({
+		episode_id: value.id,
+	}).then((res) => {
+		displayingSongs.value = res.data.result;
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
+};
 /*
     SEARCH
  */
@@ -469,12 +516,21 @@ function receiveDataFromHeader(data) {
 }
 
 /*
+    HOME
+ */
+function receiveDataFromHome() {
+	setMidComponents(0);
+}
+
+/*
     MID COMPONENTS
+    0 - Main View
     1 - Music Albums
     2 - Comments
     3 - Search Results
+    4 - Episodes
  */
-const midComponents = ref(1);
+const midComponents = ref(0);
 const setMidComponents = (val) => {
 	midComponents.value = val;
 }
@@ -490,7 +546,7 @@ onMounted(() => {
 	 */
 	theme.change(defaultBg);
 	registerDOMs();
-
+	
 	/*
 		API
 	 */
@@ -510,7 +566,7 @@ onMounted(() => {
 			songs.value = res.data.result;
 			displayingSongs.value = res.data.result;
 			currentSongId.value = songs.value[0].id;
-
+			
 			// TODO: currentSongIndex != currentSongId ?
 			parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
 				lyrics.value = res;
@@ -521,63 +577,70 @@ onMounted(() => {
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
-
+	
 })
 let playFromLeftBarAlbum = ref(null);
 </script>
 
 <template>
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
+		
+		<!-- MAIN & RIGHT CONTENT -->
+		<Header class="header" @headData="receiveDataFromHeader" @home="receiveDataFromHome" allow-search></Header>
+		<img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
+		<left-side-bar class="left-side-bar" @playFromLeftBar="(id)=>{playFromLeftBarAlbum = id }"
+		               @setCurrentPlaylist="receiveDisplayingPlaylist"/>
+		<div class="content" :class="{ 'full-width': !showRightContent }">
+			<div class="main-view" :class="{ 'expanded': !showRightContent }">
+				<el-container v-if="midComponents == 0" class="playlist-container"
+				              style="overflow: auto; height: 730px ;border-radius: 12px">
+					<MainView/>
+				</el-container>
+				<!--height: 730px -->
+				<div v-if="midComponents == 1" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
+					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
+					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum"/>
+				</div>
+				<el-container v-if="midComponents == 2" class="playlist-container"
+				              style="overflow: auto; height: 730px ;border-radius: 12px">
+					<el-button class="exit-search"
+					           data-tooltip="退出"
 
-    <!-- MAIN & RIGHT CONTENT -->
-    <Header class="header" @headData="receiveDataFromHeader" allow-search></Header>
-    <img class="logo" src="../assets/pictures/logos/logo3.png" alt="">
-    <left-side-bar class="left-side-bar" @playFromLeftBar="(id)=>{playFromLeftBarAlbum = id }" @setCurrentPlaylist="receiveDisplayingPlaylist"/>
-    <div class="content" :class="{ 'full-width': !showRightContent }">
-      <div class="main-view" :class="{ 'expanded': !showRightContent }">
-        <el-container v-if="midComponents == 0" class="playlist-container"
-                      style="overflow: auto; height: 730px ;border-radius: 12px">
-          <MainView/>
-        </el-container>
-        <!--height: 730px -->
-        <div v-if="midComponents == 1" class="playlist-container"
-                      style="overflow: scroll; border-radius: 12px">
-          <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
-                          @switchSongs="switchToPlaylist" :play-list="playlists" :playFromLeftBar="playFromLeftBarAlbum"/>
-        </div>
-        <el-container v-if="midComponents == 2" class="playlist-container"
-                      style="overflow: auto; height: 730px ;border-radius: 12px" >
-          <el-button class="exit-search"
-                     data-tooltip="退出"
-                     :class="{ 'adjusted-position': showRightContent }"
-                     @click="setMidComponents(0)"></el-button>
-          <Comment :song-id=currentSongId :user-id=currentUserId></Comment>
-        </el-container>
-        <el-container v-if="midComponents == 3" class="playlist-container"
-                      style="overflow: auto; height: 730px ;border-radius: 12px">
-          <el-button class="exit-search"
-                     data-tooltip="退出"
-                     :class="{ 'adjusted-position': showRightContent }"
-                     @click="setMidComponents(0)"></el-button>
-          <SearchView :songResult="songResult" :playlistResult="playlistResult"/>
-        </el-container>
-      </div>
-      <div v-if="showRightContent" class="right-content">
-        <div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
-          <div class="album-cover" @click="togglePlayingPage">
-            <img :src="songs[currentSongIndex].picPath" style="margin-top: 10px" id="rotatingImage" alt=""/>
-            <span class="point"></span>
-          </div>
-          <h2>{{ songs[currentSongIndex].title }}</h2>
-          <p>{{ songs[currentSongIndex].artist }}</p>
-        </div>
-
-        <div class="current-playlist" style="margin-top: 20px">
-          <el-container class="playlist-container" style="height: 64px">
-            <div class="playlist-item" style="display: flex; flex-direction: row">
-              <img src="../assets/icons/add.png" alt="" style=""/>
-              <div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
-                <p class="playlist-container-desc" style="
+					           :class="{ 'adjusted-position': showRightContent }"
+					           @click="setMidComponents(0)"></el-button>
+					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
+				</el-container>
+				<el-container v-if="midComponents == 3" class="playlist-container"
+				              style="overflow: auto; height: 730px ;border-radius: 12px">
+					<el-button class="exit-search"
+					           data-tooltip="退出"
+					           :class="{ 'adjusted-position': showRightContent }"
+					           @click="setMidComponents(0)"></el-button>
+					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
+				</el-container>
+				<div v-if="midComponents == 4" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
+					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
+					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
+				</div>
+			</div>
+			<div v-if="showRightContent" class="right-content">
+				<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
+					<div class="album-cover" @click="togglePlayingPage">
+						<img :src="songs[currentSongIndex].picPath" style="margin-top: 10px" id="rotatingImage" alt=""/>
+						<span class="point"></span>
+					</div>
+					<h2>{{ songs[currentSongIndex].title }}</h2>
+					<p>{{ songs[currentSongIndex].artist }}</p>
+				</div>
+				
+				<div class="current-playlist" style="margin-top: 20px">
+					<el-container class="playlist-container" style="height: 64px">
+						<div class="playlist-item" style="display: flex; flex-direction: row">
+							<img src="../assets/icons/add.png" alt="" style=""/>
+							<div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px">
+								<p class="playlist-container-desc" style="
 									color: white;
 									font-size: 16px;
 									text-align: left;
@@ -586,7 +649,8 @@ let playFromLeftBarAlbum = ref(null);
 							</div>
 						</div>
 					</el-container>
-					<el-container class="playlist-container" style="overflow: auto; height: 384px; display: flex; flex-direction: column">
+					<el-container class="playlist-container"
+					              style="overflow: auto; height: 384px; display: flex; flex-direction: column">
 						<div v-for="(song, index) in songs" class="playlist-item"
 						     style="display: flex; flex-direction: row">
 							<div @click="switchToSong(index, false)" style="cursor: pointer">
@@ -618,8 +682,8 @@ let playFromLeftBarAlbum = ref(null);
 				</div>
 			</div>
 		</div>
-
-
+		
+		
 		<!-- FOOTER -->
 		<footer>
 			<div class="bottom-description bottom-component"
@@ -650,7 +714,7 @@ let playFromLeftBarAlbum = ref(null);
 						{{ songs[currentSongIndex].artist }}</p>
 				</div>
 			</div>
-
+			
 			<el-card class="bottom-controller bottom-component" style="
 						position: absolute;
 					    left: 50%;
@@ -683,20 +747,25 @@ let playFromLeftBarAlbum = ref(null);
 				</div>
 			</el-card>
 
+
 			<div class="right-controls">
+				<div class="volumn-control" style="display: flex; flex-direction: row; align-items: center">
+					<h1 style="margin: 0">🔈</h1>
+					<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+				</div>
 				<div class="feature-icon"
 				     data-tooltip="分享"
 				     :class="{ active: isSharing }">
 					<img src="../assets/icons/comment/share.png" alt="分享">
 				</div>
-
+				
 				<div class="feature-icon"
 				     data-tooltip="评论"
 				     :class="{ active: midComponents === 2 }"
 				     @click="setMidComponents(2)">
 					<img src="../assets/icons/comment/comment.png" alt="评论">
 				</div>
-
+				
 				<div class="feature-icon"
 				     data-tooltip="播放队列"
 				     :class="{ active: showRightContent }"
@@ -706,8 +775,8 @@ let playFromLeftBarAlbum = ref(null);
 			</div>
 		</footer>
 	</div>
-
-
+	
+	
 	<!-- PLAYING PAGE -->
 	<div v-show="isPlayingPage" class="playing-page">
 		<div v-if="isLyricsDisplaying" class="lyrics-container">
@@ -717,7 +786,8 @@ let playFromLeftBarAlbum = ref(null);
 					:key="index"
 					:class="{ active: index === currentLineIndex }"
 					class="lyrics-line"
-				>{{ line.text }}</div>
+				>{{ line.text }}
+				</div>
 				<h1 v-if="lyrics.length === 0" style="
 					font-size: 24px;
 					color: #9d9d9d;
@@ -726,8 +796,8 @@ let playFromLeftBarAlbum = ref(null);
 				">Ouch！该歌曲暂无歌词！</h1>
 			</div>
 		</div>
-
-<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
+		
+		<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
 		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
@@ -784,6 +854,10 @@ let playFromLeftBarAlbum = ref(null);
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="volumn-control-playing" style="display: flex; flex-direction: row; align-items: center">
+				<h1 style="margin: 0">🔈</h1>
+				<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
 			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
@@ -859,7 +933,7 @@ h1 {
 	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
-
+	
 	/* 原先main中的内容
 	height: 700px;
 	width: 95%;
@@ -878,9 +952,9 @@ h1 {
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
 	grid-template-columns: auto 1fr;
-	grid-template-rows: 10% 80% 10%;
+	grid-template-rows: 10% 81% 9%;
 	grid-auto-rows: min-content;
-
+	
 	column-gap: 8px;
 	padding: 8px;
 	overflow: hidden;
@@ -896,17 +970,17 @@ h1 {
 
 left-side-bar {
 	grid-area: left-sideBar;
-
+	
 }
 
 .content {
 	grid-area: main-view;
-
+	
 }
 
 footer {
 	grid-area: now-playing-bar;
-
+	
 }
 
 /* MAIN MENU */
@@ -996,24 +1070,25 @@ footer {
 
 /* CONTENT 包含中间和右边栏 是grid布局*/
 .content {
-  height: 100%;
+	height: 100%;
 	display: grid;
 	grid-template-columns: 1fr auto;
-  grid-template-rows: 100%;
+	grid-template-rows: 100%;
 	transition: all 0.3s ease;
 	column-gap: 8px;
-
+	
 }
 
 .content.full-width {
 	grid-template-columns: 100% !important;
-
+	
 }
 
 /* LEFT CONTENT */
-.main-view{
-  overflow: scroll;
+.main-view {
+	overflow: scroll;
 }
+
 .main-view > {
 	display: flex;
 	flex-direction: column;
@@ -1025,7 +1100,7 @@ footer {
 }
 
 .main-view.expanded {
-
+	
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -1119,7 +1194,7 @@ footer {
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	max-width: 150px;
-
+	
 	@supports (-webkit-line-clamp: 2) {
 		overflow: hidden;
 		display: -webkit-box;
@@ -1145,7 +1220,6 @@ footer {
 	display: none;
 }
 */
-
 
 .album-container::-webkit-scrollbar {
 	height: 10px;
@@ -1173,7 +1247,6 @@ footer {
 	border-radius: 12px;
 	padding: 10px 20px 20px;
 	color: #e5e5e5;
-  overflow: scroll;
 }
 
 /* SONGS */
@@ -1354,17 +1427,17 @@ footer {
 	main {
 		grid-template-columns: 15% 85%;
 	}
-
+	
 	.user-info img {
 		border-radius: 50%;
 		padding: 12px 12px 6px;
 	}
-
+	
 	.nav-icon {
 		text-align: center;
 		transform: translateY(2px);
 	}
-
+	
 	.content {
 		grid-template-columns: 70% 30%;
 	}
@@ -1381,20 +1454,20 @@ footer {
 	.swiper-slide {
 		width: 500px;
 	}
-
+	
 	.swiper-slide img {
 		border-radius: 16px;
 		height: 280px;
 	}
-
+	
 	.album-frame {
 		width: 160px;
 	}
-
+	
 	.song {
 		grid-template-columns: 29% auto 10%;
 	}
-
+	
 	.controls button {
 		margin: 15px;
 	}
@@ -1404,31 +1477,31 @@ footer {
 	.content:not(.full-width) {
 		grid-template-columns: 60% 40%;
 	}
-
+	
 	.main-view {
-
+	
 	}
-
+	
 	.swiper-slide {
 		width: 410px;
 	}
-
+	
 	.swiper-slide img {
 		height: 220px;
 	}
-
+	
 	.album {
 		grid-template-rows: 4fr 2fr;
 	}
-
+	
 	.album-frame {
 		width: 130px;
 	}
-
+	
 	.song {
 		grid-template-columns: 26% auto 10%;
 	}
-
+	
 	.song:nth-child(8),
 	.song:nth-child(9) {
 		display: none;
@@ -1440,83 +1513,83 @@ footer {
 		grid-template-columns: 10% 90%;
 		margin: 20px;
 	}
-
+	
 	.main-view {
 		/*padding: 30px 20px 20px;*/
 	}
-
+	
 	.swiper-slide img {
 		height: 180px;
 	}
-
+	
 	.album {
 		grid-template-rows: 3fr 2fr;
 	}
-
+	
 	.album-frame {
 		width: 100px;
 	}
-
+	
 	.right-content {
 		grid-template-rows: 55% 45%;
 	}
-
+	
 }
 
 @media (max-width: 825px) {
 	.content:not(.full-width) {
 		grid-template-columns: 52% 48%;
 	}
-
+	
 	.swiper-slide {
 		width: 280px;
 	}
-
+	
 	.swiper-slide img {
 		height: 200px;
 	}
-
+	
 	.slide-overlay button {
 		padding: 8px 12px;
 	}
-
+	
 }
 
 @media (max-width: 750px) {
 	main {
 		grid-template-columns: 15% 85%;
 	}
-
+	
 	.content:not(.full-width) {
 		grid-template-columns: 100%;
 		grid-template-areas:
         "leftContent"
         "rightContent";
 	}
-
+	
 	.main-view {
 		grid-area: leftContent;
 	}
-
+	
 	.album {
 		grid-template-rows: 3fr 2fr;
 	}
-
+	
 	.album-frame {
 		width: 140px;
 	}
-
+	
 	.right-content {
 		grid-area: rightContent;
 		border-left: unset;
 		grid-template-rows: 60% 40%;
 		row-gap: 16px;
 	}
-
+	
 	#progress {
 		width: 60%;
 	}
-
+	
 	.controls button {
 		margin: 20px;
 	}
@@ -1526,23 +1599,23 @@ footer {
 	.swiper-slide {
 		width: 290px;
 	}
-
+	
 	.swiper-slide img {
 		height: 180px;
 	}
-
+	
 	.artist img {
 		width: 80px;
 	}
-
+	
 	.album {
 		grid-template-rows: 3fr 2fr;
 	}
-
+	
 	.album-frame {
 		width: 100px;
 	}
-
+	
 }
 
 @media (max-width: 450px) {
@@ -1550,7 +1623,7 @@ footer {
 		border-radius: 50%;
 		padding: 6px 6px 2px;
 	}
-
+	
 }
 
 /* 动画：专辑列表移到顶部 */
@@ -1603,6 +1676,7 @@ footer {
 		transform: translateY(0);
 	}
 }
+
 /**
 .share-icon,
 .queue-icon,
@@ -1738,11 +1812,6 @@ footer {
 }
 
 
-
-
-
-
-
 /* 没必要 在app中写过了
 html, body {
 	margin: 0;
@@ -1817,6 +1886,12 @@ html, body {
 	font-size: 1rem;
 }
 
+.volumn-control-playing {
+	position: absolute;
+	bottom: 20px;
+	right: 200px;
+}
+
 .corner-buttons {
 	position: absolute;
 	bottom: 20px;
@@ -1879,4 +1954,46 @@ html, body {
 	background: transparent;
 }
 
+/* 设置整个页面的输入范围滑条样式 */
+#volumeControl {
+	-webkit-appearance: none;  /* 去掉默认样式 */
+	appearance: none;
+	width: 120px;              /* 设置宽度 */
+	height: 10px;              /* 设置高度 */
+	background: #ddd;          /* 设置默认背景颜色 */
+	border-radius: 5px;        /* 设置圆角 */
+	outline: none;             /* 去除焦点时的轮廓 */
+	transition: background 0.3s; /* 背景色平滑过渡 */
+}
+
+/* 设置滑条（轨道）的样式 */
+#volumeControl::-webkit-slider-runnable-track {
+	height: 10px;  /* 设置轨道高度 */
+	border-radius: 5px;  /* 圆角 */
+	background: #1ed760;   /* 设置轨道颜色为绿色 */
+}
+
+/* 设置滑块的样式 */
+#volumeControl::-webkit-slider-thumb {
+	-webkit-appearance: none;  /* 去掉默认样式 */
+	appearance: none;
+	width: 20px;   /* 设置滑块宽度 */
+	height: 20px;  /* 设置滑块高度 */
+	margin-top: -5px;
+	border-radius: 50%;  /* 圆形滑块 */
+	background: #fff;    /* 设置滑块背景颜色为白色 */
+	border: 2px solid green;  /* 设置滑块边框颜色为绿色 */
+	cursor: pointer;  /* 设置鼠标悬停时的指针样式 */
+}
+
+/* 鼠标悬浮时改变轨道背景颜色 */
+#volumeControl:hover {
+	background: #ccc;  /* 改变背景颜色 */
+}
+
+/* 设置滑块被点击时的样式 */
+#volumeControl:active::-webkit-slider-thumb {
+	background: #8bc34a;  /* 点击时滑块的背景颜色 */
+	border-color: #66bb6a;  /* 点击时滑块边框颜色 */
+}
 </style>
