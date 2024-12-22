@@ -56,12 +56,19 @@ export const modifyPlaylist = (playlistModifyInfo) => {
     + playlist_id: number
     + song_id: number
  */
-export const addSongToPlaylist = (songInfo) => {
-    return axios.post(`${PLAYLIST_MODULE}/addSong`, songInfo,
-        { headers: { 'Content-Type': 'application/json' } })
-        .then(res => {
-            return res;
-        });
+export const addSongToPlaylist = (addInfo) => {
+    return axios.post(`${PLAYLIST_MODULE}/addSong`, null, {
+        params: {
+            user_id: addInfo.user_id,
+            playlist_id: addInfo.playlist_id,
+            song_id: addInfo.song_id
+        },
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(res => {
+        return res;
+    });
 }
 
 /*

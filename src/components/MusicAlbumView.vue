@@ -8,7 +8,7 @@ import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 
-const emit = defineEmits();
+const emit = defineEmits(['pauseSong']);
 const props = defineProps({
 	albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
 		type: Object,
@@ -19,7 +19,8 @@ const props = defineProps({
 		required: true,
 	},
 	playFromLeftBar: null,
-	currentSongId: Number
+	currentSongId: Number,
+  isPaused: Boolean,
 });
 
 const edit_title = ref("");
@@ -216,6 +217,15 @@ const playFromId = (musicId) => {
 	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
 	musicPauseIndex = null;
 }
+
+watch(() => props.isPaused, (newValue) => {
+  if (newValue) {
+    musicPauseIndex = musicPlayIndex;
+  } else {
+    musicPauseIndex = null;
+  }
+});
+
 const addToFavorite = (musicId) => {
 }
 const removeMusicFromAlbum = (albumId, songId) => {
@@ -226,11 +236,13 @@ const removeMusicFromAlbum = (albumId, songId) => {
 }
 const enterMusicDescription = (musicId) => {
 }
-const enterAuthorDescription = (authorName) => {
+const enterAuthorDescription = (artistName) => {
+	emit('switchToArtist', artistName);
 }
 
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
+  emit('pauseSong');
 }
 
 const editAlbumDescription = (albumId) => {
