@@ -190,6 +190,7 @@ const registerDOMs = () => {
 				});
 				song.load();
 				song.play();
+        isPaused.value = false;
 				theme.change(songs.value[currentSongIndex.value].picPath);
 			}
 		} catch (e) {
@@ -639,6 +640,11 @@ const pauseCurrentSong = () => {
   }
 };
 
+const updateSongs = (newSongs) => {
+  songs.value = newSongs;
+  displayingSongs.value = newSongs;
+};
+
 </script>
 
 <template>
@@ -659,6 +665,7 @@ const pauseCurrentSong = () => {
 				<div v-if="midComponents == 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
           <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
+                          :current-song-id="currentSongId"
                           @switchSongs="switchToPlaylist" @switchToArtist="(name) => setMidComponents(5, name)"
                           @pauseSong="pauseCurrentSong"
                           :playFromLeftBar="playFromLeftBarAlbum"
@@ -691,8 +698,11 @@ const pauseCurrentSong = () => {
              style="overflow: scroll; border-radius: 12px">
           <ArtistView :artist-name="currentArtist"
                       :is-paused="isPaused"
+                      :current-song-id="currentSongId"
                       @playSong="playArtistSong"
-                      @pauseSong="pauseCurrentSong"/>
+                      @pauseSong="pauseCurrentSong"
+                      @back="setMidComponents(1)"
+                      @updateSongs="updateSongs"/>
 				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">

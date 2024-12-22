@@ -32,8 +32,13 @@ const props = defineProps({
 		required: true,
 	},
 	playFromLeftBar: null,
-	currentSongId: Number,
-  isPaused: Boolean,
+	currentSongId: {
+		type: Number,
+		required: true
+	},
+	isPaused: {
+		type: Boolean,
+	}
 });
 
 const edit_title = ref("");
@@ -209,11 +214,11 @@ const removeAlbum = (albumId) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex.value = props.musicList[0].id;
+		musicPlayIndex = props.musicList[0].id;
 	} else {
-		musicPlayIndex.value = musicId;
+		musicPlayIndex = musicId;
 	}
-	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
+	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
 }
 
@@ -291,6 +296,13 @@ const addRecommendMusic = (musicId) => {
 	})
 }
 
+watch(() => props.currentSongId, (newId) => {
+	if (newId) {
+		musicPlayIndex = newId;
+    musicClickedIndex = newId;
+		musicPauseIndex = props.isPaused ? newId : null;
+	}
+});
 
 </script>
 

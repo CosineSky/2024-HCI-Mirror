@@ -11,7 +11,7 @@ import {getSongsByPlaylist} from "../api/song";
 import { formatTime } from '../utils/formatTime';
 import { loadSongDurations } from '../utils/loadSongDurations';
 
-const emit = defineEmits(['playSong', 'pauseSong']);
+const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs']);
 const props = defineProps({
   artistName: {
     type: String,
@@ -19,6 +19,10 @@ const props = defineProps({
   },
   isPaused: {
     type: Boolean,
+  },
+  currentSongId: {
+    type: Number,
+    required: true
   }
 });
 
@@ -37,6 +41,9 @@ let musicPauseIndex = ref(null);
 
 // 添加关注状态
 const isFollowing = ref(false);
+
+// 用户第一次播放该艺人歌曲的标志
+const isFirstPlay = ref(true);
 
 // 关注/取消关注逻辑
 const toggleFollow = () => {
@@ -242,21 +249,29 @@ window.onscroll = () => {
 const playFromId = (musicId) => {
   if (musicId === null || musicId === undefined) {
     if (hotSongs.value && hotSongs.value.length > 0) {
-      musicPlayIndex.value = hotSongs.value[0].id;
+      musicPlayIndex = hotSongs.value[0].id;
+      if(isFirstPlay){
+        isFirstPlay.value = false;
+        emit('updateSongs', hotSongs.value);
+      }
       emit('playSong', hotSongs.value[0]);
     }
   } else {
-    musicPlayIndex.value = musicId;
+    musicPlayIndex = musicId;
     const songToPlay = hotSongs.value.find(song => song.id === musicId);
     if (songToPlay) {
+      if(isFirstPlay){
+        isFirstPlay.value = false;
+        emit('updateSongs', hotSongs.value);
+      }
       emit('playSong', songToPlay);
     }
   }
-  musicPauseIndex.value = null;
+  musicPauseIndex = null;
 };
 
 const pauseMusic = (musicId) => {
-  musicPauseIndex.value = musicId;
+  musicPauseIndex = musicId;
   // 发送暂停事件给父组件
   emit('pauseSong');
 };
@@ -282,9 +297,9 @@ const addToFavorite = (musicId) => {
 
 watch(() => props.isPaused, (newValue) => {
   if (newValue) {
-    musicPauseIndex.value = musicPlayIndex.value;
+    musicPauseIndex = musicPlayIndex;
   } else {
-    musicPauseIndex.value = null;
+    musicPauseIndex = null;
   }
 });
 
@@ -294,10 +309,25 @@ watch(() => hotSongs.value, (newSongs) => {
   loadSongDurations(newSongs, songDurations);
 }, { immediate: true });
 
+// 监听currentSongId的变化
+watch(() => props.currentSongId, (newId) => {
+  if (newId) {
+    musicPlayIndex = newId;
+    musicClickedIndex = newId;
+    musicPauseIndex = props.isPaused ? newId : null;
+  }
+});
+
 </script>
 
 <template>
   <div class="album-content" :style="{backgroundImage: gradientColor}" @mousewheel="handelScroll">
+    <div class="back-button" data-tooltip="返回" @click="$emit('back')">
+      <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
+      </svg>
+    </div>
+
     <div class="header">
       <img :src="artist?.avatarUrl" alt="" class="artist-image" @load="updateBackground"/>
       <div class="header-content">
@@ -1174,5 +1204,42 @@ li:hover {
   font-size: 12px;
   white-space: nowrap;
   z-index: 1000;
+}
+
+/* 修改返回按钮样式 */
+.back-button {
+  position: relative;
+  margin: 24px 0 0 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, .8);
+}
+
+/* 提示文字样式 */
+.back-button[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
 }
 </style>
