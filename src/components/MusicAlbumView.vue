@@ -7,6 +7,7 @@ import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {formatTime} from "@/utils/formatTime";
 
 
 /*
@@ -58,6 +59,17 @@ let musicPauseIndex = ref(null);
 const resizeObserver = ref(null)
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
+const songDurations = ref(new Map());
+watch(() => props.musicList, (newSongs) => {
+  if (newSongs) {
+    newSongs.forEach(song => {
+      const audio = new Audio(song.filePath);
+      audio.addEventListener('loadedmetadata', () => {
+        songDurations.value.set(song.id, audio.duration);
+      });
+    });
+  }
+}, { immediate: true });
 // 放缩时的组件处理
 const handleResize = () => {
 	const albums = document.querySelectorAll(".music-album-info");
@@ -351,7 +363,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:55px">时间</p>
+				<p style="margin-left: auto; margin-right:62px">时间</p>
 			</div>
 			<div class="edit-desc" @blur="quitEdit">
 				<div data-testid="playlist-edit-details-modal" class="main-edit-desc">
@@ -430,7 +442,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:20px">详情</p><!--时间变为详细信息-->
+				<p style="margin-left: auto; margin-right:20px">时间</p><!--时间变为详细信息-->
 			</div>
 			
 			<div class="musicList">
@@ -529,7 +541,8 @@ const addRecommendMusic = (musicId) => {
 						</el-popover>
 						<!--            这里原本想写歌曲时长，但是没有 只能留空-->
 						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{}}
+						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+              {{formatTime(songDurations.get(music.id))}}
 						</div>
 						<el-popover
 							:ref="getPopoverIndex"

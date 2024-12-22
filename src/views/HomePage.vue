@@ -25,6 +25,7 @@ import {getPlaylistsByUser} from "../api/playlist";
 import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
+import { formatTime } from '../utils/formatTime';
 
 
 /*
@@ -55,12 +56,6 @@ const isLyricsDisplaying = ref(true);
 
 function toggleLyrics() {
 	isLyricsDisplaying.value = !isLyricsDisplaying.value;
-}
-
-function formatTime(time) {
-	const minutes = Math.floor(time / 60);
-	const seconds = Math.floor(time % 60);
-	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function updateCurrentTime(event) {
