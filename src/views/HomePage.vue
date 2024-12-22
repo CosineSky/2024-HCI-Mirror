@@ -332,10 +332,21 @@ const currentUserId = ref(userToken.value.id);
  */
 // Playing Status
 const songs = ref([]);
-const volumn = ref(1);
-watch(volumn, (newValue) => {
-	song.volume = newValue;
+const volume = ref(1);
+const volumePercentage = ref('100%');
+
+// 添加音量变化处理
+const updateVolumeStyle = (e) => {
+  const volume = e.target.value;
+  volumePercentage.value = (volume * 100) + '%';
+};
+
+// 监听volume变化，同步更新所有音量控制器的样式
+watch(volume, (newValue) => {
+  song.volume = newValue;
+  volumePercentage.value = (newValue * 100) + '%';
 });
+
 const displayingSongs = ref([]);
 const isPaused = ref(false);
 const duration = ref(0);
@@ -580,7 +591,11 @@ onMounted(() => {
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
-	
+
+  const volumeControl = document.getElementById('volumeControl');
+  if (volumeControl) {
+    volumeControl.style.setProperty('--volume-percentage', '100%');
+  }
 })
 let playFromLeftBarAlbum = ref(null);
 
@@ -623,6 +638,7 @@ const pauseCurrentSong = () => {
     isPaused.value = true;  // 设置为暂停状态
   }
 };
+
 </script>
 
 <template>
@@ -803,9 +819,17 @@ const pauseCurrentSong = () => {
 			
 			
 			<div class="right-controls">
-				<div class="volumn-control" style="display: flex; flex-direction: row; align-items: center">
+				<div class="volume-control" style="display: flex; flex-direction: row; align-items: center">
 					<h1 style="margin: 0">🔈</h1>
-					<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+					<input type="range" 
+						   id="volumeControl" 
+						   min="0" 
+						   max="1" 
+						   step="0.01" 
+						   v-model="volume"
+						   @input="updateVolumeStyle"
+						   :style="{'--volume-percentage': volumePercentage}"
+					/>
 				</div>
 				<div class="feature-icon"
 				     data-tooltip="分享"
@@ -908,9 +932,17 @@ const pauseCurrentSong = () => {
 					</div>
 				</div>
 			</div>
-			<div class="volumn-control-playing" style="display: flex; flex-direction: row; align-items: center">
+			<div class="volume-control-playing" style="display: flex; flex-direction: row; align-items: center">
 				<h1 style="margin: 0">🔈</h1>
-				<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+        <input type="range"
+               id="volumeControl"
+               min="0"
+               max="1"
+               step="0.01"
+               v-model="volume"
+               @input="updateVolumeStyle"
+               :style="{'--volume-percentage': volumePercentage}"
+        />
 			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
@@ -1939,7 +1971,7 @@ html, body {
 	font-size: 1rem;
 }
 
-.volumn-control-playing {
+.volume-control-playing {
 	position: absolute;
 	bottom: 20px;
 	right: 200px;
@@ -2012,36 +2044,30 @@ html, body {
 	-webkit-appearance: none;  /* 去掉默认样式 */
 	appearance: none;
 	width: 120px;              /* 设置宽度 */
-	height: 10px;              /* 设置高度 */
-	background: #ddd;          /* 设置默认背景颜色 */
-	border-radius: 5px;        /* 设置圆角 */
+	height: 4px;              /* 设置高度 */
+	border-radius: 2px;        /* 设置圆角 */
+	background: linear-gradient(to right, #1db954 var(--volume-percentage, 100%), #4d4d4d var(--volume-percentage, 100%));
 	outline: none;             /* 去除焦点时的轮廓 */
 	transition: background 0.3s; /* 背景色平滑过渡 */
 }
 
-/* 设置滑条（轨道）的样式 */
-#volumeControl::-webkit-slider-runnable-track {
-	height: 10px;  /* 设置轨道高度 */
-	border-radius: 5px;  /* 圆角 */
-	background: #1ed760;   /* 设置轨道颜色为绿色 */
-}
-
-/* 设置滑块的样式 */
+/* 设置滑块按钮样式 */
 #volumeControl::-webkit-slider-thumb {
 	-webkit-appearance: none;  /* 去掉默认样式 */
 	appearance: none;
-	width: 20px;   /* 设置滑块宽度 */
-	height: 20px;  /* 设置滑块高度 */
-	margin-top: -5px;
+	width: 12px;   /* 设置滑块宽度 */
+	height: 12px;  /* 设置滑块高度 */
 	border-radius: 50%;  /* 圆形滑块 */
 	background: #fff;    /* 设置滑块背景颜色为白色 */
-	border: 2px solid green;  /* 设置滑块边框颜色为绿色 */
+	border: none;  /* 去除边框 */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
 	cursor: pointer;  /* 设置鼠标悬停时的指针样式 */
+	transition: all 0.2s ease; /* 添加过渡效果 */
 }
 
-/* 鼠标悬浮时改变轨道背景颜色 */
-#volumeControl:hover {
-	background: #ccc;  /* 改变背景颜色 */
+/* 滑块按钮悬停效果 */
+#volumeControl::-webkit-slider-thumb:hover {
+	transform: scale(1.2);
 }
 
 /* 设置滑块被点击时的样式 */
