@@ -67,8 +67,8 @@ export const addSongToPlaylist = (addInfo) => {
             'Content-Type': 'application/json'
         }
     }).then(res => {
-        return res;
-    });
+            return res;
+        });
 }
 
 /*

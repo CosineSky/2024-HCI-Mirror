@@ -6,12 +6,23 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+
+
+/*
+    USER
+ */
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 const emit = defineEmits(['pauseSong']);
 const props = defineProps({
 	albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
 		type: Object,
+		required: true,
+	},
+	playList: {
+		type: Array,
 		required: true,
 	},
 	musicList: {//  类型 ：id ,title, artist, album,description, picPath,uploadTime
@@ -85,7 +96,8 @@ const handleResize = () => {
 		headerAlbumName.style.fontSize = "80px";
 		headerAlbumName.style.marginBottom = "35px";
 	}
-	//🙏
+
+	//🙏 权宜之计
 	const fixedTipArea = document.querySelector(".fixed-tips");
 	const fixedPlayArea = document.querySelector(".fixed-play-area");
 	fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
@@ -155,26 +167,6 @@ const handelScroll = (event) => {
 	}
 }
 
-window.onscroll = () => {
-	const playArea = document.querySelector(".play-area");
-	const fixedPlayArea = document.querySelector(".fixed-play-area");
-	const tipArea = document.querySelector(".tips");
-	const fixedTipArea = document.querySelector(".fixed-tips");
-	const stickyPlayY = playArea.offsetTop;
-	const stickyTipY = tipArea.offsetTop;
-	
-	if (window.scrollY >= stickyPlayY) {
-		fixedPlayArea.style.opacity = "1";
-	} else {
-		fixedPlayArea.style.opacity = "0";
-	}
-	if (window.scrollY + fixedPlayArea.scrollHeight >= stickyTipY) {
-		fixedTipArea.style.display = "flex";
-		fixedTipArea.style.top = fixedPlayArea.scrollHeight + 'px';
-	} else {
-		fixedTipArea.style.display = "none";
-	}
-}
 
 watch(props.playFromLeftBar, () => {
 	playFromId(props.playFromLeftBar)
@@ -213,10 +205,25 @@ const playFromId = (musicId) => {
 	} else {
 		musicPlayIndex.value = musicId;
 	}
-	
 	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
 	musicPauseIndex = null;
 }
+
+const addToFavorite = (musicId, albumId) => {
+	addSongToPlaylist({
+		user_id: currentUserId.value,
+		playlist_id: albumId,
+		song_id: musicId,
+	}).then(() => {
+		ElMessage({
+			message: "添加至: " + props.albumInfo.title,
+			grouping: true,
+			type: 'info',
+			offset: 16,
+			customClass: "reco-message",
+			duration: 4000,
+		})
+	})
 
 watch(() => props.isPaused, (newValue) => {
   if (newValue) {
@@ -362,6 +369,7 @@ const addRecommendMusic = (musicId) => {
 						</button>
 					</div>
 					<div class="edit-desc-text">
+						<!--              <input accept="image/.jpg, image/.jpeg, image/.png" type="file" data-testid="image-file-picker" class="wcftliF4QjZKB1CYgEON">-->
 						<div class="edit-desc-img">
 							<div class="edit-desc-img-1" draggable="false">
 								<div class="edit-desc-img-1-1 edit-desc-img-1">
@@ -400,10 +408,13 @@ const addRecommendMusic = (musicId) => {
 							</div>
 						</div>
 						<div class="edit-desc-input-name">
-							<input v-model="edit_title" data-testid="playlist-edit-details-name-input" id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1" placeholder="添加名称">
+							<input v-model="edit_title" data-testid="playlist-edit-details-name-input"
+							       id="text-input-c673a65959365e7f" type="text" class="edit-desc-input-name-1"
+							       placeholder="添加名称">
 						</div>
 						<div class="edit-desc-input-desc">
-                            <textarea v-model="edit_description" data-testid="playlist-edit-details-description-input" class="edit-desc-input-desc-1" placeholder="添加简介"/>
+							<textarea v-model="edit_description" data-testid="playlist-edit-details-description-input"
+							          class="edit-desc-input-desc-1" placeholder="添加简介"/>
 						</div>
 						<div class="edit-desc-button">
 							<button @click="confirmEdit(albumInfo.id)" data-testid="playlist-edit-details-save-button"
@@ -421,7 +432,7 @@ const addRecommendMusic = (musicId) => {
 				<p style="position:absolute; left:45px">#</p>
 				<p style="position:absolute; left:140px">标题</p>
 				<p class="album-text" style="position:absolute; left:62%">专辑</p>
-				<p style="margin-left: auto; margin-right:75px">时间</p>
+				<p style="margin-left: auto; margin-right:20px">详情</p><!--时间变为详细信息-->
 			</div>
 			
 			<div class="musicList">
@@ -437,7 +448,11 @@ const addRecommendMusic = (musicId) => {
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }"> <!--@click事件写在script中的函数里 无法及时触发:style中的样式!!!-->
 					
-					<div :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">{{ musicList.indexOf(music) + 1 }}
+					<div
+						:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
+						{{
+							musicList.indexOf(music) + 1
+						}}
 					</div>
 					<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 					             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
@@ -484,17 +499,39 @@ const addRecommendMusic = (musicId) => {
 								<check-mark class="check-mark"
 								            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
 							</template>
-							<ul @click="closePopover">
-								<!--          TODO: 这里需要所有的歌单-->
-								<li @click="addToFavorite(music.id)"></li>
+
+							<ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
+								<div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">
+									选择歌单收藏
+								</div>
+								<hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
+
+								<li class="album-to-add" @click="addToFavorite(music.id,album.id)"
+								    v-for="album in playList">
+									<div style="
+										height:40px;
+										display: flex;
+										align-items: center;
+										justify-content: space-between;
+										font-size: 20px;
+										font-weight:400"
+									>
+										<div style="display: flex; flex-direction: row">
+											<img :src="album.picPath" style="height: 40px; width:40px; border-radius: 4px" alt=""/>
+											<div style="
+												margin-left: 10px;
+												font-size: 18px;
+											">{{ album.title }}</div>
+										</div>
+										<div style="font-size: 14px; color: #a4a4a4">{{ album.songNum }}首</div>
+									</div>
+
+								</li>
 							</ul>
 						</el-popover>
-						
+						<!--            这里原本想写歌曲时长，但是没有 只能留空-->
 						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{
-								music.upload_time
-							}}
-							<!--TODO: 解决播放时间问题-->
+						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{}}
 						</div>
 						<el-popover
 							:ref="getPopoverIndex"
@@ -508,7 +545,7 @@ const addRecommendMusic = (musicId) => {
 								<dots class="music-more-info"/>
 							</template>
 							<ul @click="closePopover">
-								<li @click="removeMusicFromAlbum(music.id)">删除歌曲</li>
+								<li @click="removeMusicFromAlbum(albumInfo.id, music.id)">删除歌曲</li>
 							</ul>
 						</el-popover>
 					
@@ -541,6 +578,7 @@ const addRecommendMusic = (musicId) => {
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
 						
+
 						<div
 							:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
 							{{
@@ -559,7 +597,6 @@ const addRecommendMusic = (musicId) => {
 						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
 						
 						<div class="music-detailed-info">
-							<!--TODO: img src to be changed-->
 							<img class="music-image"
 							     :src="music.picPath"
 							     alt="歌曲图片"/>
@@ -862,6 +899,10 @@ p {
 
 .check-mark:focus {
 	outline: none;
+}
+
+.album-to-add {
+	padding: 8px;
 }
 
 .music-more-info {
