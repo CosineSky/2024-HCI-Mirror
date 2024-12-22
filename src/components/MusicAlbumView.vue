@@ -627,7 +627,7 @@ p {
 	margin: 0;
 	padding: 0;
 	color: white;
-	background-color: rgb(31, 31, 31);
+	background-color: #121212;
 	transition: background-color ease 0.6s;
 	display: flex;
 	flex-direction: column;

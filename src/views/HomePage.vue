@@ -928,7 +928,7 @@ h1 {
 	  flex-direction: column;
 	*/
 	min-height: 100vh;
-	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
+	background-color: rgb(0, 0, 0); /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
 	
@@ -1239,7 +1239,7 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
-	background-color: #171717;
+	background-color: #121212;
 	display: flex;
 	flex-direction: column;
 	border-radius: 12px;

@@ -40,7 +40,10 @@ const router = createRouter({
             meta: {title: 'Manage'}
         },
         {
+            path: '/test',
             // @ts-ignore
+            component: () => import('../views/a.vue'),
+            meta: {title: 'test'}
 
         }
     ]

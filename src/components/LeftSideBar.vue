@@ -240,7 +240,7 @@ nav {
 	padding: 12px 0 20px;
 	overflow: hidden;
 	font-family: inherit;
-	background-color: #171717;
+	background-color: #121212;
 	
 }
 
