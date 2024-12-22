@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref} from "vue"
+import {computed, onMounted, ref, watch} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -26,6 +26,7 @@ import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
 import { formatTime } from '../utils/formatTime';
+import {getPlaylistById} from "../api/resolve";
 
 
 /*
@@ -58,11 +59,11 @@ function toggleLyrics() {
 	isLyricsDisplaying.value = !isLyricsDisplaying.value;
 }
 
-function formatTime(time) {
-	const minutes = Math.floor(time / 60);
-	const seconds = Math.floor(time % 60);
-	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
+// function formatTime(time) {
+// 	const minutes = Math.floor(time / 60);
+// 	const seconds = Math.floor(time % 60);
+// 	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+// }
 
 function updateCurrentTime(event) {
 	currentTime.value = event.target.currentTime;
@@ -548,11 +549,25 @@ function receiveDataFromHome() {
 const midComponents = ref(0);
 const currentArtist = ref(null);
 
-const setMidComponents = (val, artistName = null) => {
+const setMidComponents = (val, prop = null) => {
   midComponents.value = val;
-  if (val === 5) {
-    currentArtist.value = artistName;
+  if(val === 1)
+  {
+    getPlaylistById({playlist_id:prop}).then((res) => {
+      displayingPlaylist.value = res.data.result;
+      getSongsByPlaylist({
+        playlist_id: displayingPlaylist.value.id,
+      }).then((res) => {
+        displayingSongs.value = res.data.result;
+      }).catch(e => {
+        console.log("Failed to get songs!");
+      });
+    })
   }
+  if (val === 5) {
+    currentArtist.value = prop;
+  }
+
 }
 
 /*
@@ -662,12 +677,16 @@ const updateSongs = (newSongs) => {
 		               @setCurrentPlaylist="receiveDisplayingPlaylist"/>
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
-				<el-container v-if="midComponents == 0" class="playlist-container"
-				              style="overflow: auto; height: 730px ;border-radius: 12px">
-					<MainView/>
-				</el-container>
+				<div v-if="midComponents === 0" class="playlist-container"
+				              style="overflow: scroll; border-radius: 12px">
+					<MainView @openArtistView="(name) => setMidComponents(5, name)"
+                    @openEpisodeView="(name) => setMidComponents(4, name)"
+                    @openMusicView=""
+                    @openAlbumView="(album) => setMidComponents(1, album)"
+            />
+				</div>
 				<!--height: 730px -->
-				<div v-if="midComponents == 1" class="playlist-container"
+				<div v-if="midComponents === 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
           <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
                           :current-song-id="currentSongId"
@@ -677,7 +696,7 @@ const updateSongs = (newSongs) => {
                           :is-paused="isPaused"
           />
 				</div>
-				<el-container v-if="midComponents == 2" class="playlist-container"
+				<el-container v-if="midComponents === 2" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
 					           data-tooltip="退出"
@@ -686,7 +705,7 @@ const updateSongs = (newSongs) => {
 					           @click="setMidComponents(0)"></el-button>
 					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
 				</el-container>
-				<el-container v-if="midComponents == 3" class="playlist-container"
+				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<el-button class="exit-search"
 					           data-tooltip="退出"
@@ -694,12 +713,12 @@ const updateSongs = (newSongs) => {
 					           @click="setMidComponents(0)"></el-button>
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
 				</el-container>
-				<div v-if="midComponents == 4" class="playlist-container"
+				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
 					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
 					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
         </div>
-        <div v-if="midComponents == 5" class="playlist-container"
+        <div v-if="midComponents === 5" class="playlist-container"
              style="overflow: scroll; border-radius: 12px">
           <ArtistView :artist-name="currentArtist"
                       :is-paused="isPaused"
@@ -1031,7 +1050,7 @@ h1 {
 	  flex-direction: column;
 	*/
 	min-height: 100vh;
-	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
+  background-color: #000000; /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
 	
@@ -1188,6 +1207,7 @@ footer {
 /* LEFT CONTENT */
 .main-view {
 	overflow: scroll;
+  background-color: #121212 !important;
 }
 
 .main-view > {

@@ -167,7 +167,7 @@ defineProps({
 			     :key="album.id"
 			     @mouseenter="()=>{albumHoveredIndex = album.id}"
 			     @mouseleave="()=>{albumHoveredIndex = null}"
-			     :style="{backgroundColor: albumHoveredIndex === album.id ? '#1F1F1F' : '#171717' }"
+			     :style="{backgroundColor: albumHoveredIndex === album.id ? '#1F1F1F' : '#121212' }"
 			     @click="emit('setCurrentPlaylist', album);"
 			     class="musicAlbum-item">
 				<img

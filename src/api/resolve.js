@@ -28,7 +28,7 @@ export const getSongById = (songId) => {
 /*
     // TODO: newly added
     + playlist_id: number
- */
+*/
 export const getPlaylistById = (playlistId) => {
     console.log(playlistId)
     return axios.get(`${PLAYLIST_MODULE}/id`, { params: playlistId })

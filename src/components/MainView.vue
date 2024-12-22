@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue"
+import {onMounted, ref} from "vue"
 import {getSongsByPlaylist} from "@/api/song";
 import {getPlaylistById} from "../api/resolve";
 
@@ -16,35 +16,46 @@ import nextIcon from "../icon/nextIcon.vue";
 //     },
 //
 // })
+const emit = defineEmits([])
+/*条目区 都写死*/
 const defautAlbum = ref({
+  id:2,
   title:"default",
     picPath:null
 })
 const mostPlayedAlbum= ref({
+  id:3,
   title:"mostPlayedAlbum",
   picPath:null
 })
 const weeklyRecommend = ref({
+  id:5,
   picPath:"https://i.scdn.co/image/ab67616d00004851970e7892dab13cdb11387690",
 
 })
 const newSongsRecommend = ref({
+  id:6,
   picPath:"https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d"
 })
 /*先固定就这两位*/
-const artistRecommend = ref([{picPath:"",name:"Marcus Warner"},{picPath:"",name: "朴树"}])
-const episodeRecommend = ref([{picPath:"",title:"热门专辑1"},{picPath:"",title:"热门专辑2"}])
+const artistRecommend = ref([{ id:1,picPath:"",name:"Marcus Warner"},{id:1,picPath:"",name: "朴树"}])
+const episodeRecommend = ref([{id:1,picPath:"",title:"热门专辑1"},{id:1,picPath:"",title:"热门专辑2"}])
 
 /*图片区 ：推荐歌曲、推荐艺人、推荐专辑(歌单)*/
 const songs = ref([]);
-const singers = ref([]);
+/*写死*/
+const artists = ref([{
+  id:1,
+  avatarUrl:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/6ac2a408-1632-4713-bcc3-a54151e29c18.jpg",
+  name:"朴树"
+},
+]);
 const albums = ref([]);
 
 const currentTab = ref('all')
-
-
 let timer = ref(null)
 const limit = 230;
+
 function leftSlide(event){
   // 保存滚动盒子左侧已滚动的距离
   const target = event.currentTarget.nextElementSibling;
@@ -71,7 +82,6 @@ function leftSlide(event){
   },18)
   // 20：速度（可调节）
 }
-
 function rightSlide(event){
   const target = event.currentTarget.previousElementSibling;
   // 保存滚动盒子左侧已滚动的距离
@@ -100,7 +110,6 @@ function rightSlide(event){
   },18)
   // 20：速度（可调节）
 }
-
 const handleTabClick = (tab) => {
 	currentTab.value = tab
 }
@@ -118,12 +127,34 @@ const buttonTurnDown= (buttonId)=>{
   leftButton[buttonId].style.opacity="0";
 
 }
+const openArtistView = (name)=>{
+  emit('openArtistView', name);
+}
+const openEpisodeView= (id)=>{
+  emit('openEpisodeView', id);
+}
+const openMusicView = (id)=>{
+  emit('openMusicView', id);
+}
+const openAlbumView = (id)=>{
+  emit('openAlbumView', id);
+}
 
-getSongsByPlaylist({
-	playlist_id: 3,
-}).then((res) => {
-	songs.value = res.data.result.slice(0, 4);
-});
+const albumIds = [3,4,5,6]
+onMounted(()=>{
+  getSongsByPlaylist({
+    playlist_id: 3,
+  }).then((res) => {
+    songs.value = res.data.result.slice(0, 4);
+  });
+  albumIds.forEach((id)=>{
+    getPlaylistById({playlist_id:id}).then((res) => {
+      albums.value.push(res.data.result);
+
+    }).catch((err)=>{console.log(err)})
+  })
+})
+
 
 </script>
 
@@ -144,87 +175,87 @@ getSongsByPlaylist({
 			</button>
 		</div>
 		<div class="recommend-tabs">
-        <div class="tab-main">
+        <div class="tab-main" @click="openAlbumView(defautAlbum.id)">
           <div class="wrapper">
             <div class="img">
               <img class="tab-img" :src="defautAlbum.picPath" alt="">
             </div>
             <div class="text">
-              <span>点赞的歌曲</span>
+              <span class="tab-text">点赞的歌曲</span>
             </div>
           </div>
         </div>
-      <div class="tab-main">
+      <div class="tab-main" @click="openAlbumView(mostPlayedAlbum.id)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="mostPlayedAlbum.picPath" alt="">
           </div>
           <div class="text">
-            <span>{{mostPlayedAlbum.title}}</span>
+            <span class="tab-text">{{mostPlayedAlbum.title}}</span>
           </div>
         </div>
       </div>
 <!--      每周推荐-->
-      <div class="tab-main">
+      <div class="tab-main" @click="openAlbumView(weeklyRecommend.id)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="weeklyRecommend.picPath" alt="">
           </div>
           <div class="text">
-            <span>每周推荐</span>
+            <span class="tab-text">每周推荐</span>
           </div>
         </div>
       </div>
       <!--      新歌推荐-->
-      <div class="tab-main">
+      <div class="tab-main" @click="openAlbumView(newSongsRecommend.id)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="newSongsRecommend.picPath" alt="">
           </div>
           <div class="text">
-            <span>新歌推荐</span>
+            <span class="tab-text">新歌推荐</span>
           </div>
         </div>
       </div>
       <!--艺人推荐 （下面两个tab）-->
-      <div class="tab-main">
+      <div class="tab-main" @click="openArtistView(artistRecommend[0].name)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="artistRecommend[0].picPath" alt="">
           </div>
           <div class="text">
-            <span>{{ artistRecommend[0].name }}</span>
+            <span class="tab-text">{{ artistRecommend[0].name }}</span>
           </div>
         </div>
       </div>
-      <div class="tab-main">
+      <div class="tab-main" @click="openArtistView(artistRecommend[1].name)">
         <div class="wrapper">
           <div class="img">
             <img  class="tab-img" :src="artistRecommend[1].picPath" alt="">
           </div>
           <div class="text">
-            <span>{{ artistRecommend[1].name }}</span>
+            <span class="tab-text">{{ artistRecommend[1].name }}</span>
           </div>
         </div>
       </div>
       <!--专辑推荐 （下面两个tab）-->
-      <div class="tab-main">
-        <div class="wrapper">
+      <div class="tab-main" @click="openEpisodeView(episodeRecommend[0].id)">
+        <div class="wrapper" >
           <div class="img">
             <img  class="tab-img" :src="episodeRecommend[0].picPath" alt="">
           </div>
           <div class="text">
-            <span>{{ episodeRecommend[0].title }}</span>
+            <span class="tab-text">{{ episodeRecommend[0].title }}</span>
           </div>
         </div>
       </div>
-      <div class="tab-main">
+      <div class="tab-main" @click="openEpisodeView(episodeRecommend[1].id)">
         <div class="wrapper">
           <div class="img">
             <img  class="tab-img" :src="episodeRecommend[1].picPath" alt="">
           </div>
           <div class="text">
-            <span>{{ episodeRecommend[1].title }}</span>
+            <span class="tab-text">{{ episodeRecommend[1].title }}</span>
           </div>
         </div>
       </div>
@@ -238,10 +269,11 @@ getSongsByPlaylist({
           <div class="scroll_list">
             <div v-for="song in songs"
                  :key="song.id"
-                 class="song">
-              <img class="song-img" :src="song.picPath" alt="">
-              <div class="song-text">{{ song.title }}</div>
-              <div class="song-text">{{ song.artist }}</div>
+                 class="scroll-entry"
+              @click="openMusicView(song.id)">
+              <img class="big-img" :src="song.picPath" alt="">
+              <div class="entry-text bolder-white-theme">{{ song.title }}</div>
+              <div class="entry-text">{{ song.artist }}</div>
             </div>
 
           </div>
@@ -255,12 +287,33 @@ getSongsByPlaylist({
         <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
         <div class="scroll_wrapper" >
           <div class="scroll_list">
-            <div v-for="song in songs"
-                 :key="song.id"
-                 class="song">
-              <img class="song-img" :src="song.picPath" alt="">
-              <div class="song-text">{{ song.title }}</div>
-              <div class="song-text">{{ song.artist }}</div>
+            <div v-for="artist in artists"
+                 :key="artist.id"
+                 class="scroll-entry large-scroll-entry"
+                  @click="openArtistView(artist.name)">
+              <img class="very-big-img" style="border-radius: 50%" :src="artist.avatarUrl" alt="">
+              <div class="entry-text bolder-white-theme">{{ artist.name}}</div>
+              <div class="entry-text">艺人</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="right_btn" @click="rightSlide">  <p style="margin-bottom: 2px">></p>  </div>
+      </div>
+    </div>
+    <div class="albums-recommendation" @mouseenter="buttonTurnUp(2)" @mouseleave="buttonTurnDown(2)">
+      <h1>推荐专辑</h1><!--这里暂时写歌单 最好改为专辑-->
+      <div id="click-scroll-X" >
+        <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
+        <div class="scroll_wrapper" >
+          <div class="scroll_list">
+            <div v-for="album in albums"
+                 :key="album.id"
+                 class="scroll-entry"
+            @click="openEpisodeView(album.id)">
+              <img class="big-img" :src="album.picPath" alt="">
+              <div class="entry-text bolder-white-theme">{{ album.title }}</div>
+              <div class="entry-text">{{ album.description }}</div>
             </div>
 
           </div>
@@ -270,7 +323,6 @@ getSongsByPlaylist({
     </div>
 
 
-
 	</div>
 </template>
 
@@ -278,13 +330,14 @@ getSongsByPlaylist({
 p{
   margin: 0;
 }
-span{
+.tab-text{
   color: white;
   font-weight: bold;
   font-size: 16px;
   white-space: normal;
 }
 .main-view {
+  border-radius: 12px;
 	padding: 20px;
   background-color: #121212;
   display: flex;
@@ -372,7 +425,7 @@ span{
     position: absolute;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.4s ease-in-out;
     bottom: 140px;
   }
   .right_btn{
@@ -383,7 +436,7 @@ span{
   }
   .scroll_wrapper {
 
-    width: 600px;
+    width: 100%;
     overflow-x: scroll;
     padding: 20px 0;
 
@@ -406,8 +459,9 @@ h1 {
 .daily-recommendation{
 
 }
-.song {
+.scroll-entry {
   padding:9px;
+  align-items: center;
   box-shadow: 0 4px 15px rgb(17, 17, 17); /* 悬浮效果的阴影 */
   width: 180px;
   height: 210px;
@@ -419,14 +473,22 @@ h1 {
     border-radius: 6px;
     background-color: rgba(255, 255, 255, 0.1);
   }
+  &.large-scroll-entry{
+    height: 230px;
+  }
 }
 
-.song-img {
+.big-img {
   border-radius: 6px;
 	width: 160px;
 	height: 160px;
 }
-.song-text{
+.very-big-img {
+  border-radius: 6px;
+  width: 180px;
+  height: 180px;
+}
+.entry-text{
   width: 160px;
   margin-left: 4px;
   text-align: left;
@@ -436,8 +498,11 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-
+.bolder-white-theme{
+  font-size: 18px;
+  font-weight: bolder;
+  color: rgb(241, 241, 241);
+}
 
 .active {
 	background-color: #fff;

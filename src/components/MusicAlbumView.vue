@@ -6,8 +6,6 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
-import tippy from 'tippy.js';
 
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
