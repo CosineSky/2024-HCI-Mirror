@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref, watch} from "vue"
+import {computed, onMounted, ref} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -15,6 +15,7 @@ import SearchView from "@/components/SearchView.vue";
 import MusicAlbumView from "../components/MusicAlbumView.vue";
 import MainView from "../components/MainView.vue";
 import EpisodeView from "@/components/EpisodeView.vue";
+import ArtistView from "../components/ArtistView.vue";
 
 // APIs
 import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
@@ -24,6 +25,7 @@ import {getPlaylistsByUser} from "../api/playlist";
 import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
+import { formatTime } from '../utils/formatTime';
 
 
 /*
@@ -194,6 +196,7 @@ const registerDOMs = () => {
 				});
 				song.load();
 				song.play();
+        isPaused.value = false;
 				theme.change(songs.value[currentSongIndex.value].picPath);
 			}
 		} catch (e) {
@@ -336,9 +339,19 @@ const currentUserId = ref(userToken.value.id);
  */
 // Playing Status
 const songs = ref([]);
-const volumn = ref(1);
-watch(volumn, (newValue) => {
-	song.volume = newValue;
+const volume = ref(1);
+const volumePercentage = ref('100%');
+
+// 添加音量变化处理
+const updateVolumeStyle = (e) => {
+  const volume = e.target.value;
+  volumePercentage.value = (volume * 100) + '%';
+};
+
+// 监听volume变化，同步更新所有音量控制器的样式
+watch(volume, (newValue) => {
+  song.volume = newValue;
+  volumePercentage.value = (newValue * 100) + '%';
 });
 const displayingSongs = ref([]);
 const isPaused = ref(false);
@@ -353,7 +366,6 @@ const togglePlayingPage = () => {
 	isPlayingPage.value = !isPlayingPage.value;
 	registerDOMs();
 }
-
 const switchSongs = (del) => {
 	console.log(playingMode.value, currentSongIndex.value, songs.value.length)
 	switch (playingMode.value) {
@@ -394,6 +406,7 @@ const switchToSong = (index, isDiffPlaylist) => {
 		song.load();
 		song.play();
 		theme.change(songs.value[index].picPath);
+    isPaused.value = false;
 	}
 }
 
@@ -516,10 +529,13 @@ function receiveDataFromHeader(data) {
 	setMidComponents(3);
 }
 
-/*HOME*/
+/*
+    HOME
+ */
 function receiveDataFromHome() {
 	setMidComponents(0);
 }
+
 /*
     MID COMPONENTS
     0 - Main View
@@ -527,10 +543,16 @@ function receiveDataFromHome() {
     2 - Comments
     3 - Search Results
     4 - Episodes
+    5 - Artist View
  */
 const midComponents = ref(0);
-const setMidComponents = (val) => {
-	midComponents.value = val;
+const currentArtist = ref(null);
+
+const setMidComponents = (val, artistName = null) => {
+  midComponents.value = val;
+  if (val === 5) {
+    currentArtist.value = artistName;
+  }
 }
 
 /*
@@ -575,9 +597,59 @@ onMounted(() => {
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
-	
+
+  const volumeControl = document.getElementById('volumeControl');
+  if (volumeControl) {
+    volumeControl.style.setProperty('--volume-percentage', '100%');
+  }
 })
 let playFromLeftBarAlbum = ref(null);
+
+const playArtistSong = (songToPlay) => {
+  // 检查歌曲是否已经在播放列表中
+  const existingIndex = songs.value.findIndex(song => song.id === songToPlay.id);
+
+  if (existingIndex !== -1) {
+    // 如果歌曲已存在，直接播放该歌曲
+    currentSongIndex.value = existingIndex;
+    currentSongId.value = songToPlay.id;
+  } else {
+    // 如果歌曲不存在，添加到播放列表开头并播放
+    songs.value = [songToPlay, ...songs.value];
+    currentSongIndex.value = 0;
+    currentSongId.value = songToPlay.id;
+  }
+
+  if (song) {
+    controlIcons.forEach(controlIcon => {
+      controlIcon.src = PLAY;
+    });
+    song.src = songToPlay.filePath;
+    parseLrc(songToPlay.lyricsPath).then(res => {
+      lyrics.value = res;
+    });
+    song.load();
+    song.play();
+    theme.change(songToPlay.picPath);
+    isPaused.value = false;  // 设置为播放状态
+  }
+};
+
+const pauseCurrentSong = () => {
+  if (song) {
+    song.pause();
+    controlIcons.forEach(controlIcon => {
+      controlIcon.src = PAUSE;
+    });
+    isPaused.value = true;  // 设置为暂停状态
+  }
+};
+
+const updateSongs = (newSongs) => {
+  songs.value = newSongs;
+  displayingSongs.value = newSongs;
+};
+
 </script>
 
 <template>
@@ -597,8 +669,13 @@ let playFromLeftBarAlbum = ref(null);
 				<!--height: 730px -->
 				<div v-if="midComponents == 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
-					                @switchSongs="switchToPlaylist" :playFromLeftBar="playFromLeftBarAlbum" :play-list="playlists"/>
+          <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
+                          :current-song-id="currentSongId"
+                          @switchSongs="switchToPlaylist" @switchToArtist="(name) => setMidComponents(5, name)"
+                          @pauseSong="pauseCurrentSong"
+                          :playFromLeftBar="playFromLeftBarAlbum"
+                          :is-paused="isPaused"
+          />
 				</div>
 				<el-container v-if="midComponents == 2" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
@@ -621,6 +698,16 @@ let playFromLeftBarAlbum = ref(null);
 				     style="overflow: scroll; border-radius: 12px">
 					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
 					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
+        </div>
+        <div v-if="midComponents == 5" class="playlist-container"
+             style="overflow: scroll; border-radius: 12px">
+          <ArtistView :artist-name="currentArtist"
+                      :is-paused="isPaused"
+                      :current-song-id="currentSongId"
+                      @playSong="playArtistSong"
+                      @pauseSong="pauseCurrentSong"
+                      @back="setMidComponents(1)"
+                      @updateSongs="updateSongs"/>
 				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
@@ -747,9 +834,17 @@ let playFromLeftBarAlbum = ref(null);
 
 
 			<div class="right-controls">
-				<div class="volumn-control" style="display: flex; flex-direction: row; align-items: center">
+				<div class="volume-control" style="display: flex; flex-direction: row; align-items: center">
 					<h1 style="margin: 0">🔈</h1>
-					<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+					<input type="range"
+						   id="volumeControl"
+						   min="0"
+						   max="1"
+						   step="0.01"
+						   v-model="volume"
+						   @input="updateVolumeStyle"
+						   :style="{'--volume-percentage': volumePercentage}"
+					/>
 				</div>
 				<div class="feature-icon"
 				     data-tooltip="分享"
@@ -853,9 +948,17 @@ let playFromLeftBarAlbum = ref(null);
 					</div>
 				</div>
 			</div>
-			<div class="volumn-control-playing" style="display: flex; flex-direction: row; align-items: center">
+			<div class="volume-control-playing" style="display: flex; flex-direction: row; align-items: center">
 				<h1 style="margin: 0">🔈</h1>
-				<input v-model="volumn" type="range" id="volumeControl" min="0" max="1" step="0.01">
+        <input type="range"
+               id="volumeControl"
+               min="0"
+               max="1"
+               step="0.01"
+               v-model="volume"
+               @input="updateVolumeStyle"
+               :style="{'--volume-percentage': volumePercentage}"
+        />
 			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
@@ -928,7 +1031,7 @@ h1 {
 	  flex-direction: column;
 	*/
 	min-height: 100vh;
-	background-color: rgb(0, 0, 0); /* rgba(0, 0, 0, 1); */
+	background-color: rgb(19, 19, 19); /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
 	
@@ -950,7 +1053,7 @@ h1 {
         "left-sidebar main-view main-view"
         "now-playing-bar now-playing-bar now-playing-bar";
 	grid-template-columns: auto 1fr;
-	grid-template-rows: 10% 80% 10%;
+	grid-template-rows: 10% 81% 9%;
 	grid-auto-rows: min-content;
 	
 	column-gap: 8px;
@@ -1239,7 +1342,7 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
-	background-color: #121212;
+	background-color: #171717;
 	display: flex;
 	flex-direction: column;
 	border-radius: 12px;
@@ -1763,7 +1866,7 @@ footer {
 /* 退出搜索图标 */
 .exit-search {
 	position: absolute;
-	top: 90px;
+	top: 120px;
 	right: 10px;
 	width: 30px;
 	height: 30px;
@@ -1884,7 +1987,7 @@ html, body {
 	font-size: 1rem;
 }
 
-.volumn-control-playing {
+.volume-control-playing {
 	position: absolute;
 	bottom: 20px;
 	right: 200px;
@@ -1957,36 +2060,30 @@ html, body {
 	-webkit-appearance: none;  /* 去掉默认样式 */
 	appearance: none;
 	width: 120px;              /* 设置宽度 */
-	height: 10px;              /* 设置高度 */
-	background: #ddd;          /* 设置默认背景颜色 */
-	border-radius: 5px;        /* 设置圆角 */
+	height: 4px;              /* 设置高度 */
+	border-radius: 2px;        /* 设置圆角 */
+	background: linear-gradient(to right, #1db954 var(--volume-percentage, 100%), #4d4d4d var(--volume-percentage, 100%));
 	outline: none;             /* 去除焦点时的轮廓 */
 	transition: background 0.3s; /* 背景色平滑过渡 */
 }
 
-/* 设置滑条（轨道）的样式 */
-#volumeControl::-webkit-slider-runnable-track {
-	height: 10px;  /* 设置轨道高度 */
-	border-radius: 5px;  /* 圆角 */
-	background: #1ed760;   /* 设置轨道颜色为绿色 */
-}
-
-/* 设置滑块的样式 */
+/* 设置滑块按钮样式 */
 #volumeControl::-webkit-slider-thumb {
 	-webkit-appearance: none;  /* 去掉默认样式 */
 	appearance: none;
-	width: 20px;   /* 设置滑块宽度 */
-	height: 20px;  /* 设置滑块高度 */
-	margin-top: -5px;
+	width: 12px;   /* 设置滑块宽度 */
+	height: 12px;  /* 设置滑块高度 */
 	border-radius: 50%;  /* 圆形滑块 */
 	background: #fff;    /* 设置滑块背景颜色为白色 */
-	border: 2px solid green;  /* 设置滑块边框颜色为绿色 */
+	border: none;  /* 去除边框 */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
 	cursor: pointer;  /* 设置鼠标悬停时的指针样式 */
+	transition: all 0.2s ease; /* 添加过渡效果 */
 }
 
-/* 鼠标悬浮时改变轨道背景颜色 */
-#volumeControl:hover {
-	background: #ccc;  /* 改变背景颜色 */
+/* 滑块按钮悬停效果 */
+#volumeControl::-webkit-slider-thumb:hover {
+	transform: scale(1.2);
 }
 
 /* 设置滑块被点击时的样式 */
