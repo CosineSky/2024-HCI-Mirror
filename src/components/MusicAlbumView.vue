@@ -8,6 +8,7 @@ import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
+import { loadSongDurations } from '../utils/loadSongDurations';
 
 
 /*
@@ -59,17 +60,12 @@ let musicPauseIndex = ref(null);
 const resizeObserver = ref(null)
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
+//获取歌曲时长
 const songDurations = ref(new Map());
 watch(() => props.musicList, (newSongs) => {
-  if (newSongs) {
-    newSongs.forEach(song => {
-      const audio = new Audio(song.filePath);
-      audio.addEventListener('loadedmetadata', () => {
-        songDurations.value.set(song.id, audio.duration);
-      });
-    });
-  }
+  loadSongDurations(newSongs, songDurations);
 }, { immediate: true });
+
 // 放缩时的组件处理
 const handleResize = () => {
 	const albums = document.querySelectorAll(".music-album-info");
@@ -539,10 +535,10 @@ const addRecommendMusic = (musicId) => {
 								</li>
 							</ul>
 						</el-popover>
-						<!--            这里原本想写歌曲时长，但是没有 只能留空-->
 						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-              {{formatTime(songDurations.get(music.id))}}
+						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
+            v-show="songDurations.get(music.id) !== undefined">
+              {{ formatTime(songDurations.get(music.id)) }}
 						</div>
 						<el-popover
 							:ref="getPopoverIndex"

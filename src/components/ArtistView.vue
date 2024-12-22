@@ -9,6 +9,7 @@ import checkMark from "../icon/checkMark.vue";
 import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
 import { formatTime } from '../utils/formatTime';
+import { loadSongDurations } from '../utils/loadSongDurations';
 
 const emit = defineEmits(['playSong', 'pauseSong']);
 const props = defineProps({
@@ -289,29 +290,10 @@ watch(() => props.isPaused, (newValue) => {
 
 const songDurations = ref(new Map());
 
-const getDuration = (music) => {
-  if (songDurations.value.has(music.id)) {
-    return songDurations.value.get(music.id);
-  }
-  
-  const audio = new Audio(music.filePath);
-  audio.addEventListener('loadedmetadata', () => {
-    songDurations.value.set(music.id, audio.duration);
-  });
-  
-  return '0:00';
-};
-
 watch(() => hotSongs.value, (newSongs) => {
-  if (newSongs) {
-    newSongs.forEach(song => {
-      const audio = new Audio(song.filePath);
-      audio.addEventListener('loadedmetadata', () => {
-        songDurations.value.set(song.id, audio.duration);
-      });
-    });
-  }
+  loadSongDurations(newSongs, songDurations);
 }, { immediate: true });
+
 </script>
 
 <template>
@@ -433,7 +415,8 @@ watch(() => hotSongs.value, (newSongs) => {
             </div>
 
             <div style="margin-left: auto;margin-right: 45px; color: #b2b2b2"
-                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
+            v-show="songDurations.get(music.id) !== undefined">
               {{ formatTime(songDurations.get(music.id)) }}
             </div>
           </div>
