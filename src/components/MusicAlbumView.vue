@@ -210,21 +210,21 @@ const playFromId = (musicId) => {
 }
 
 const addToFavorite = (musicId, albumId) => {
-	addSongToPlaylist({
-		user_id: currentUserId.value,
-		playlist_id: albumId,
-		song_id: musicId,
-	}).then(() => {
-		ElMessage({
-			message: "添加至: " + props.albumInfo.title,
-			grouping: true,
-			type: 'info',
-			offset: 16,
-			customClass: "reco-message",
-			duration: 4000,
-		})
-	})
-
+  addSongToPlaylist({
+    user_id: currentUserId.value,
+    playlist_id: albumId,
+    song_id: musicId,
+  }).then(() => {
+    ElMessage({
+      message: "添加至: " + props.albumInfo.title,
+      grouping: true,
+      type: 'info',
+      offset: 16,
+      customClass: "reco-message",
+      duration: 4000,
+    })
+  })
+}
 watch(() => props.isPaused, (newValue) => {
   if (newValue) {
     musicPauseIndex = musicPlayIndex;
@@ -233,8 +233,6 @@ watch(() => props.isPaused, (newValue) => {
   }
 });
 
-const addToFavorite = (musicId) => {
-}
 const removeMusicFromAlbum = (albumId, songId) => {
 	removeSongFromPlaylist({
 		playlist_id: albumId,
