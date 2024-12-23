@@ -2,6 +2,8 @@
 import {ref} from "vue";
 import Empty from "./Empty.vue";
 
+const emit = defineEmits(['back']);
+
 const {songResult, playlistResult} = defineProps({
 	songResult: Array,
 	playlistResult: Array
@@ -16,6 +18,12 @@ const handleTabClick = (tab) => {
 
 <template>
 	<div class="search-view">
+    <div class="back-button" data-tooltip="返回" @click="$emit('back')">
+      <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
+      </svg>
+    </div>
+
 		<div class="tabs">
 			<button
 				class="tab-button"
@@ -65,10 +73,48 @@ const handleTabClick = (tab) => {
 
 <style scoped>
 .search-view {
-	padding: 20px;
+	padding: 0;
 }
 
+.back-button {
+  position: relative;
+  margin: 24px 0 40px 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, .8);
+}
+
+/* 提示文字样式 */
+.back-button[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+
 .tabs {
+  margin-top: 20px;
 	margin-bottom: 20px;
 	display: flex;
 	flex-direction: row;

@@ -3,13 +3,13 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import playButton from "../icon/playButton.vue";
 import pauseButton from "../icon/pauseButton.vue";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
-import {getSongsByArtist, getArtistInfo} from "../api/artist";
+import {getArtistInfo} from "../api/artist";
 import {getSongById} from "../api/resolve";
 import checkMark from "../icon/checkMark.vue";
 import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
-import { formatTime } from '../utils/formatTime';
-import { loadSongDurations } from '../utils/loadSongDurations';
+import {formatTime} from '../utils/formatTime';
+import {loadSongDurations} from '../utils/loadSongDurations';
 
 const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs']);
 const props = defineProps({
@@ -183,6 +183,10 @@ onMounted(() => {
       resizeObserver.value.observe(albumContent);
     }
   });
+
+  musicPlayIndex = props.currentSongId;
+  musicClickedIndex = props.currentSongId;
+  musicPauseIndex = props.isPaused ? props.currentSongId : null;
 });
 
 onUnmounted(() => {
@@ -309,13 +313,17 @@ watch(() => hotSongs.value, (newSongs) => {
   loadSongDurations(newSongs, songDurations);
 }, { immediate: true });
 
-// 监听currentSongId的变化
 watch(() => props.currentSongId, (newId) => {
   if (newId) {
     musicPlayIndex = newId;
     musicClickedIndex = newId;
     musicPauseIndex = props.isPaused ? newId : null;
   }
+}, { immediate: true });
+
+const isCurrentSongInList = computed(() => {
+  if (!props.currentSongId || !hotSongs.value || hotSongs.value.length === 0) return false;
+  return hotSongs.value.some(song => song.id === musicPlayIndex);
 });
 
 </script>
@@ -341,10 +349,10 @@ watch(() => props.currentSongId, (newId) => {
     <div class="content">
       <div class="play-area">
         <div class="play-button">
-          <play-button v-if="musicPlayIndex===null||musicPauseIndex!==null"
+          <play-button v-if="!isCurrentSongInList||musicPauseIndex!==null"
                        @click="playFromId(musicPauseIndex)"
                        style="position: absolute; top:20%;left:24%;color: #000000"/>
-          <pause-button v-if="musicPlayIndex!==null&&musicPauseIndex===null"
+          <pause-button v-if="isCurrentSongInList&&musicPauseIndex===null"
                         @click="pauseMusic(musicPlayIndex)"
                         style="position: absolute; top:24%;left:25%;color: #000000"/>
         </div>
@@ -835,321 +843,6 @@ li:hover {
     border: 1px solid #f5f5f5;
     scale: 1.1;
   }
-}
-
-/* new-elements */
-.edit-desc {
-  visibility: hidden;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, .7);
-  bottom: 0;
-  display: flex;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.main-edit-desc {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  background-color: #282828;
-  border-radius: 8px;
-  -webkit-box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
-  box-shadow: 0 4px 4px rgba(0, 0, 0, .3);
-  color: #fff;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  min-height: 384px;
-  width: 524px;
-}
-
-.edit-desc-header {
-  display: flex;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
-  padding: 24px;
-}
-
-.edit-desc-header-button {
-  align-self: end;
-  background-color: transparent;
-  border: 0;
-  border-radius: 32px;
-  color: hsla(0, 0%, 100%, .7);
-  grid-area: close-button;
-  height: 32px;
-  margin-top: -8px;
-  width: 32px;
-  -webkit-margin-end: -8px;
-  margin-inline-end: -8px;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.edit-desc-text {
-  display: grid;
-  grid-template: 32px 132px 32px auto / 180px 1fr;
-  grid-template-areas:
-        "album-image title"
-        "album-image description"
-        ". save-button"
-        "disclaimer disclaimer";
-  grid-gap: 16px;
-  padding: 0 24px 24px;
-}
-
-.edit-desc-img {
-  grid-area: album-image;
-  height: 180px;
-  margin: 0;
-  position: relative;
-  /* width: 180px; */
-}
-
-.edit-desc-img-1 {
-  border-radius: 4px;
-  height: 100%;
-  width: 100%;
-}
-
-.edit-desc-img-1-1 {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  background-color: #282828;
-  color: #7f7f7f;
-  justify-content: center;
-  -webkit-box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
-  box-shadow: 0 4px 60px rgba(0, 0, 0, .5);
-
-  &:hover {
-    display: none;
-  }
-}
-
-.large-svg {
-  fill: currentcolor;
-  width: 48px;
-  height: 48px;
-}
-
-.edit-desc-img-2 {
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.edit-desc-img-2-1 {
-  height: 100%;
-  width: 100%;
-}
-
-.edit-desc-img-2-button {
-  background-color: #282828;
-  color: #fff;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  text-align: center;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  border: none;
-  border-radius: 4px;
-  justify-content: center;
-  opacity: 0;
-  padding: 0;
-}
-
-.edit-desc-img-2-1-1 {
-  margin-top: 16px;
-  -webkit-transition: opacity .2s;
-  transition: opacity .2s;
-}
-
-.edit-desc-img-3 {
-  right: 8px;
-  height: 32px;
-  position: absolute;
-  top: 8px;
-  width: 32px;
-}
-
-@media (hover: hover) {
-  .edit-desc-img-3-button:not([data-context-menu-open=true]) {
-    opacity: 0;
-    pointer-events: none;
-    position: unset;
-  }
-}
-
-.edit-desc-img-3-button {
-  background-color: rgba(0, 0, 0, .3);
-  border: none;
-  border-radius: 500px;
-  color: #b3b3b3;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 8px;
-  text-decoration: none;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-
-  &:hover {
-    opacity: 0;
-    pointer-events: none;
-    position: unset;
-  }
-}
-
-.small-svg {
-  height: 16px;
-  width: 16px;
-}
-
-.edit-desc-input-name {
-  grid-area: title;
-  position: relative;
-  margin-right: 8px;
-}
-
-.edit-desc-input-name-1 {
-  background: hsla(0, 0%, 100%, .1);
-  border: 1px solid transparent;
-  border-radius: 4px;
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  height: 40px;
-  padding: 0 12px;
-  width: 100%;
-  -webkit-box-shadow: inset 0 -2px #343030;
-  box-shadow: inset 0 -2px 0 0 #343030;
-}
-
-.edit-desc-input-desc {
-  grid-area: description;
-  margin-top: 8px;
-  position: relative;
-}
-
-.edit-desc-input-desc-1 {
-  background: hsla(0, 0%, 100%, .1);
-  border: 1px solid transparent;
-  border-radius: 4px;
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  padding: 8px 8px 28px;
-  resize: none;
-  width: 100%;
-  height: 70%;
-}
-
-.edit-desc-button {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  grid-area: save-button;
-  justify-self: flex-end;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.edit-desc-button-1 {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  background-color: transparent;
-  border: 0;
-  border-radius: 9999px;
-  cursor: pointer;
-  display: inline-block;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  text-transform: none;
-  touch-action: manipulation;
-  transition-duration: 33ms;
-  transition-property: background-color, border-color, color, box-shadow, filter, transform;
-  user-select: none;
-  vertical-align: middle;
-  transform: translate3d(0px, 0px, 0px);
-  padding: 0px;
-  min-inline-size: 0px;
-  align-self: center;
-}
-
-.edit-desc-button-1-1 {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  position: relative;
-  background-color: #ffffff;
-  color: #000000;
-  display: flex;
-  border-radius: 9999px;
-  font-size: inherit;
-  min-block-size: 48px;
-  -webkit-box-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  justify-content: center;
-  padding-block: 8px;
-  padding-inline: 32px;
-  transition-property: background-color, transform;
-  transition-duration: 33ms;
-}
-
-.encore-text {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  color: inherit;
-  margin-block: 0;
-  font-size: 13px;
-  white-space: normal;
-}
-
-.encore-text-title-small {
-  font-size: 1.5rem;
-}
-
-.final-tip {
-  grid-area: disclaimer;
-}
-
-.encore-text-marginal-bold {
-  font-weight: 700;
 }
 
 .follow-button {

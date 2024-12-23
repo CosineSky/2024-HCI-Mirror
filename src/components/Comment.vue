@@ -11,6 +11,8 @@ import {useTheme} from "../store/theme";
 import Pagination from "../components/Pagination.vue";
 import {getDominantColor} from "../utils/getBackgroundColor";
 
+const emit = defineEmits(['back']);
+
 const theme = useTheme()
 const state = reactive({
   comments: [],
@@ -46,7 +48,7 @@ const sortBy = ref('Time') // 默认按时间排序
 覆盖仓库的Comment.vue
  */
 const backgroundColor = ref("#ffffff");
-const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} 0%, #121212 100%)`);
 
 onMounted(() => {
   watch(bg, (val) => {
@@ -199,7 +201,7 @@ const handleSubmit = () => {
     songId: parseInt(songId),
     comment: comment.value,
   }).then(() => {
-    ElMessage.success("评论成功！");
+    // ElMessage.success("评论成功！");
 
     comment.value = "";
     getCommentCount(parseInt(songId));
@@ -207,7 +209,7 @@ const handleSubmit = () => {
     sortBy.value = 'Time'
     getCommentMusicFn(parseInt(songId), 1);
   }).catch(error => {
-    ElMessage.error("发布评论失败，请稍后重试");
+    // ElMessage.error("发布评论失败，请稍后重试");
     console.error("Submit comment failed:", error);
   });
 }
@@ -250,7 +252,7 @@ const handleLike = (index) => {
         ? comment.likeCount + 1
         : comment.likeCount - 1;
   }).catch(error => {
-    ElMessage.error("点赞失败，请稍后重试");
+    // ElMessage.error("点赞失败，请稍后重试");
     console.error("Like failed:", error);
   });
 }
@@ -263,139 +265,145 @@ const changeSortBy = (type) => {
 
 <template>
   <div class="comment-wrapper" :style="{backgroundImage: gradientColor}">
-    <div class="comment">
-      <div v-if="state.song !== null" class="comment-box">
-        <div class="info">
-          <div ref="imgEl" class="bg-img"></div>
-          <div class="song-info">
-            <div class="song-name">{{ state.song.title }}</div>
-            <div class="singers">
-              <div class="singer-info">
-                <span>歌手:{{ state.song.artist }}</span>
-                <!--<span v-for="(item, index) in state.song.singer">-->
-                <!--歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}-->
-                <!--</span>-->
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="navigation">
-          <div class="nav-left active" @click="showComments">评论{{ state.total }}</div>
-          <div class="nav-right" @click="showDetails">详情</div>
-        </div>
-        <div v-if="showComment" class="user-comment">
-          <textarea placeholder="请输入您的评论..." v-model="comment" @input="adjustHeight"></textarea>
-          <span
-              class="custom-button"
-              style="color: white; font-size: 20px; position: absolute; bottom: 14px; right: 2%"
-              @click.stop="handleSubmit"
-          >发布</span>
-        </div>
-        <div v-if="showComment" class="comment-content">
-          <div class="comment-content-box">
-            <div class="title-container">
-              <div class="title">精彩评论</div>
-              <div class="sort-options">
-							<span
-                  :class="{ active: sortBy === 'Time' }"
-                  @click="changeSortBy('Time')"
-              >最新</span>
-                <div class="divider"></div>
-                <span
-                    :class="{ active: sortBy === 'Hot' }"
-                    @click="changeSortBy('Hot')"
-                >最热</span>
-              </div>
-            </div>
-            <div class="content" @wheel.stop>
-              <div v-for="i in state.comments.length" class="content-line">
-                <!--							:style="{ backgroundImage: `url(${state.commenters[i - 1].avatarUrl})` }"-->
-                <div
-                    @click="gotoUserDetail(state.commenters[i - 1].userId)"
-                    :style="{ backgroundImage: '../assets/pictures/avatar.png' }"
-                    class="photo"
-                ></div>
-                <div v-if="state.commenters[i - 1] !== undefined" class="right-box">
-                  <div class="comment-text">
-                    <div @click="gotoUserDetail(state.comments[i - 1].id)" class="name">
-                      {{ state.commenters[i - 1].username }}:
-                    </div>
-                    <div class="text">{{ state.comments[i - 1].comment }}</div>
-                  </div>
-                  <div class="handle-box">
-                    <div class="time">{{ parseTime(state.comments[i - 1].createdAt) }}</div>
-                    <div class="operation">
-                      <img
-                          :src="likeIcon"
-                          class="like-icon"
-                          :class="{ 'liked': state.comments[i-1].isLiked }"
-                          alt="like"
-                          @click="handleLike(i-1)"
-                      />
-                      <span
-                          :class="{ 'liked-count': state.comments[i-1].isLiked }"
-                          style="font-size: 12px;color: white"
-                      >{{ state.comments[i - 1].likeCount }}
-										</span>
-                      <div class="operator-line"></div>
-                    </div>
-                  </div>
+    <div class="back-button" data-tooltip="返回" @click="$emit('back')">
+      <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
+      </svg>
+    </div>
+
+      <div class="comment">
+        <div v-if="state.song !== null" class="comment-box">
+          <div class="info">
+            <div ref="imgEl" class="bg-img"></div>
+            <div class="song-info">
+              <div class="song-name">{{ state.song.title }}</div>
+              <div class="singers">
+                <div class="singer-info">
+                  <span>歌手:{{ state.song.artist }}</span>
+                  <!--<span v-for="(item, index) in state.song.singer">-->
+                  <!--歌手:{{item.name + (index < state.song.singer.length - 1 ? '/' : '') }}-->
+                  <!--</span>-->
                 </div>
-                <div class="line"></div>
               </div>
             </div>
-            <pagination
-                class="pagination"
-                @current-change="currentChange"
-                :total="state.total"
-                :pageSize="state.pageSize"
-                :currentPage="state.currentPage"
-                :background="true"
-                layout="prev, pager, next"
-            />
           </div>
-        </div>
-        <div v-if="showDetail" class="song-info-container">
-          <div class="song-info-row" v-if="state.song.title">
-            <div class="song-info-label">歌曲:</div>
-            <div class="song-info-value">{{ state.song.title }}</div>
+          <div class="navigation">
+            <div class="nav-left active" @click="showComments">评论{{ state.total }}</div>
+            <div class="nav-right" @click="showDetails">详情</div>
           </div>
-          <div class="song-info-row" v-if="state.song.artist">
-            <div class="song-info-label">艺人:</div>
-            <div class="song-info-value">{{ state.song.artist }}</div>
+          <div v-if="showComment" class="user-comment">
+            <textarea placeholder="请输入您的评论..." v-model="comment" @input="adjustHeight"></textarea>
+            <span
+                class="custom-button"
+                style="color: white; font-size: 20px; position: absolute; bottom: 14px; right: 2%"
+                @click.stop="handleSubmit"
+            >发布</span>
           </div>
-          <div class="song-info-row" v-if="state.song.album">
-            <div class="song-info-label">专辑:</div>
-            <div class="song-info-value">{{ state.song.album }}</div>
+          <div v-if="showComment" class="comment-content">
+            <div class="comment-content-box">
+              <div class="title-container">
+                <div class="title">精彩评论</div>
+                <div class="sort-options">
+  							<span
+                    :class="{ active: sortBy === 'Time' }"
+                    @click="changeSortBy('Time')"
+                >最新</span>
+                  <div class="divider"></div>
+                  <span
+                      :class="{ active: sortBy === 'Hot' }"
+                      @click="changeSortBy('Hot')"
+                  >最热</span>
+                </div>
+              </div>
+              <div class="content" @wheel.stop>
+                <div v-for="i in state.comments.length" class="content-line">
+                  <!--							:style="{ backgroundImage: `url(${state.commenters[i - 1].avatarUrl})` }"-->
+                  <div
+                      @click="gotoUserDetail(state.commenters[i - 1].userId)"
+                      :style="{ backgroundImage: '../assets/pictures/avatar.png' }"
+                      class="photo"
+                  ></div>
+                  <div v-if="state.commenters[i - 1] !== undefined" class="right-box">
+                    <div class="comment-text">
+                      <div @click="gotoUserDetail(state.comments[i - 1].id)" class="name">
+                        {{ state.commenters[i - 1].username }}:
+                      </div>
+                      <div class="text">{{ state.comments[i - 1].comment }}</div>
+                    </div>
+                    <div class="handle-box">
+                      <div class="time">{{ parseTime(state.comments[i - 1].createdAt) }}</div>
+                      <div class="operation">
+                        <img
+                            :src="likeIcon"
+                            class="like-icon"
+                            :class="{ 'liked': state.comments[i-1].isLiked }"
+                            alt="like"
+                            @click="handleLike(i-1)"
+                        />
+                        <span
+                            :class="{ 'liked-count': state.comments[i-1].isLiked }"
+                            style="font-size: 12px;color: white"
+                        >{{ state.comments[i - 1].likeCount }}
+  										</span>
+                        <div class="operator-line"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="line"></div>
+                </div>
+              </div>
+              <pagination
+                  class="pagination"
+                  @current-change="currentChange"
+                  :total="state.total"
+                  :pageSize="state.pageSize"
+                  :currentPage="state.currentPage"
+                  :background="true"
+                  layout="prev, pager, next"
+              />
+            </div>
           </div>
-          <div class="song-info-row" v-if="state.song.lyricist">
-            <div class="song-info-label">作词:</div>
-            <div class="song-info-value">{{ state.song.lyricist }}</div>
-          </div>
-          <div class="song-info-row" v-if="state.song.composer">
-            <div class="song-info-label">作曲:</div>
-            <div class="song-info-value">{{ state.song.composer }}</div>
-          </div>
-          <div class="song-info-row" v-if="state.song.language">
-            <div class="song-info-label">歌曲语种:</div>
-            <div class="song-info-value">{{ state.song.language }}</div>
-          </div>
-          <div class="song-info-row" v-if="state.song.genre">
-            <div class="song-info-label">歌曲流派:</div>
-            <div class="song-info-value">{{ state.song.genre }}</div>
-          </div>
-          <div class="song-info-row" v-if="state.song.recordCompany">
-            <div class="song-info-label">唱片公司:</div>
-            <div class="song-info-value">{{ state.song.recordCompany }}</div>
-          </div>
-          <div class="song-info-row" v-if="state.song.description">
-            <div class="song-info-label">详细介绍:</div>
-            <div class="song-info-value">{{ state.song.description }}</div>
+          <div v-if="showDetail" class="song-info-container">
+            <div class="song-info-row" v-if="state.song.title">
+              <div class="song-info-label">歌曲:</div>
+              <div class="song-info-value">{{ state.song.title }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.artist">
+              <div class="song-info-label">艺人:</div>
+              <div class="song-info-value">{{ state.song.artist }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.album">
+              <div class="song-info-label">专辑:</div>
+              <div class="song-info-value">{{ state.song.album }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.lyricist">
+              <div class="song-info-label">作词:</div>
+              <div class="song-info-value">{{ state.song.lyricist }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.composer">
+              <div class="song-info-label">作曲:</div>
+              <div class="song-info-value">{{ state.song.composer }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.language">
+              <div class="song-info-label">歌曲语种:</div>
+              <div class="song-info-value">{{ state.song.language }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.genre">
+              <div class="song-info-label">歌曲流派:</div>
+              <div class="song-info-value">{{ state.song.genre }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.recordCompany">
+              <div class="song-info-label">唱片公司:</div>
+              <div class="song-info-value">{{ state.song.recordCompany }}</div>
+            </div>
+            <div class="song-info-row" v-if="state.song.description">
+              <div class="song-info-label">详细介绍:</div>
+              <div class="song-info-value">{{ state.song.description }}</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <style scoped lang="less">
@@ -405,27 +413,70 @@ const changeSortBy = (type) => {
   height: 100%;
 }
 .comment-wrapper {
-  min-height: 100%;
+  //min-height: 100%;
   width: 100%;
   background-attachment: fixed;
   position: relative;
   z-index: 1;
   transition: background-color ease 0.6s;
+  background-color: #121212;
+  height: calc(100vh - 160px);
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.back-button {
+  position: relative;
+  margin: 24px 0 0 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, .8);
+}
+
+/* 提示文字样式 */
+.back-button[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #282828;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
 }
 .comment {
   height: 100%;
   width: 100%;
   margin: 0;
-  //position: fixed;
-  //transform: translateY(100%);
-  //background-color: @bgColor;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+  border-radius: 12px;
+  
+  
   .comment-box {
     padding: 30px;
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
-    flex-flow: column;
-    height: 50%;
+    min-height: calc(100% - 24px);
+    padding-bottom: 30px;
 
     .info {
       display: flex;
@@ -678,7 +729,7 @@ const changeSortBy = (type) => {
           display: flex;
           justify-content: center;
           align-items: center;
-          margin-top: 20px;
+          margin-top: 10px;
         }
 
         :deep(.el-pagination) {
@@ -705,7 +756,7 @@ const changeSortBy = (type) => {
         margin-right: 30px;
       }
 
-      margin-bottom: 150px;
+      margin-bottom: 30px;
       width: 100%;
       padding: 20px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -772,6 +823,23 @@ const changeSortBy = (type) => {
       height: 12px;
       background-color: rgba(255, 255, 255, 0.2);
     }
+  }
+}
+
+.comment::-webkit-scrollbar {
+  width: 12px;
+}
+
+.comment::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.comment::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  
+  &:hover {
+    background: #555;
   }
 }
 </style>

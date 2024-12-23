@@ -18,7 +18,7 @@ import { loadSongDurations } from '../utils/loadSongDurations';
 const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
-const emit = defineEmits(['pauseSong']);
+const emit = defineEmits(['pauseSong', 'switchSongs', 'switchToArtist', 'back']);
 const props = defineProps({
 	albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
 		type: Object,
@@ -29,7 +29,7 @@ const props = defineProps({
 		required: true,
 	},
 	musicList: {//  类型 ：id ,title, artist, album,description, picPath,uploadTime
-		type: Object,
+		type: Array,
 		required: true,
 	},
 	playFromLeftBar: null,
@@ -140,6 +140,10 @@ onMounted(() => {
 			resizeObserver.value.observe(albumContent);
 		}
 	})
+
+  musicPlayIndex = props.currentSongId;
+  musicClickedIndex = props.currentSongId;
+  musicPauseIndex = props.isPaused ? props.currentSongId : null;
 })
 
 onUnmounted(() => {
@@ -150,7 +154,6 @@ onUnmounted(() => {
 })
 
 const handelScroll = (event) => {
-	
 	const playArea = document.querySelector(".play-area");
 	const fixedPlayArea = document.querySelector(".fixed-play-area");
 	const tipArea = document.querySelector(".tips");
@@ -215,11 +218,11 @@ const removeAlbum = (albumId) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex.value = props.musicList[0].id;
+		musicPlayIndex = props.musicList[0].id;
 	} else {
-		musicPlayIndex.value = musicId;
+		musicPlayIndex = musicId;
 	}
-	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
+	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
 }
 
@@ -303,12 +306,22 @@ watch(() => props.currentSongId, (newId) => {
     musicClickedIndex = newId;
 		musicPauseIndex = props.isPaused ? newId : null;
 	}
+}, { immediate: true });
+// 判断当前播放的歌曲是否在歌单中
+const isCurrentSongInList = computed(() => {
+  if (!musicPlayIndex || !props.musicList) return false;
+  return props.musicList.some(song => song.id === musicPlayIndex);
 });
 
 </script>
 
 <template>
 	<div class="album-content" :style="{backgroundImage: gradientColor}" @mousewheel="handelScroll">
+		<div class="back-button" data-tooltip="返回" @click="$emit('back')">
+			<svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+				<path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
+			</svg>
+		</div>
 		<div class="header">
 			<!--			.<img src="../assets/pictures/songs/2.jpg" alt="" class="album-image" @load="updateBackground"/>-->
 			<img :src="albumInfo.picPath" alt="" class="album-image" @load="updateBackground(albumInfo.picPath)"/>
@@ -330,10 +343,10 @@ watch(() => props.currentSongId, (newId) => {
 		<div class="content">
 			<div class="play-area">
 				<div class="play-button">
-					<play-button v-if="musicPlayIndex===null||musicPauseIndex!==null"
+					<play-button v-if="!isCurrentSongInList||musicPauseIndex!==null"
 					             @click="playFromId(musicPauseIndex)"
 					             style="position: absolute; top:20%;left:24%;color: #000000"/>
-					<pause-button v-if="musicPlayIndex!==null&&musicPauseIndex===null"
+					<pause-button v-if="isCurrentSongInList&&musicPauseIndex===null"
 					              @click="pauseMusic(musicPlayIndex)"
 					              style="position: absolute; top:24%;left:25%;color: #000000"/>
 				</div>
@@ -1307,5 +1320,40 @@ li:hover {
 
 .encore-text-marginal-bold {
 	font-weight: 700;
+}
+
+.back-button {
+	position: relative;
+	margin: 24px 0 0 24px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	border-radius: 50%;
+	color: #fff;
+	transition: all 0.2s ease;
+
+	&:hover {
+		transform: scale(1.1);
+		background-color: rgba(0, 0, 0, .8);
+	}
+}
+
+.back-button[data-tooltip]:hover::after {
+	content: attr(data-tooltip);
+	position: absolute;
+	top: 38px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #282828;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: nowrap;
+	z-index: 1000;
+	pointer-events: none;
 }
 </style>

@@ -39,13 +39,13 @@ const router = createRouter({
             component: () => import('../views/ManagePage.vue'),
             meta: {title: 'Manage'}
         },
-        {
-            path: '/test',
-            // @ts-ignore
-            component: () => import('../views/a.vue'),
-            meta: {title: 'test'}
-
-        }
+        // {
+        //     path: '/test',
+        //     // @ts-ignore
+        //     component: () => import('../views/a.vue'),
+        //     meta: {title: 'test'}
+        //
+        // }
     ]
 })
 

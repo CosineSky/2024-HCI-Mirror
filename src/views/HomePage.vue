@@ -355,7 +355,7 @@ watch(volume, (newValue) => {
   volumePercentage.value = (newValue * 100) + '%';
 });
 const displayingSongs = ref([]);
-const isPaused = ref(false);
+const isPaused = ref(true);
 const duration = ref(0);
 const playingMode = ref(0); /* 0 - Normal, 1 - Loop, 2 - Random */
 
@@ -548,27 +548,42 @@ function receiveDataFromHome() {
  */
 const midComponents = ref(0);
 const currentArtist = ref(null);
+const backStack = ref([]);
 
-const setMidComponents = (val, prop = null) => {
-  midComponents.value = val;
-  if(val === 1)
-  {
-    getPlaylistById({playlist_id:prop}).then((res) => {
-      displayingPlaylist.value = res.data.result;
-      getSongsByPlaylist({
-        playlist_id: displayingPlaylist.value.id,
-      }).then((res) => {
-        displayingSongs.value = res.data.result;
-      }).catch(e => {
-        console.log("Failed to get songs!");
-      });
-    })
+const setMidComponents = (val, prop = null, isBack = false) => {
+  console.log("from" + midComponents.value + " to " + val)
+  if (val !== midComponents.value && !isBack) {
+    backStack.value.push(midComponents.value);
   }
+  
+  midComponents.value = val;
+  
+  // if(val === 1) {
+  //   getPlaylistById({playlist_id:prop}).then((res) => {
+  //     displayingPlaylist.value = res.data.result;
+  //     getSongsByPlaylist({
+  //       playlist_id: displayingPlaylist.value.id,
+  //     }).then((res) => {
+  //       displayingSongs.value = res.data.result;
+  //     }).catch(e => {
+  //       console.log("Failed to get songs!");
+  //     });
+  //   })
+  // }
+  
   if (val === 5) {
     currentArtist.value = prop;
   }
+};
 
-}
+const goBack = () => {
+  if (backStack.value.length > 0) {
+    const lastIndex = backStack.value.pop();
+    setMidComponents(lastIndex, currentArtist.value, true);
+  } else {
+    setMidComponents(0, null);
+  }
+};
 
 /*
     share_icon
@@ -682,7 +697,7 @@ const updateSongs = (newSongs) => {
 					<MainView @openArtistView="(name) => setMidComponents(5, name)"
                     @openEpisodeView="(name) => setMidComponents(4, name)"
                     @openMusicView=""
-                    @openAlbumView="(album) => setMidComponents(1, album)"
+                    @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
             />
 				</div>
 				<!--height: 730px -->
@@ -694,24 +709,19 @@ const updateSongs = (newSongs) => {
                           @pauseSong="pauseCurrentSong"
                           :playFromLeftBar="playFromLeftBarAlbum"
                           :is-paused="isPaused"
+                          @back="goBack"
           />
 				</div>
 				<el-container v-if="midComponents === 2" class="playlist-container"
-				              style="overflow: auto; height: 730px ;border-radius: 12px">
-					<el-button class="exit-search"
-					           data-tooltip="退出"
-
-					           :class="{ 'adjusted-position': showRightContent }"
-					           @click="setMidComponents(0)"></el-button>
-					<Comment :song-id=currentSongId :user-id=currentUserId></Comment>
+				              style="overflow: scroll; height: 730px ;border-radius: 12px">
+					<Comment :song-id=currentSongId :user-id=currentUserId
+                   @back="goBack"
+          ></Comment>
 				</el-container>
 				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
-					<el-button class="exit-search"
-					           data-tooltip="退出"
-					           :class="{ 'adjusted-position': showRightContent }"
-					           @click="setMidComponents(0)"></el-button>
-					<SearchView :songResult="songResult" :playlistResult="playlistResult"/>
+					<SearchView :songResult="songResult" :playlistResult="playlistResult"
+                      @back="goBack"/>
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
@@ -725,7 +735,7 @@ const updateSongs = (newSongs) => {
                       :current-song-id="currentSongId"
                       @playSong="playArtistSong"
                       @pauseSong="pauseCurrentSong"
-                      @back="setMidComponents(1)"
+                      @back="goBack"
                       @updateSongs="updateSongs"/>
 				</div>
 			</div>
