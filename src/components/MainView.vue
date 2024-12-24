@@ -39,10 +39,14 @@ const newSongsRecommend = ref({
 })
 
 /*先固定就这两位*/
-const artistRecommend = ref([{ id:1,picPath:"",name:"Marcus Warner"},{id:1,picPath:"",name: "朴树"}])
-const episodeRecommend = ref([{id:1,picPath:"",title:"热门专辑1"},{id:1,picPath:"",title:"热门专辑2"}])
+const artistRecommend = ref([
+    { id:1,picPath:"https://y.qq.com/music/photo_new/T001R150x150M000000mLAT42CFWNa.jpg?max_age=2592000",name:"朴树"},
+    {id:2,picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/958cd3c3-718b-4d88-8799-d939b364741b.jpg",name: "n-buna"}])
+const episodeRecommend = ref([
+    {id:200,picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/b313c9cf-85d7-4b5d-9ba4-a80acce452ba.png",title:"Ignite (2016 League Of Legends World Championship)"},
+    {id:201,picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/e17e49ca-62f9-404d-866b-a13e9886372e.jpg",title:"Stay"}])
 
-/*图片区 ：推荐歌曲、推荐艺人、推荐专辑(歌单)*/
+/*图片区 ：推荐歌曲、推荐艺人、推荐专辑*/
 const songs = ref([]);
 /*写死*/
 const artists = ref([{
@@ -51,12 +55,12 @@ const artists = ref([{
   name:"朴树"
 },
 ]);
-const albums = ref([]);
+const episodes = ref([]);
+
 
 const currentTab = ref('all')
 let timer = ref(null)
 const limit = 250;
-
 function leftSlide(event){
   // 保存滚动盒子左侧已滚动的距离
   const target = event.currentTarget.nextElementSibling;
@@ -140,7 +144,7 @@ const openAlbumView = (id)=>{
   emit('openAlbumView', id);
 }
 
-const albumIds = [3,4,5,6]
+
 onMounted(()=>{
   getSongsByPlaylist({
     playlist_id: 3,
@@ -149,15 +153,15 @@ onMounted(()=>{
   }).catch(e => {
     console.log("MainView Failed to get songs!");
   });
-  albumIds.forEach((id)=>{
-    console.log("MainView");
-    getPlaylistById({playlist_id: id
-
-    }).then((res) => {
-      albums.value.push(res.data.result);
-
-    }).catch((err)=>{console.log(err)})
-  })
+  let randomEpisodeIds =[];
+  for (let i = 0; i < 6; i++) {
+    randomEpisodeIds.push( Math.floor(Math.random()*20+200));
+  }
+  randomEpisodeIds.forEach((id)=>{
+    getPlaylistById({playlist_id:id}).then(res => {
+      episodes.value.push(res.data.result);
+    })
+  });
 })
 
 
@@ -307,7 +311,7 @@ onMounted(()=>{
       </div>
     </div>
     <div class="albums-recommendation" @mouseenter="buttonTurnUp(2)" @mouseleave="buttonTurnDown(2)">
-      <h1>推荐专辑</h1><!--这里暂时写歌单 最好改为专辑-->
+      <h1>推荐专辑</h1><!--专辑-->
       <div id="click-scroll-X" >
         <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
         <div class="scroll_wrapper" >
@@ -315,7 +319,7 @@ onMounted(()=>{
             <div v-for="album in albums"
                  :key="album.id"
                  class="scroll-entry"
-            @click="openEpisodeView(album.id)">
+            @click="openEpisodeView(album)">
               <img class="big-img" :src="album.picPath" alt="">
               <div class="entry-text bolder-white-theme">{{ album.title }}</div>
               <div class="entry-text">{{ album.description }}</div>

@@ -24,14 +24,14 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
-	playList: { //指当前收藏的歌单列表
-		type: Array,
-		required: true,
-	},
 	musicList: {//  类型 ：id ,title, artist, album,description, picPath,uploadTime
 		type: Array,
 		required: true,
 	},
+  playList: { //指当前收藏的歌单列表
+    type: Array,
+    required: true,
+  },
 	playFromLeftBar: null,
 	currentSongId: {
 		type: Number,
@@ -298,9 +298,8 @@ const addRecommendMusic = (musicId) => {
 		duration: 4000,
 	})
 }
-const enterMusicEpisode = (episode) => {
 
-}
+
 watch(() => props.currentSongId, (newId) => {
 	if (newId) {
 		musicPlayIndex = newId;
@@ -514,8 +513,8 @@ const isCurrentSongInList = computed(() => {
                 {{ music.artist }}</p>
             </div>
           </div>
-
-          <div class="music-album-info" @click="enterMusicEpisode()" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+<!--          从歌单界面进入专辑-->
+          <div class="music-album-info" @click="emit('openEpisodeView',music.album)" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
             {{ music.album }}
           </div>
           <div class="music-right-info">

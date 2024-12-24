@@ -8,33 +8,42 @@ import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
+import {getPlaylistById} from "../api/resolve";
+import {getSongsByPlaylist} from "../api/song";
+import {loadSongDurations} from "../utils/loadSongDurations";
 
 
 const emit = defineEmits();
 const props = defineProps({
-	episodeInfo: { // 类型 ：id,title,artist,picPath,createTime,songNum
+	episodeInfo: { // 类型 ：id,title,picPath,createTime,songNum
 		type: Object,
 		required: true,
 	},
-	musicList: { //  类型 ：id,title,artist,picPath,upload_time
+	musicList: { //表示当前歌单列表  类型 ：id,title,artist,picPath,upload_time
 		type: Object,
 		required: true,
 	},
-	playFromLeftBar: null,
-	currentSongId: Number
+  playList: { //指当前收藏的歌单列表
+    type: Array,
+    required: true,
+  },
+  playFromLeftBar: null,
+  currentSongId: {
+    type: Number,
+    required: true
+  },
+  isPaused: {
+    type: Boolean,
+  }
 });
-const relatedEpisode = ref([{
-  id:1,
-  title:"相关歌单1",
-  picPath:"",
-  createTime : ""
-},{
-  id:2,
-  title:"相关歌单2",
-  picPath:"",
-  createTime : ""
-
-}]);
+// 需要当前专辑信息
+// const episodeInfo = ref({
+//   id:211,title:"Apologize",picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/529a2416-7055-4210-bb5d-2bf5e8380536.jpg",
+//   createTime:"2024",songNum:""
+// })
+// const musicList = ref([])
+// 推荐专辑随即从200-220取8个
+const relatedEpisode = ref([]);
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -110,6 +119,20 @@ const debounce = (fn, delay) => {
 
 onMounted(() => {
 	resizeObserver.value = new ResizeObserver(debounce(handleResize, 50));
+  getSongsByPlaylist({playlist_id:props.episodeInfo.value.id}).then(res => {
+    props.musicList.value = res.data.result;
+      console.log("episode得到歌曲！！")
+  })
+  let randomEpisodeIds =[];
+  for (let i = 0; i < 6; i++) {
+      randomEpisodeIds.push( Math.floor(Math.random()*20+200));
+  }
+  randomEpisodeIds.forEach((id)=>{
+      getPlaylistById({playlist_id:id}).then(res => {
+        relatedEpisode.value.push(res.data.result);
+      })
+  });
+
 	console.log(resizeObserver.value)
 	nextTick(() => {
 		const albumContent = document.querySelector(".album-content");
@@ -161,7 +184,6 @@ const handelScroll = (event) => {
 watch(props.playFromLeftBar, () => {
 	playFromId(props.playFromLeftBar)
 })
-
 
 const popovers = ref([])
 const getPopoverIndex = (popover) => {
@@ -234,15 +256,7 @@ function  openEpisodeView(id){
 
 }
 //TODO:
-const enterArtistSpace = () => {
-}
-
-const removeAlbum = (albumId) => {
-	removePlaylist({
-		playlist_id: albumId,
-	}).then(res => {
-		console.log("Hi")
-	})
+const enterArtistDescription = (artistName) => {
 }
 
 const playFromId = (musicId) => {
@@ -252,40 +266,18 @@ const playFromId = (musicId) => {
 	} else {
 		musicPlayIndex.value = musicId;
 	}
-
-	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
+	emit('switchSongs', props.episodeInfo, musicPlayIndex.value);
 	musicPauseIndex = null;
 }
 const addToFavorite = (musicId) => {
 }
-const removeMusicFromAlbum = (albumId, songId) => {
-	removeSongFromPlaylist({
-		playlist_id: albumId,
-		song_id: songId,
-	})
-}
 const enterMusicDescription = (musicId) => {
 }
-const enterArtistDescription = (authorName) => {
-}
+
 
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
 }
-
-const addRecommendMusic = (musicId) => {
-	console.log(musicId);
-	//TODO:添加歌曲到指定的歌单
-	ElMessage({
-		message: "添加至: " + props.albumInfo.title,
-		grouping: true,
-		type: 'info',
-		offset: 16,
-		customClass: "reco-message",
-		duration: 4000,
-	})
-}
-
 
 </script>
 
@@ -298,10 +290,10 @@ const addRecommendMusic = (musicId) => {
 				<p class="header-album-name" style="font-weight: bolder;font-size:80px;margin:10px 0 35px 10px;">
 					{{ episodeInfo.title }}</p>
 				<div class="header-content-detail">
-					<p class="header-creator" @click="enterArtistSpace">{{ episodeInfo.artist }}</p>
+					<p class="header-creator" @click="enterArtistDescription">{{ episodeInfo.artist }}</p>
 					<p style="padding-right:  6px ">•</p>
 					<p v-if="episodeInfo.createTime !== undefined">
-						{{ episodeInfo.createTime.substring(0, 10) }} </p>
+						{{ episodeInfo.createTime.substring(0, 4) }} </p>
 					<p style="padding: 0 2px 0 6px">•</p>
 					<p style="margin-left:6px">{{ musicList.length }} 首歌曲</p>
 				</div>
@@ -319,20 +311,7 @@ const addRecommendMusic = (musicId) => {
 					              style="position: absolute; top:24%;left:25%;color: #000000"/>
 				</div>
 				<!--        ：ref中函数执行时，组件已经渲染好，并将本组件作为参数传入函数-->
-				<el-popover
-					style="border-radius: 10px"
-					:width="400"
-					trigger="click"
-					popper-class="my-popover"
-					:ref="getPopoverIndex"
-					:hide-after=0>
-					<template #reference>
-						<dots class="more-info"/>
-					</template>
-					<ul @click="closePopover">
-						<li @click="">删除歌单</li>
-					</ul>
-				</el-popover>
+
 			</div>
 			
 			<div class="fixed-play-area" :style="{background :`${backgroundColor}`}">
@@ -450,7 +429,7 @@ const addRecommendMusic = (musicId) => {
 				</div>
 			</div>
       <div class="related-episodes">
-        <h1>推荐专辑</h1><!--这里暂时写歌单 最好改为专辑-->
+        <h1>相关专辑</h1>
         <div id="click-scroll-X" >
           <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
           <div class="scroll_wrapper" >
@@ -458,7 +437,7 @@ const addRecommendMusic = (musicId) => {
               <div v-for="ep in relatedEpisode"
                    :key="ep.id"
                    class="scroll-entry"
-                   @click="openEpisodeView(ep.id)">
+                   @click="emit('openEpisodeView',ep)">
                 <img class="big-img" :src="ep.picPath" alt="">
                 <div class="entry-text bolder-white-theme">{{ ep.title }}</div>
                 <div class="entry-text">{{ ep.createTime.substring(0,4) }}</div>

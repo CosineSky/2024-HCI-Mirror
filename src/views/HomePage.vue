@@ -476,21 +476,35 @@ const receiveDisplayingPlaylist = (value) => {
 /*
     EPISODES
  */
-const episodes = ref([]);
-const currentEpisode = ref(2);
-const currentEpisodeId = ref(2);
+const currentEpisode = ref(2); //当前专辑
+const currentEpisodeId = ref(2);//当前专辑id
 const displayingEpisode = ref(2);
-const receiveDisplayingEpisode = (value) => {
+const receiveDisplayingEpisode = (episode) => {
 	setMidComponents(4);
-	displayingEpisode.value = value;
-	getSongsByEpisode({
-		episode_id: value.id,
+	// getPlaylistByName();
+  displayingEpisode.value = episode;
+	getSongsByPlaylist({
+		episode_id: episode.id,
 	}).then((res) => {
 		displayingSongs.value = res.data.result;
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
 };
+const receiveDisplayingEpisodeByName = (episodeName) => {
+  setMidComponents(4);
+
+  //TODO:
+  // getPlaylistByName();
+  displayingEpisode.value = episode;
+  getSongsByPlaylist({
+    episode_id: episodeName.id,
+  }).then((res) => {
+    displayingSongs.value = res.data.result;
+  }).catch(e => {
+    console.log("Failed to get songs!");
+  });
+}
 /*
     SEARCH
  */
@@ -533,22 +547,6 @@ const setMidComponents = (val, prop = null, isBack = false) => {
   
   midComponents.value = val;
 
-  // if(val === 1)
-  // {
-  //   console.log("MainView");
-  //   if(prop != null) {
-  //     getPlaylistById({playlist_id: prop}).then((res) => {
-  //       displayingPlaylist.value = res.data.result;
-  //       getSongsByPlaylist({
-  //         playlist_id: displayingPlaylist.value.id,
-  //       }).then((res) => {
-  //         displayingSongs.value = res.data.result;
-  //       }).catch(e => {
-  //         console.log("Failed to get songs!");
-  //       });
-  //     })
-  //   }
-  // }
   
   if (val === 5) {
     currentArtist.value = prop;
@@ -705,21 +703,25 @@ const updateSongs = (newSongs) => {
 				<div v-if="midComponents === 0" class="playlist-container"
 				              style="overflow: scroll; border-radius: 12px">
 					<MainView @openArtistView="(name) => setMidComponents(5, name)"
-                    @openEpisodeView="(name) => setMidComponents(4, name)"
+                    @openEpisodeView="(episode) => receiveDisplayingEpisode(episode)"
                     @openMusicView=""
                     @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
-            />
+            /><!---->
 				</div>
 				<!--height: 730px -->
 				<div v-if="midComponents === 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-          <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
+          <MusicAlbumView :album-info="displayingPlaylist"
+                          :music-list="displayingSongs"
+                          :play-list="playlists"
                           :current-song-id="currentSongId"
-                          @switchSongs="switchToPlaylist" @switchToArtist="(name) => setMidComponents(5, name)"
-                          @pauseSong="pauseCurrentSong"
                           :playFromLeftBar="playFromLeftBarAlbum"
                           :is-paused="isPaused"
+                          @switchSongs="switchToPlaylist"
+                          @switchToArtist="(name) => setMidComponents(5, name)"
+                          @pauseSong="pauseCurrentSong"
                           @back="goBack"
+                          @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
           />
 				</div>
 				<el-container v-if="midComponents === 2" class="playlist-container"
@@ -735,8 +737,18 @@ const updateSongs = (newSongs) => {
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
-					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
+					<EpisodeView :episode-info="displayingEpisode"
+                       :music-list="displayingSongs"
+                       :play-list="playlists"
+                       :current-song-id="currentSongId"
+                       :playFromLeftBar="playFromLeftBarAlbum"
+                       :is-paused="isPaused"
+                       @switchSongs="switchToPlaylist"
+                       @switchToArtist="(name) => setMidComponents(5, name)"
+                       @pauseSong="pauseCurrentSong"
+                       @back="goBack"
+                       @openEpisodeView="(episode)=>{receiveDisplayingEpisode(episode)}"
+                       />
         </div>
         <div v-if="midComponents === 5" class="playlist-container"
              style="overflow: scroll; border-radius: 12px">

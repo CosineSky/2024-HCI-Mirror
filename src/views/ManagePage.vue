@@ -53,21 +53,21 @@ onMounted(() => {
     <body>
 	    <section class="user">
 	        <div class="user_options-container">
-	            <div class="user_options-text">
-	                <div class="user_options-unregistered">
-	                    <h2 class="user_unregistered-title">厌倦了那些老歌？</h2>
-	                    <p class="user_unregistered-text">没关系！作为我们的音乐播放器管理者，您可以随时将全新的歌曲添加到我们的音乐库，打造属于您的专属旋律世界，随时随地与世界分享您的音乐心情。让每一首歌，都成为您灵感的源泉！</p>
-		                <p class="user_unregistered-text">您只需在右侧的表单中填写歌曲的必要信息和文件。</p>
-	                </div>
-	                <div class="user_options-registered">
-	                    <button class="user_registered-login" id="login-button">Login</button>
-	                </div>
-	            </div>
+<!--	            <div class="user_options-text">-->
+<!--	                <div class="user_options-unregistered">-->
+<!--	                    <h2 class="user_unregistered-title">厌倦了那些老歌？</h2>-->
+<!--	                    <p class="user_unregistered-text">没关系！作为我们的音乐播放器管理者，您可以随时将全新的歌曲添加到我们的音乐库，打造属于您的专属旋律世界，随时随地与世界分享您的音乐心情。让每一首歌，都成为您灵感的源泉！</p>-->
+<!--		                <p class="user_unregistered-text">您只需在右侧的表单中填写歌曲的必要信息和文件。</p>-->
+<!--	                </div>-->
+<!--	                <div class="user_options-registered">-->
+<!--	                    <button class="user_registered-login" id="login-button">Login</button>-->
+<!--	                </div>-->
+<!--	            </div>-->
 	            
-	            <div class="user_options-forms" id="user_options-forms">
+	            <div class="user_options-forms" style="width: 400px" id="user_options-forms">
 	                <div class="user_forms-login">
 	                    <h2 class="forms_title">Upload A NEW SONG</h2>
-	                    <form class="forms_form">
+	                    <form class="forms_form" >
 	                        <div class="text-area">
 	                            <h2>Song Information</h2>
 	                            <div class="setting">
@@ -106,10 +106,11 @@ onMounted(() => {
 	                            </div>
 	                        </div>
 	                        <div>
+                            <input style="margin: 5px" @click="handleSubmit" type="submit" value="Let's ROCK!" class="forms_buttons-action">
+
 		                        <router-link to="/home" class="home-btn">
 			                        <input style="margin: 5px" type="submit" value="Back" class="forms_buttons-cancel">
 		                        </router-link>
-	                            <input style="margin: 5px" @click="handleSubmit" type="submit" value="Let's ROCK!" class="forms_buttons-action">
 	                        </div>
 	                    </form>
 	                </div>
