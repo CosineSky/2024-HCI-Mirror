@@ -345,12 +345,11 @@ const openEpisodeView= (id)=>{
           </div>
         </div>
 
-<!--        <div class="other-info">
-          <div class="lyrics-lines" :style="{ transform: `translateY(${-currentLineIndex * 40}px)` }">
+        <div class="other-info">
+          <div class="lyrics-lines">
             <div
                 v-for="(line, index) in lyrics"
                 :key="index"
-                :class="{ active: index === currentLineIndex }"
                 class="lyrics-line"
             >{{ line.text }}
             </div>
@@ -361,7 +360,7 @@ const openEpisodeView= (id)=>{
 				    font-family: Consolas, 幼圆, serif;
 				">Ouch！该歌曲暂无歌词！</h1>
           </div>
-        </div>-->
+        </div>
 
         <!--TODO:推荐歌曲的细节处理-->
         <div class="other-info">
@@ -850,5 +849,104 @@ li:hover {
   padding: 10px 0;
   color: #aaa;
   transition: color 0.3s;
+}
+
+
+p{
+  margin: 0;
+}
+
+#click-scroll-X {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .left_btn,.right_btn {
+    font-size: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+    color: #fff;
+    background-color: #1f1f1f;
+    position: absolute;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    bottom: 140px;
+  }
+  .right_btn{
+    right: -10px;
+  }
+  .left_btn{
+    left: -10px;
+  }
+  .scroll_wrapper {
+
+    width: 100%;
+    overflow-x: scroll;
+    padding: 20px 0;
+
+    .scroll_list {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap:2px;
+    }
+  }
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  margin-left: 10px;
+  color: #fff;
+  text-align: left;
+}
+.scroll-entry {
+  padding:9px;
+  align-items: center;
+  box-shadow: 0 4px 15px rgb(17, 17, 17); /* 悬浮效果的阴影 */
+  width: 180px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  gap:5px;
+  &:hover{
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  &.large-scroll-entry{
+    height: 230px;
+  }
+}
+
+.big-img {
+  border-radius: 6px;
+  width: 160px;
+  height: 160px;
+}
+.very-big-img {
+  border-radius: 6px;
+  width: 180px;
+  height: 180px;
+}
+.entry-text{
+  width: 160px;
+  margin-left: 4px;
+  text-align: left;
+  color: #a6a6a6;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bolder-white-theme{
+  font-size: 18px;
+  font-weight: bolder;
+  color: rgb(241, 241, 241);
 }
 </style>
