@@ -482,13 +482,14 @@ const receiveDisplayingEpisode = (episode) => {
 	setMidComponents(4);
   displayingEpisode.value = episode;
 	getSongsByPlaylist({
-		episode_id: episode.id,
+		playlist_id: episode.id,
 	}).then((res) => {
 		displayingSongs.value = res.data.result;
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
 };
+
 const receiveDisplayingEpisodeByName = (episodeName) => {
   setMidComponents(4);
 
@@ -496,7 +497,7 @@ const receiveDisplayingEpisodeByName = (episodeName) => {
   // getPlaylistByName();
   displayingEpisode.value = episode;
   getSongsByPlaylist({
-    episode_id: episodeName.id,
+    playlist_id: episodeName.id,
   }).then((res) => {
     displayingSongs.value = res.data.result;
   }).catch(e => {

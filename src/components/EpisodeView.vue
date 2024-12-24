@@ -53,11 +53,16 @@ let musicPauseIndex = ref(null);
 const resizeObserver = ref(null)
 const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
+// watch(props.episodeInfo,()=>{
+//
+// })
+
 //获取歌曲时长
 const songDurations = ref(new Map());
 watch(() => props.musicList, (newSongs) => {
   loadSongDurations(newSongs, songDurations);
 }, { immediate: true });
+
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -119,13 +124,16 @@ const debounce = (fn, delay) => {
 
 onMounted(() => {
 	resizeObserver.value = new ResizeObserver(debounce(handleResize, 50));
-  getSongsByPlaylist({playlist_id:props.episodeInfo.value.id}).then(res => {
+  getSongsByPlaylist({playlist_id:props.episodeInfo.id}).then(res => {
     props.musicList.value = res.data.result;
       console.log("episode得到歌曲！！")
   })
   let randomEpisodeIds =[];
-  for (let i = 0; i < 6; i++) {
-      randomEpisodeIds.push( Math.floor(Math.random()*20+200));
+  for (let i = 0; i < 10; i++) {
+    let num = Math.floor(Math.random()*20+200);
+      if(randomEpisodeIds.indexOf(num) === -1)
+        randomEpisodeIds.push(num);
+      else i--;
   }
   randomEpisodeIds.forEach((id)=>{
       getPlaylistById({playlist_id:id}).then(res => {

@@ -137,14 +137,14 @@ const buttonTurnDown= (buttonId)=>{
 const openArtistView = (name)=>{
   emit('openArtistView', name);
 }
-const openEpisodeView= (id)=>{
-  emit('openEpisodeView', id);
+const openEpisodeView= (episode)=>{
+  emit('openEpisodeView', episode);
 }
 const openMusicView = (id)=>{
   emit('openMusicView', id);
 }
-const openAlbumView = (id)=>{
-  emit('openAlbumView', id);
+const openAlbumView = (album)=>{
+  emit('openAlbumView', album);
 }
 
 
@@ -157,10 +157,14 @@ onMounted(()=>{
     console.log("MainView Failed to get songs!");
   });
   let randomEpisodeIds =[];
-  for (let i = 0; i < 6; i++) {
-    randomEpisodeIds.push( Math.floor(Math.random()*20+200));
+  for (let i = 0; i < 10; i++) {
+    let num = Math.floor(Math.random()*20+200);
+    if(randomEpisodeIds.indexOf(num) === -1)
+      randomEpisodeIds.push(num);
+    else i--;
   }
   randomEpisodeIds.forEach((id)=>{
+    console.log(id)
     getPlaylistById({playlist_id:id}).then(res => {
       episodes.value.push(res.data.result);
     })
@@ -187,7 +191,7 @@ onMounted(()=>{
 			</button>
 		</div>
 		<div class="recommend-tabs">
-        <div class="tab-main" @click="openAlbumView(defautAlbum.id)">
+        <div class="tab-main" @click="openAlbumView(defautAlbum)">
           <div class="wrapper">
             <div class="img">
               <img class="tab-img" :src="defautAlbum.picPath" alt="">
@@ -197,7 +201,7 @@ onMounted(()=>{
             </div>
           </div>
         </div>
-      <div class="tab-main" @click="openAlbumView(mostPlayedAlbum.id)">
+      <div class="tab-main" @click="openAlbumView(mostPlayedAlbum)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="mostPlayedAlbum.picPath" alt="">
@@ -208,7 +212,7 @@ onMounted(()=>{
         </div>
       </div>
 <!--      每周推荐-->
-      <div class="tab-main" @click="openAlbumView(weeklyRecommend.id)">
+      <div class="tab-main" @click="openAlbumView(weeklyRecommend)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="weeklyRecommend.picPath" alt="">
@@ -219,7 +223,7 @@ onMounted(()=>{
         </div>
       </div>
       <!--      新歌推荐-->
-      <div class="tab-main" @click="openAlbumView(newSongsRecommend.id)">
+      <div class="tab-main" @click="openAlbumView(newSongsRecommend)">
         <div class="wrapper">
           <div class="img">
             <img class="tab-img" :src="newSongsRecommend.picPath" alt="">
@@ -251,7 +255,7 @@ onMounted(()=>{
         </div>
       </div>
       <!--专辑推荐 （下面两个tab）-->
-      <div class="tab-main" @click="openEpisodeView(episodeRecommend[0].id)">
+      <div class="tab-main" @click="openEpisodeView(episodeRecommend[0])">
         <div class="wrapper" >
           <div class="img">
             <img  class="tab-img" :src="episodeRecommend[0].picPath" alt="">
@@ -261,7 +265,7 @@ onMounted(()=>{
           </div>
         </div>
       </div>
-      <div class="tab-main" @click="openEpisodeView(episodeRecommend[1].id)">
+      <div class="tab-main" @click="openEpisodeView(episodeRecommend[1])">
         <div class="wrapper">
           <div class="img">
             <img  class="tab-img" :src="episodeRecommend[1].picPath" alt="">
@@ -319,10 +323,10 @@ onMounted(()=>{
         <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
         <div class="scroll_wrapper" >
           <div class="scroll_list">
-            <div v-for="album in albums"
+            <div v-for="album in episodes"
                  :key="album.id"
                  class="scroll-entry"
-            @click="openEpisodeView(album.id)">
+            @click="openEpisodeView(album)">
               <img class="big-img" :src="album.picPath" alt="">
               <div class="entry-text bolder-white-theme">{{ album.title }}</div>
               <div class="entry-text">{{ album.description }}</div>
