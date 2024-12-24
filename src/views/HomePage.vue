@@ -27,7 +27,8 @@ import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
 import { formatTime } from '../utils/formatTime';
-import {getPlaylistById} from "../api/resolve";
+import {getPlaylistById, getSongById} from "../api/resolve";
+import MusicView from "@/components/MusicView.vue";
 
 
 /*
@@ -538,6 +539,23 @@ function receiveDataFromHome() {
 }
 
 /*
+    Music View
+ */
+const displayingMusic = ref();
+const displayingMusicId = ref(2);
+
+const receiveDisplayingMusic = (value) => {
+  setMidComponents(6);
+  displayingMusicId.value = value;
+  getSongById(
+      {
+        song_id: displayingMusicId.value
+      }).then((res) => {
+    displayingMusic.value = res.data.result;
+  });
+};
+
+/*
     MID COMPONENTS
     0 - Main View
     1 - Music Albums
@@ -545,6 +563,7 @@ function receiveDataFromHome() {
     3 - Search Results
     4 - Episodes
     5 - Artist View
+    6 - Music View
  */
 const midComponents = ref(0);
 const currentArtist = ref(null);
@@ -573,6 +592,8 @@ const setMidComponents = (val, prop = null, isBack = false) => {
   
   if (val === 5) {
     currentArtist.value = prop;
+  } else if (val === 6) {
+    displayingMusicId.value = prop;
   }
 };
 
@@ -727,7 +748,7 @@ const updateSongs = (newSongs) => {
 				              style="overflow: scroll; border-radius: 12px">
 					<MainView @openArtistView="(name) => setMidComponents(5, name)"
                     @openEpisodeView="(name) => setMidComponents(4, name)"
-                    @openMusicView=""
+                    @openMusicView="(songId) => receiveDisplayingMusic(songId)"
                     @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
             />
 				</div>
@@ -769,6 +790,14 @@ const updateSongs = (newSongs) => {
                       @back="goBack"
                       @updateSongs="updateSongs"/>
 				</div>
+        <div v-if="midComponents === 6" class="playlist-container"
+             style="overflow: scroll; border-radius: 12px">
+          <MusicView :song-info="displayingMusic"
+                     :current-song-id="currentSongId"
+                     :is-paused="isPaused"
+                     :play-from-left-bar="playFromLeftBarAlbum"
+          />
+        </div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div v-if="songs[currentSongIndex] !== undefined && showQueue" class="music-player music-info">
