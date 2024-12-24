@@ -585,7 +585,7 @@ p {
 
 .fixed-play-area {
   top: 0;
-  z-index: 11;
+  z-index: 2;
   opacity: 0;
   transition: opacity 0.2s ease-out;
   border-radius: 12px 12px 0 0;

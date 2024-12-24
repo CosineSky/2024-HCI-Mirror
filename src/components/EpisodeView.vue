@@ -7,6 +7,8 @@ import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
 import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {formatTime} from "@/utils/formatTime";
+
 
 const emit = defineEmits();
 const props = defineProps({
@@ -21,8 +23,18 @@ const props = defineProps({
 	playFromLeftBar: null,
 	currentSongId: Number
 });
+const relatedEpisode = ref([{
+  id:1,
+  title:"相关歌单1",
+  picPath:"",
+  createTime : ""
+},{
+  id:2,
+  title:"相关歌单2",
+  picPath:"",
+  createTime : ""
 
-const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
+}]);
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -30,7 +42,13 @@ let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
 const resizeObserver = ref(null)
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 
+//获取歌曲时长
+const songDurations = ref(new Map());
+watch(() => props.musicList, (newSongs) => {
+  loadSongDurations(newSongs, songDurations);
+}, { immediate: true });
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -140,27 +158,6 @@ const handelScroll = (event) => {
 	}
 }
 
-window.onscroll = () => {
-	const playArea = document.querySelector(".play-area");
-	const fixedPlayArea = document.querySelector(".fixed-play-area");
-	const tipArea = document.querySelector(".tips");
-	const fixedTipArea = document.querySelector(".fixed-tips");
-	const stickyPlayY = playArea.offsetTop;
-	const stickyTipY = tipArea.offsetTop;
-	
-	if (window.scrollY >= stickyPlayY) {
-		fixedPlayArea.style.opacity = "1";
-	} else {
-		fixedPlayArea.style.opacity = "0";
-	}
-	if (window.scrollY + fixedPlayArea.scrollHeight >= stickyTipY) {
-		fixedTipArea.style.display = "flex";
-		fixedTipArea.style.top = fixedPlayArea.scrollHeight + 'px';
-	} else {
-		fixedTipArea.style.display = "none";
-	}
-}
-
 watch(props.playFromLeftBar, () => {
 	playFromId(props.playFromLeftBar)
 })
@@ -178,7 +175,64 @@ const closePopover = (e) => {
 	})
 }
 
+let timer = ref(null)
+const limit = 250;
+function leftSlide(event){
+  // 保存滚动盒子左侧已滚动的距离
+  const target = event.currentTarget.nextElementSibling;
+  let left=target.scrollLeft
+  console.log(target);
+  let num=1
+  clearInterval(timer)
 
+  timer=setInterval(()=>{
+    let distanceNextTime =(limit/2 - Math.abs( limit/2 - num))/3;
+    //   !left:已经滚动到最左侧
+    //   一次性滚动距离（可调节）
+    if(left<=0||num>=limit){
+      // 停止滚动
+      clearInterval(timer)
+      return
+    }
+    left-=distanceNextTime
+    // 给滚动盒子元素赋值向左滚动距离
+    target.scrollLeft=left < 0 ? 0 : left
+    // 保存向左滚动距离（方便判断一次性滚动多少距离）
+    num+=distanceNextTime
+
+  },18)
+  // 20：速度（可调节）
+}
+function rightSlide(event){
+  const target = event.currentTarget.previousElementSibling;
+  // 保存滚动盒子左侧已滚动的距离
+  let left=target.scrollLeft
+  // 保存元素的整体宽度
+  let scrollWidth=target.scrollWidth
+  // 保存元素的可见宽度
+  let clientWidth=target.clientWidth
+  let num=1
+  clearInterval(timer)
+  timer = setInterval(()=>{
+    let distanceNextTime =(limit/2 - Math.abs( limit/2 - num))/3;
+    // 已经滚动距离+可见宽度
+    // left+clientWidth>=scrollWidth：滚动到最右侧
+    // num>=300一次性滚动距离
+    if(left+clientWidth>=scrollWidth||num>=limit){
+      clearInterval(timer.value)
+      return
+    }
+    // 给滚动盒子元素赋值向左滚动距离
+    left+=distanceNextTime
+    target.scrollLeft= left +clientWidth > scrollWidth? scrollWidth - clientWidth : left;
+    // 保存向左滚动距离（方便判断一次性滚动多少距离）
+    num+=distanceNextTime
+  },18)
+  // 20：速度（可调节）
+}
+function  openEpisodeView(id){
+
+}
 //TODO:
 const enterArtistSpace = () => {
 }
@@ -198,7 +252,7 @@ const playFromId = (musicId) => {
 	} else {
 		musicPlayIndex.value = musicId;
 	}
-	
+
 	emit('switchSongs', props.albumInfo, musicPlayIndex.value);
 	musicPauseIndex = null;
 }
@@ -212,7 +266,7 @@ const removeMusicFromAlbum = (albumId, songId) => {
 }
 const enterMusicDescription = (musicId) => {
 }
-const enterAuthorDescription = (authorName) => {
+const enterArtistDescription = (authorName) => {
 }
 
 const pauseMusic = (musicId) => {
@@ -240,7 +294,7 @@ const addRecommendMusic = (musicId) => {
 		<div class="header">
 			<img :src="episodeInfo.picPath" alt="" class="album-image" @load="updateBackground(episodeInfo.picPath)"/>
 			<div class="header-content">
-				<p style="text-align: left;margin:20px 0 0 15px">专辑</p>
+				<p style="text-align: left;margin:20px 0 0 15px">专辑EP</p>
 				<p class="header-album-name" style="font-weight: bolder;font-size:80px;margin:10px 0 35px 10px;">
 					{{ episodeInfo.title }}</p>
 				<div class="header-content-detail">
@@ -253,7 +307,7 @@ const addRecommendMusic = (musicId) => {
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="content">
 			<div class="play-area">
 				<div class="play-button">
@@ -346,9 +400,9 @@ const addRecommendMusic = (musicId) => {
 							   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
 							   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
 							>{{ music.title }}</p>
-							
-							<p @click="enterAuthorDescription(music.artist)" class="music-author"
-							   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+
+							<p @click="enterArtistDescription(music.artist)" class="music-author"
+                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 								{{ music.artist }}</p>
 						</div>
 					</div>
@@ -372,13 +426,11 @@ const addRecommendMusic = (musicId) => {
 								<li @click="addToFavorite(music.id)"></li>
 							</ul>
 						</el-popover>
-						
-						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">{{
-								music.upload_time
-							}}
-							<!--TODO: 解决播放时间问题-->
-						</div>
+            <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
+                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
+                 v-show="songDurations.get(music.id) !== undefined">
+              {{ formatTime(songDurations.get(music.id)) }}
+            </div>
 						<el-popover
 							:ref="getPopoverIndex"
 							class="music-dropdown-options"
@@ -391,12 +443,32 @@ const addRecommendMusic = (musicId) => {
 								<dots class="music-more-info"/>
 							</template>
 							<ul @click="closePopover">
-								<li @click="removeMusicFromAlbum(music.id)">删除歌曲</li>
+
 							</ul>
 						</el-popover>
 					</div>
 				</div>
 			</div>
+      <div class="related-episodes">
+        <h1>推荐专辑</h1><!--这里暂时写歌单 最好改为专辑-->
+        <div id="click-scroll-X" >
+          <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
+          <div class="scroll_wrapper" >
+            <div class="scroll_list">
+              <div v-for="ep in relatedEpisode"
+                   :key="ep.id"
+                   class="scroll-entry"
+                   @click="openEpisodeView(ep.id)">
+                <img class="big-img" :src="ep.picPath" alt="">
+                <div class="entry-text bolder-white-theme">{{ ep.title }}</div>
+                <div class="entry-text">{{ ep.createTime.substring(0,4) }}</div>
+              </div>
+
+            </div>
+          </div>
+          <div class="right_btn" @click="rightSlide">  <p style="margin-bottom: 2px">></p>  </div>
+        </div>
+      </div>
 		</div>
 	</div>
 </template>
@@ -406,7 +478,7 @@ li {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	
+
 }
 
 li:hover {
@@ -688,4 +760,93 @@ li:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
+
+#click-scroll-X {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .left_btn,.right_btn {
+    font-size: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+    color: #fff;
+    background-color: #1f1f1f;
+    position: absolute;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    bottom: 140px;
+  }
+  .right_btn{
+    right: -10px;
+  }
+  .left_btn{
+    left: -10px;
+  }
+  .scroll_wrapper {
+
+    width: 100%;
+    overflow-x: scroll;
+    padding: 20px 0;
+
+    .scroll_list {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap:2px;
+    }
+  }
+}
+.scroll-entry {
+  padding:9px;
+  align-items: center;
+  box-shadow: 0 4px 15px rgb(17, 17, 17); /* 悬浮效果的阴影 */
+  width: 180px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  gap:5px;
+  &:hover{
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  &.large-scroll-entry{
+    height: 230px;
+  }
+}
+
+.big-img {
+  border-radius: 6px;
+  width: 160px;
+  height: 160px;
+}
+.entry-text{
+   width: 160px;
+   margin-left: 4px;
+   text-align: left;
+   color: #a6a6a6;
+   font-size: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+ }
+.bolder-white-theme{
+  font-size: 18px;
+  font-weight: bolder;
+  color: rgb(241, 241, 241);
+}
+h1 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  margin-left: 10px;
+  color: #fff;
+  text-align: left;
+}
+
 </style>

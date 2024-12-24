@@ -440,34 +440,7 @@ const switchToPlaylist = (playlist, songId) => {
 	});
 }
 
-const switchToEpisode = (episode, songId) => {
-	console.log(episode, songId)
 
-	currentEpisode.value = episode;
-	displayingEpisode.value = episode;
-	currentEpisodeId.value = episode.id;
-	theme.change(currentEpisode.value.picPath);
-
-	getSongsByEpisode({
-		episode_id: currentEpisodeId.value,
-	}).then((res) => {
-		songs.value = res.data.result;
-		displayingSongs.value = res.data.result;
-		currentSongId.value = songId;
-		for (let i = 0; i < songs.value.length; i++) {
-			if (songs.value[i].id === songId) {
-				switchToSong(i, true);
-				parseLrc(songs.value[i].lyricsPath).then(res => {
-					lyrics.value = res;
-				});
-				break;
-			}
-		}
-
-	}).catch(e => {
-		console.log("Error while switching episodes!");
-	});
-}
 /*
     PLAYLISTS
  */
@@ -550,6 +523,8 @@ const midComponents = ref(0);
 const currentArtist = ref(null);
 const backStack = ref([]);
 
+
+
 const setMidComponents = (val, prop = null, isBack = false) => {
   console.log("from" + midComponents.value + " to " + val)
   if (val !== midComponents.value && !isBack) {
@@ -557,18 +532,22 @@ const setMidComponents = (val, prop = null, isBack = false) => {
   }
   
   midComponents.value = val;
-  
-  // if(val === 1) {
-  //   getPlaylistById({playlist_id:prop}).then((res) => {
-  //     displayingPlaylist.value = res.data.result;
-  //     getSongsByPlaylist({
-  //       playlist_id: displayingPlaylist.value.id,
-  //     }).then((res) => {
-  //       displayingSongs.value = res.data.result;
-  //     }).catch(e => {
-  //       console.log("Failed to get songs!");
-  //     });
-  //   })
+
+  // if(val === 1)
+  // {
+  //   console.log("MainView");
+  //   if(prop != null) {
+  //     getPlaylistById({playlist_id: prop}).then((res) => {
+  //       displayingPlaylist.value = res.data.result;
+  //       getSongsByPlaylist({
+  //         playlist_id: displayingPlaylist.value.id,
+  //       }).then((res) => {
+  //         displayingSongs.value = res.data.result;
+  //       }).catch(e => {
+  //         console.log("Failed to get songs!");
+  //       });
+  //     })
+  //   }
   // }
   
   if (val === 5) {

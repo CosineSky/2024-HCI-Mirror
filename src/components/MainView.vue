@@ -37,6 +37,7 @@ const newSongsRecommend = ref({
   id:6,
   picPath:"https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d"
 })
+
 /*先固定就这两位*/
 const artistRecommend = ref([{ id:1,picPath:"",name:"Marcus Warner"},{id:1,picPath:"",name: "朴树"}])
 const episodeRecommend = ref([{id:1,picPath:"",title:"热门专辑1"},{id:1,picPath:"",title:"热门专辑2"}])
@@ -54,7 +55,7 @@ const albums = ref([]);
 
 const currentTab = ref('all')
 let timer = ref(null)
-const limit = 230;
+const limit = 250;
 
 function leftSlide(event){
   // 保存滚动盒子左侧已滚动的距离
@@ -90,7 +91,6 @@ function rightSlide(event){
   let scrollWidth=target.scrollWidth
   // 保存元素的可见宽度
   let clientWidth=target.clientWidth
-
   let num=1
   clearInterval(timer)
   timer = setInterval(()=>{
@@ -145,10 +145,15 @@ onMounted(()=>{
   getSongsByPlaylist({
     playlist_id: 3,
   }).then((res) => {
-    songs.value = res.data.result.slice(0, 4);
+    songs.value = res.data.result.slice(0, 6);
+  }).catch(e => {
+    console.log("MainView Failed to get songs!");
   });
   albumIds.forEach((id)=>{
-    getPlaylistById({playlist_id:id}).then((res) => {
+    console.log("MainView");
+    getPlaylistById({playlist_id: id
+
+    }).then((res) => {
       albums.value.push(res.data.result);
 
     }).catch((err)=>{console.log(err)})
@@ -336,6 +341,7 @@ p{
   font-size: 16px;
   white-space: normal;
 }
+
 .main-view {
   border-radius: 12px;
 	padding: 20px;

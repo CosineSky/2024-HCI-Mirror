@@ -24,7 +24,7 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
-	playList: {
+	playList: { //指当前收藏的歌单列表
 		type: Array,
 		required: true,
 	},
@@ -218,9 +218,9 @@ const removeAlbum = (albumId) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex = props.musicList[0].id;
+		musicPlayIndex.value  = props.musicList[0].id;
 	} else {
-		musicPlayIndex = musicId;
+		musicPlayIndex.value  = musicId;
 	}
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
@@ -258,7 +258,7 @@ const removeMusicFromAlbum = (albumId, songId) => {
 }
 const enterMusicDescription = (musicId) => {
 }
-const enterAuthorDescription = (artistName) => {
+const enterArtistDescription = (artistName) => {
 	emit('switchToArtist', artistName);
 }
 
@@ -282,7 +282,6 @@ const confirmEdit = (albumId) => {
 
 	})
 }
-
 const quitEdit = () => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "hidden";
@@ -299,7 +298,9 @@ const addRecommendMusic = (musicId) => {
 		duration: 4000,
 	})
 }
+const enterMusicEpisode = (episode) => {
 
+}
 watch(() => props.currentSongId, (newId) => {
 	if (newId) {
 		musicPlayIndex = newId;
@@ -343,6 +344,7 @@ const isCurrentSongInList = computed(() => {
 		<div class="content">
 			<div class="play-area">
 				<div class="play-button">
+<!--          musicPlayIndex改为了musicPlayIndex-->
 					<play-button v-if="!isCurrentSongInList||musicPauseIndex!==null"
 					             @click="playFromId(musicPauseIndex)"
 					             style="position: absolute; top:20%;left:24%;color: #000000"/>
@@ -455,8 +457,7 @@ const isCurrentSongInList = computed(() => {
 								<span class="edit-desc-button-1-1">收藏</span>
 							</button>
 						</div>
-						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意
-							Spotify 获取你选择上传的图像。请确保你有上传此图像的权利。</p>
+						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意获取你选择上传的图像。</p>
 					</div>
 				</div>
 			</div>
@@ -508,13 +509,13 @@ const isCurrentSongInList = computed(() => {
                  :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
               >{{ music.title }}</p>
 
-              <p @click="enterAuthorDescription(music.artist)" class="music-author"
+              <p @click="enterArtistDescription(music.artist)" class="music-author"
                  :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
                 {{ music.artist }}</p>
             </div>
           </div>
 
-          <div class="music-album-info" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+          <div class="music-album-info" @click="enterMusicEpisode()" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
             {{ music.album }}
           </div>
           <div class="music-right-info">
@@ -639,8 +640,8 @@ const isCurrentSongInList = computed(() => {
 								   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
 								>{{ music.title }}</p>
 
-								<p @click="enterAuthorDescription(music.artist)" class="music-author"
-								   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+								<p @click="enterArtistDescription(music.artist)" class="music-author"
+                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 									{{ music.artist }}</p>
 							</div>
 						</div>
@@ -1323,6 +1324,7 @@ li:hover {
 }
 
 .back-button {
+  z-index: 3;
 	position: relative;
 	margin: 24px 0 0 24px;
 	width: 32px;
