@@ -19,25 +19,24 @@ import nextIcon from "../icon/nextIcon.vue";
 const emit = defineEmits([])
 /*条目区 都写死*/
 const defautAlbum = ref({
-  id:2,
-  title:"default",
-    picPath:null
+	id: 2,
+	title: "default",
+	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/53a10825-f3a3-48e9-81ec-86d662606c67.png"
 })
-const mostPlayedAlbum= ref({
-  id:3,
-  title:"mostPlayedAlbum",
-  picPath:null
+const mostPlayedAlbum = ref({
+	id: 3,
+	title: "最受欢迎的专辑",
+	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/60fa504f-23ee-4446-8ef8-0f5049963865.png"
 })
 const weeklyRecommend = ref({
-  id:5,
-  picPath:"https://i.scdn.co/image/ab67616d00004851970e7892dab13cdb11387690",
+	id: 5,
+	picPath: "https://i.scdn.co/image/ab67616d00004851970e7892dab13cdb11387690",
 
 })
 const newSongsRecommend = ref({
-  id:6,
-  picPath:"https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d"
+	id: 6,
+	picPath: "https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d"
 })
-
 /*先固定就这两位*/
 const artistRecommend = ref([
     { id:1,picPath:"https://y.qq.com/music/photo_new/T001R150x150M000000mLAT42CFWNa.jpg?max_age=2592000",name:"朴树"},
@@ -46,14 +45,16 @@ const episodeRecommend = ref([
     {id:200,picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/b313c9cf-85d7-4b5d-9ba4-a80acce452ba.png",title:"Ignite (2016 League Of Legends World Championship)"},
     {id:201,picPath:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/e17e49ca-62f9-404d-866b-a13e9886372e.jpg",title:"Stay"}])
 
-/*图片区 ：推荐歌曲、推荐艺人、推荐专辑*/
+/*图片区 ：推荐歌曲、推荐艺人、推荐专辑(歌单)*/
 const songs = ref([]);
 /*写死*/
-const artists = ref([{
-  id:1,
-  avatarUrl:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/6ac2a408-1632-4713-bcc3-a54151e29c18.jpg",
-  name:"朴树"
-},
+const artists = ref([
+	{id: 1, avatarUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/6ac2a408-1632-4713-bcc3-a54151e29c18.jpg", name: "朴树"},
+	{id: 2, avatarUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/59b6831d-a4c8-4e11-8edc-bfbd0221fd0e.jpg", name: "许巍"},
+	{id: 3, avatarUrl: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/e6af63fd-21cd-4c9a-98ed-0362fd5c69f5.jpg", name: "Beyond"},
+	{id: 4, avatarUrl: "https://i.scdn.co/image/ab67616100005174f1496a59885e3470c2644879", name: "张学友"},
+	{id: 5, avatarUrl: "https://i.scdn.co/image/ab67616100005174e62cff9c6018ae5616b01eab", name: "ヨルシカ"},
+	// {id: 5, avatarUrl: "", name: "朴树"},
 ]);
 const episodes = ref([]);
 
@@ -95,6 +96,7 @@ function rightSlide(event){
   let scrollWidth=target.scrollWidth
   // 保存元素的可见宽度
   let clientWidth=target.clientWidth
+
   let num=1
   clearInterval(timer)
   timer = setInterval(()=>{
@@ -114,6 +116,7 @@ function rightSlide(event){
   },18)
   // 20：速度（可调节）
 }
+
 const handleTabClick = (tab) => {
 	currentTab.value = tab
 }
@@ -311,7 +314,7 @@ onMounted(()=>{
       </div>
     </div>
     <div class="albums-recommendation" @mouseenter="buttonTurnUp(2)" @mouseleave="buttonTurnDown(2)">
-      <h1>推荐专辑</h1><!--专辑-->
+      <h1>推荐专辑</h1><!--这里暂时写歌单 最好改为专辑-->
       <div id="click-scroll-X" >
         <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
         <div class="scroll_wrapper" >
@@ -319,7 +322,7 @@ onMounted(()=>{
             <div v-for="album in albums"
                  :key="album.id"
                  class="scroll-entry"
-            @click="openEpisodeView(album)">
+            @click="openEpisodeView(album.id)">
               <img class="big-img" :src="album.picPath" alt="">
               <div class="entry-text bolder-white-theme">{{ album.title }}</div>
               <div class="entry-text">{{ album.description }}</div>
@@ -345,14 +348,13 @@ p{
   font-size: 16px;
   white-space: normal;
 }
-
 .main-view {
   border-radius: 12px;
 	padding: 20px;
-  background-color: #121212;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+	background-color: #121212;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }
 
 .tabs {
@@ -418,45 +420,47 @@ p{
   margin-left: 8px;
 }
 #click-scroll-X {
-  position: relative;
-  display: flex;
-  align-items: center;
+	position: relative;
+	display: flex;
+	align-items: center;
 
-  .left_btn,.right_btn {
-    font-size: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    width: 40px;
-    color: #fff;
-    background-color: #1f1f1f;
-    position: absolute;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.4s ease-in-out;
-    bottom: 140px;
-  }
-  .right_btn{
-    right: -10px;
-  }
-  .left_btn{
-    left: -10px;
-  }
-  .scroll_wrapper {
+	.left_btn, .right_btn {
+		font-size: 30px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 40px;
+		width: 40px;
+		color: #fff;
+		background-color: #1f1f1f;
+		position: absolute;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.4s ease-in-out;
+		bottom: 140px;
+	}
 
-    width: 100%;
-    overflow-x: scroll;
-    padding: 20px 0;
+	.right_btn {
+		right: -10px;
+	}
 
-    .scroll_list {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap:2px;
-    }
-  }
+	.left_btn {
+		left: -10px;
+	}
+
+	.scroll_wrapper {
+
+		width: 100%;
+		overflow-x: scroll;
+		padding: 20px 0;
+
+		.scroll_list {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+	}
 }
 
 h1 {
@@ -470,22 +474,24 @@ h1 {
 
 }
 .scroll-entry {
-  padding:9px;
-  align-items: center;
-  box-shadow: 0 4px 15px rgb(17, 17, 17); /* 悬浮效果的阴影 */
-  width: 180px;
-  height: 210px;
-  display: flex;
-  flex-direction: column;
-  gap:5px;
-  &:hover{
-    cursor: pointer;
-    border-radius: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  &.large-scroll-entry{
-    height: 230px;
-  }
+	padding: 9px;
+	align-items: center;
+	box-shadow: 0 4px 15px rgb(17, 17, 17); /* 悬浮效果的阴影 */
+	width: 180px;
+	height: 210px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+
+	&:hover {
+		cursor: pointer;
+		border-radius: 6px;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	&.large-scroll-entry {
+		height: 230px;
+	}
 }
 
 .big-img {
