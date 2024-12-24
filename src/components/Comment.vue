@@ -156,7 +156,7 @@ const getCommentMusicFn = async (id, page) => {
 
     for (let i = 0; i < state.comments.length; i++) {
       getUserById({
-        user_id: state.comments[i].userId
+        userId: state.comments[i].userId
       }).then(res => {
         console.log("COMMENTER FOUND")
         state.commenters.push(res.data.result)

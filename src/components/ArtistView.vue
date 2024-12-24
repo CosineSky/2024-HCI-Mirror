@@ -4,12 +4,13 @@ import playButton from "../icon/playButton.vue";
 import pauseButton from "../icon/pauseButton.vue";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import {getArtistInfo} from "../api/artist";
-import {getSongById} from "../api/resolve";
+import {getSongById, getUserById} from "../api/resolve";
 import checkMark from "../icon/checkMark.vue";
 import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
 import {formatTime} from '../utils/formatTime';
 import {loadSongDurations} from '../utils/loadSongDurations';
+import {userFollowArtist} from "@/api/user";
 
 const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs']);
 const props = defineProps({
@@ -47,12 +48,14 @@ const isFirstPlay = ref(true);
 
 // 关注/取消关注逻辑
 const toggleFollow = () => {
+  userFollowArtist({
+    user_id: currentUserId.value,
+    artist_id: artist.value.id,
+    isFollowed: isFollowing.value
+  }).catch(error => {
+    console.error("Failed to update artist follow status:", error);
+  })
   isFollowing.value = !isFollowing.value;
-  // TODO: 调用后端API实现关注/取消关注
-  // followArtist({
-  //   artistId: artist.value.id,
-  //   isFollow: isFollowing.value
-  // });
 };
 
 // 添加喜欢歌曲的状态管理
@@ -152,7 +155,12 @@ const getRandomListeners = () => {
 
 const monthlyListeners = ref(getRandomListeners());
 
+const followedArtistIds = ref([]);
+
 onMounted(() => {
+  getUserById({userId: currentUserId.value}).then(res => {
+    followedArtistIds.value = res.data.result.followedArtistIds;
+  })
   // 初始化喜欢的歌曲集合
   initializeLikedSongs();
 
@@ -177,27 +185,30 @@ onUnmounted(() => {
   popovers.value = null;
 });
 
-watch(() => props.artistName, (newValue) => {
-  getArtistInfo(newValue).then(res => {
-    artist.value = res.data.result;
+watch(() => props.artistName, async (newValue) => {
+  try {
+    const artistResponse = await getArtistInfo(newValue);
+    artist.value = artistResponse.data.result;
+    
+    if (!followedArtistIds.value.length) {
+      const userResponse = await getUserById({ userId: currentUserId.value });
+      followedArtistIds.value = userResponse.data.result.followedArtistIds;
+    }
+    isFollowing.value = followedArtistIds.value.includes(artist.value.id);
     updateBackground(artist.value.avatarUrl);
 
     const songPromises = artist.value.songIds.map(songId =>
-        getSongById({
-          song_id: songId
-        }).then(res => res.data.result)
+      getSongById({
+        song_id: songId
+      }).then(res => res.data.result)
     );
 
-    // 等待所有歌曲信息获取完成
-    Promise.all(songPromises).then(songs => {
-      hotSongs.value = songs;
-    }).catch(error => {
-      console.error("Failed to fetch songs:", error);
-    });
-    console.log(artist.value)
-    console.log(hotSongs.value);
-  });
-},{immediate: true})
+    const songs = await Promise.all(songPromises);
+    hotSongs.value = songs;
+  } catch (error) {
+    console.error("Failed to fetch artist data:", error);
+  }
+}, { immediate: true });
 
 const handelScroll = (event) => {
 

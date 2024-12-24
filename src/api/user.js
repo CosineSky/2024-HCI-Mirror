@@ -38,3 +38,16 @@ export const userInfo = () => {
             return res;
         });
 }
+
+export const userFollowArtist = (followArtistInfo) => {
+    return axios.post(`${USER_MODULE}/followArtist`,null,{
+        params:{
+            userId: followArtistInfo.user_id,
+            artistId: followArtistInfo.artist_id,
+            isFollowed: followArtistInfo.isFollowed
+        }
+    })
+        .then(res => {
+            return res;
+        });
+}
