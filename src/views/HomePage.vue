@@ -549,30 +549,31 @@ const currentArtist = ref(null);
 const backStack = ref([]);
 
 const setMidComponents = (val, prop = null, isBack = false) => {
-	console.log("from " + midComponents.value + " to " + val)
-	if (val !== midComponents.value && !isBack) {
-		backStack.value.push(midComponents.value);
-	}
-
-	
-	midComponents.value = val;
-	
-	if (val === 5) {
-		currentArtist.value = prop;
-	}
-	
-	// if(val === 1) {
-	//   getPlaylistById({playlist_id:prop}).then((res) => {
-	//     displayingPlaylist.value = res.data.result;
-	//     getSongsByPlaylist({
-	//       playlist_id: displayingPlaylist.value.id,
-	//     }).then((res) => {
-	//       displayingSongs.value = res.data.result;
-	//     }).catch(e => {
-	//       console.log("Failed to get songs!");
-	//     });
-	//   })
-	// }
+  console.log("from" + midComponents.value + " to " + val)
+  if (val !== midComponents.value && !isBack) {
+    backStack.value.push(midComponents.value);
+  }
+  
+  midComponents.value = val;
+  
+  // if(val === 1) {
+  //   getPlaylistById({playlist_id:prop}).then((res) => {
+  //     displayingPlaylist.value = res.data.result;
+  //     getSongsByPlaylist({
+  //       playlist_id: displayingPlaylist.value.id,
+  //     }).then((res) => {
+  //       displayingSongs.value = res.data.result;
+  //     }).catch(e => {
+  //       console.log("Failed to get songs!");
+  //     });
+  //   })
+  // }
+  
+  if (val === 5) {
+    currentArtist.value = prop;
+  } else if (val === 6) {
+    displayingMusicId.value = prop;
+  }
 };
 
 const goBack = () => {
