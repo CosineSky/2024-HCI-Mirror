@@ -26,9 +26,7 @@ import {getPlaylistsByUser} from "../api/playlist";
 import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
-import { formatTime } from '../utils/formatTime';
-import {getPlaylistById, getSongById} from "../api/resolve";
-import MusicView from "@/components/MusicView.vue";
+import {formatTime} from '../utils/formatTime';
 
 
 /*
@@ -125,6 +123,26 @@ let progresses;
 let controlIcons;
 let playModeIcons;
 
+function updateSongInfo() {
+	try {
+		if (songs.value[currentSongIndex.value]) {
+			controlIcons.forEach(controlIcon => {
+				controlIcon.src = PLAY;
+			});
+			song.src = songs.value[currentSongIndex.value].filePath;
+			parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
+				lyrics.value = res;
+			});
+			song.load();
+			song.play();
+			isPaused.value = false;
+			theme.change(songs.value[currentSongIndex.value].picPath);
+		}
+	} catch (e) {
+		console.log("Uncaught Error in updateSongInfo!", e);
+	}
+}
+
 
 const registerDOMs = () => {
 	/*
@@ -186,25 +204,6 @@ const registerDOMs = () => {
 	controlIcons = document.querySelectorAll('.idControlIcon');
 	playModeIcons = document.querySelectorAll('.idPlayModeIcon');
 	
-	function updateSongInfo() {
-		try {
-			if (songs.value[currentSongIndex.value]) {
-				controlIcons.forEach(controlIcon => {
-					controlIcon.src = PLAY;
-				});
-				song.src = songs.value[currentSongIndex.value].filePath;
-				parseLrc(songs.value[currentSongIndex.value].lyricsPath).then(res => {
-					lyrics.value = res;
-				});
-				song.load();
-				song.play();
-        isPaused.value = false;
-				theme.change(songs.value[currentSongIndex.value].picPath);
-			}
-		} catch (e) {
-			console.log("Uncaught Error in updateSongInfo!", e);
-		}
-	}
 	
 	function shareSong() {
 		console.log("Hello!");
@@ -261,7 +260,6 @@ const registerDOMs = () => {
 	});
 	song.addEventListener("ended", function () {
 		switchSongs(1);
-		updateSongInfo();
 	});
 	song.addEventListener("timeupdate", function () {
 		if (!song.paused) {
@@ -293,7 +291,6 @@ const registerDOMs = () => {
 		if (!forwardButton._hasClickListener) {
 			forwardButton.addEventListener("click", function () {
 				switchSongs(1);
-				updateSongInfo();
 			});
 			forwardButton._hasClickListener = true;
 		}
@@ -302,7 +299,6 @@ const registerDOMs = () => {
 		if (!backwardButton._hasClickListener) {
 			backwardButton.addEventListener("click", function () {
 				switchSongs(-1);
-				updateSongInfo();
 			});
 			backwardButton._hasClickListener = true;
 		}
@@ -346,14 +342,14 @@ const volumePercentage = ref('100%');
 
 // 添加音量变化处理
 const updateVolumeStyle = (e) => {
-  const volume = e.target.value;
-  volumePercentage.value = (volume * 100) + '%';
+	const volume = e.target.value;
+	volumePercentage.value = (volume * 100) + '%';
 };
 
 // 监听volume变化，同步更新所有音量控制器的样式
 watch(volume, (newValue) => {
-  song.volume = newValue;
-  volumePercentage.value = (newValue * 100) + '%';
+	song.volume = newValue;
+	volumePercentage.value = (newValue * 100) + '%';
 });
 const displayingSongs = ref([]);
 const isPaused = ref(true);
@@ -387,6 +383,7 @@ const switchSongs = (del) => {
 			break;
 	}
 	currentSongId.value = songs.value[currentSongIndex.value].id;
+	updateSongInfo();
 }
 
 const switchToSong = (index, isDiffPlaylist) => {
@@ -408,7 +405,7 @@ const switchToSong = (index, isDiffPlaylist) => {
 		song.load();
 		song.play();
 		theme.change(songs.value[index].picPath);
-    isPaused.value = false;
+		isPaused.value = false;
 	}
 }
 
@@ -443,12 +440,12 @@ const switchToPlaylist = (playlist, songId) => {
 
 const switchToEpisode = (episode, songId) => {
 	console.log(episode, songId)
-
+	
 	currentEpisode.value = episode;
 	displayingEpisode.value = episode;
 	currentEpisodeId.value = episode.id;
 	theme.change(currentEpisode.value.picPath);
-
+	
 	getSongsByEpisode({
 		episode_id: currentEpisodeId.value,
 	}).then((res) => {
@@ -464,7 +461,7 @@ const switchToEpisode = (episode, songId) => {
 				break;
 			}
 		}
-
+		
 	}).catch(e => {
 		console.log("Error while switching episodes!");
 	});
@@ -539,23 +536,6 @@ function receiveDataFromHome() {
 }
 
 /*
-    Music View
- */
-const displayingMusic = ref();
-const displayingMusicId = ref(2);
-
-const receiveDisplayingMusic = (value) => {
-  setMidComponents(6);
-  displayingMusicId.value = value;
-  getSongById(
-      {
-        song_id: displayingMusicId.value
-      }).then((res) => {
-    displayingMusic.value = res.data.result;
-  });
-};
-
-/*
     MID COMPONENTS
     0 - Main View
     1 - Music Albums
@@ -563,47 +543,45 @@ const receiveDisplayingMusic = (value) => {
     3 - Search Results
     4 - Episodes
     5 - Artist View
-    6 - Music View
  */
 const midComponents = ref(0);
 const currentArtist = ref(null);
 const backStack = ref([]);
 
 const setMidComponents = (val, prop = null, isBack = false) => {
-  console.log("from" + midComponents.value + " to " + val)
-  if (val !== midComponents.value && !isBack) {
-    backStack.value.push(midComponents.value);
-  }
-  
-  midComponents.value = val;
-  
-  // if(val === 1) {
-  //   getPlaylistById({playlist_id:prop}).then((res) => {
-  //     displayingPlaylist.value = res.data.result;
-  //     getSongsByPlaylist({
-  //       playlist_id: displayingPlaylist.value.id,
-  //     }).then((res) => {
-  //       displayingSongs.value = res.data.result;
-  //     }).catch(e => {
-  //       console.log("Failed to get songs!");
-  //     });
-  //   })
-  // }
-  
-  if (val === 5) {
-    currentArtist.value = prop;
-  } else if (val === 6) {
-    displayingMusicId.value = prop;
-  }
+	console.log("from " + midComponents.value + " to " + val)
+	if (val !== midComponents.value && !isBack) {
+		backStack.value.push(midComponents.value);
+	}
+
+	
+	midComponents.value = val;
+	
+	if (val === 5) {
+		currentArtist.value = prop;
+	}
+	
+	// if(val === 1) {
+	//   getPlaylistById({playlist_id:prop}).then((res) => {
+	//     displayingPlaylist.value = res.data.result;
+	//     getSongsByPlaylist({
+	//       playlist_id: displayingPlaylist.value.id,
+	//     }).then((res) => {
+	//       displayingSongs.value = res.data.result;
+	//     }).catch(e => {
+	//       console.log("Failed to get songs!");
+	//     });
+	//   })
+	// }
 };
 
 const goBack = () => {
-  if (backStack.value.length > 0) {
-    const lastIndex = backStack.value.pop();
-    setMidComponents(lastIndex, currentArtist.value, true);
-  } else {
-    setMidComponents(0, null);
-  }
+	if (backStack.value.length > 0) {
+		const lastIndex = backStack.value.pop();
+		setMidComponents(lastIndex, currentArtist.value, true);
+	} else {
+		setMidComponents(0, null);
+	}
 };
 
 /*
@@ -617,29 +595,29 @@ const isSharing = ref(false);
 const showNowPlaying = ref(false);
 const showQueue = ref(false);
 const showRightContent = computed(() => {
-  return showQueue.value || showNowPlaying.value
+	return showQueue.value || showNowPlaying.value
 });
 
 const toggleNowPlaying = async () => {
-  if (showQueue.value) {
-    showQueue.value = false;
-  }
-  showNowPlaying.value = !showNowPlaying.value;
+	if (showQueue.value) {
+		showQueue.value = false;
+	}
+	showNowPlaying.value = !showNowPlaying.value;
 };
 
 const toggleQueue = () => {
-  showNowPlaying.value = false;
-  showQueue.value = !showQueue.value;
+	showNowPlaying.value = false;
+	showQueue.value = !showQueue.value;
 };
 
 const getNextSong = () => {
-  if (!songs.value.length) return null;
-  const nextIndex = (currentSongIndex.value + 1) % songs.value.length;
-  return songs.value[nextIndex];
+	if (!songs.value.length) return null;
+	const nextIndex = (currentSongIndex.value + 1) % songs.value.length;
+	return songs.value[nextIndex];
 };
 
 const playNextSong = () => {
-  switchSongs(1);
+	switchSongs(1);
 };
 
 onMounted(() => {
@@ -679,57 +657,57 @@ onMounted(() => {
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
-
-  const volumeControl = document.getElementById('volumeControl');
-  if (volumeControl) {
-    volumeControl.style.setProperty('--volume-percentage', '100%');
-  }
+	
+	const volumeControl = document.getElementById('volumeControl');
+	if (volumeControl) {
+		volumeControl.style.setProperty('--volume-percentage', '100%');
+	}
 })
 let playFromLeftBarAlbum = ref(null);
 
 const playArtistSong = (songToPlay) => {
-  // 检查歌曲是否已经在播放列表中
-  const existingIndex = songs.value.findIndex(song => song.id === songToPlay.id);
-
-  if (existingIndex !== -1) {
-    // 如果歌曲已存在，直接播放该歌曲
-    currentSongIndex.value = existingIndex;
-    currentSongId.value = songToPlay.id;
-  } else {
-    // 如果歌曲不存在，添加到播放列表开头并播放
-    songs.value = [songToPlay, ...songs.value];
-    currentSongIndex.value = 0;
-    currentSongId.value = songToPlay.id;
-  }
-
-  if (song) {
-    controlIcons.forEach(controlIcon => {
-      controlIcon.src = PLAY;
-    });
-    song.src = songToPlay.filePath;
-    parseLrc(songToPlay.lyricsPath).then(res => {
-      lyrics.value = res;
-    });
-    song.load();
-    song.play();
-    theme.change(songToPlay.picPath);
-    isPaused.value = false;  // 设置为播放状态
-  }
+	// 检查歌曲是否已经在播放列表中
+	const existingIndex = songs.value.findIndex(song => song.id === songToPlay.id);
+	
+	if (existingIndex !== -1) {
+		// 如果歌曲已存在，直接播放该歌曲
+		currentSongIndex.value = existingIndex;
+		currentSongId.value = songToPlay.id;
+	} else {
+		// 如果歌曲不存在，添加到播放列表开头并播放
+		songs.value = [songToPlay, ...songs.value];
+		currentSongIndex.value = 0;
+		currentSongId.value = songToPlay.id;
+	}
+	
+	if (song) {
+		controlIcons.forEach(controlIcon => {
+			controlIcon.src = PLAY;
+		});
+		song.src = songToPlay.filePath;
+		parseLrc(songToPlay.lyricsPath).then(res => {
+			lyrics.value = res;
+		});
+		song.load();
+		song.play();
+		theme.change(songToPlay.picPath);
+		isPaused.value = false;  // 设置为播放状态
+	}
 };
 
 const pauseCurrentSong = () => {
-  if (song) {
-    song.pause();
-    controlIcons.forEach(controlIcon => {
-      controlIcon.src = PAUSE;
-    });
-    isPaused.value = true;  // 设置为暂停状态
-  }
+	if (song) {
+		song.pause();
+		controlIcons.forEach(controlIcon => {
+			controlIcon.src = PAUSE;
+		});
+		isPaused.value = true;  // 设置为暂停状态
+	}
 };
 
 const updateSongs = (newSongs) => {
-  songs.value = newSongs;
-  displayingSongs.value = newSongs;
+	songs.value = newSongs;
+	displayingSongs.value = newSongs;
 };
 
 </script>
@@ -745,59 +723,53 @@ const updateSongs = (newSongs) => {
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
 				<div v-if="midComponents === 0" class="playlist-container"
-				              style="overflow: scroll; border-radius: 12px">
+				     style="overflow: scroll; border-radius: 12px">
 					<MainView @openArtistView="(name) => setMidComponents(5, name)"
-                    @openEpisodeView="(name) => setMidComponents(4, name)"
-                    @openMusicView="(songId) => receiveDisplayingMusic(songId)"
-                    @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
-            />
+					          @openEpisodeView="(name) => setMidComponents(4, name)"
+					          @openMusicView=""
+					          @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
+					/>
 				</div>
 				<!--height: 730px -->
 				<div v-if="midComponents === 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-          <MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs" :play-list="playlists"
-                          :current-song-id="currentSongId"
-                          @switchSongs="switchToPlaylist" @switchToArtist="(name) => setMidComponents(5, name)"
-                          @pauseSong="pauseCurrentSong"
-                          :playFromLeftBar="playFromLeftBarAlbum"
-                          :is-paused="isPaused"
-                          @back="goBack"
-          />
+					<MusicAlbumView :album-info="displayingPlaylist" :music-list="displayingSongs"
+					                :play-list="playlists"
+					                :current-song-id="currentSongId"
+					                @switchSongs="switchToPlaylist"
+					                @switchToArtist="(name) => setMidComponents(5, name)"
+					                @pauseSong="pauseCurrentSong"
+					                :playFromLeftBar="playFromLeftBarAlbum"
+					                :is-paused="isPaused"
+					                @back="goBack"
+					/>
 				</div>
 				<el-container v-if="midComponents === 2" class="playlist-container"
 				              style="overflow: scroll; height: 730px ;border-radius: 12px">
 					<Comment :song-id=currentSongId :user-id=currentUserId
-                   @back="goBack"
-          ></Comment>
+					         @back="goBack"
+					></Comment>
 				</el-container>
 				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<SearchView :songResult="songResult" :playlistResult="playlistResult"
-                      @back="goBack"/>
+					            @back="goBack"/>
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
 					<EpisodeView :episode-info="displayingEpisode" :music-list="displayingSongs"
 					             @switchSongs="switchToEpisode" :playFromLeftBar="playFromLeftBarAlbum"/>
-        </div>
-        <div v-if="midComponents === 5" class="playlist-container"
-             style="overflow: scroll; border-radius: 12px">
-          <ArtistView :artist-name="currentArtist"
-                      :is-paused="isPaused"
-                      :current-song-id="currentSongId"
-                      @playSong="playArtistSong"
-                      @pauseSong="pauseCurrentSong"
-                      @back="goBack"
-                      @updateSongs="updateSongs"/>
 				</div>
-        <div v-if="midComponents === 6" class="playlist-container"
-             style="overflow: scroll; border-radius: 12px">
-          <MusicView :song-info="displayingMusic"
-                     :current-song-id="currentSongId"
-                     :is-paused="isPaused"
-                     :play-from-left-bar="playFromLeftBarAlbum"
-          />
-        </div>
+				<div v-if="midComponents === 5" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
+					<ArtistView :artist-name="currentArtist"
+					            :is-paused="isPaused"
+					            :current-song-id="currentSongId"
+					            @playSong="playArtistSong"
+					            @pauseSong="pauseCurrentSong"
+					            @back="goBack"
+					            @updateSongs="updateSongs"/>
+				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
 				<div v-if="songs[currentSongIndex] !== undefined && showQueue" class="music-player music-info">
@@ -854,16 +826,16 @@ const updateSongs = (newSongs) => {
 						</div>
 					</el-container>
 				</div>
-
-        <NowPlayingView
-            v-if="showNowPlaying"
-            :is-visible="showNowPlaying"
-            :current-song="songs[currentSongIndex]"
-            :next-song="getNextSong()"
-            @play-next="playNextSong"
-            @toggle-queue="toggleQueue"
-            @enter-author-description="(name) => setMidComponents(5, name)"
-        />
+				
+				<NowPlayingView
+					v-if="showNowPlaying"
+					:is-visible="showNowPlaying"
+					:current-song="songs[currentSongIndex]"
+					:next-song="getNextSong()"
+					@play-next="playNextSong"
+					@toggle-queue="toggleQueue"
+					@enter-author-description="(name) => setMidComponents(5, name)"
+				/>
 			</div>
 		</div>
 		
@@ -930,33 +902,34 @@ const updateSongs = (newSongs) => {
 					<p style="margin-left: 10px; padding-bottom: 40px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
-
-
+			
+			
 			<div class="right-controls">
 				<div class="volume-control" style="display: flex; flex-direction: row; align-items: center">
 					<h1 style="margin: 0">🔈</h1>
 					<input type="range"
-						   id="volumeControl"
-						   min="0"
-						   max="1"
-						   step="0.01"
-						   v-model="volume"
-						   @input="updateVolumeStyle"
-						   :style="{'--volume-percentage': volumePercentage}"
+					       id="volumeControl"
+					       min="0"
+					       max="1"
+					       step="0.01"
+					       v-model="volume"
+					       @input="updateVolumeStyle"
+					       :style="{'--volume-percentage': volumePercentage}"
 					/>
 				</div>
-
-        <div class="feature-icon"
-             data-tooltip="当前播放"
-             :class="{ active: showNowPlaying }"
-             @click="toggleNowPlaying">
-          <svg role="img" height="16" width="16" viewBox="0 0 16 16" fill="currentColor"
-               color="gray">
-            <path d="M11.196 8 6 5v6l5.196-3z"></path>
-            <path d="M15.002 1.75A1.75 1.75 0 0 0 13.252 0h-10.5a1.75 1.75 0 0 0-1.75 1.75v12.5c0 .966.784 1.75 1.75 1.75h10.5a1.75 1.75 0 0 0 1.75-1.75V1.75zm-1.75-.25a.25.25 0 0 1 .25.25v12.5a.25.25 0 0 1-.25.25h-10.5a.25.25 0 0 1-.25-.25V1.75a.25.25 0 0 1 .25-.25h10.5z"></path>
-          </svg>
-        </div>
-
+				
+				<div class="feature-icon"
+				     data-tooltip="当前播放"
+				     :class="{ active: showNowPlaying }"
+				     @click="toggleNowPlaying">
+					<svg role="img" height="16" width="16" viewBox="0 0 16 16" fill="currentColor"
+					     color="gray">
+						<path d="M11.196 8 6 5v6l5.196-3z"></path>
+						<path
+							d="M15.002 1.75A1.75 1.75 0 0 0 13.252 0h-10.5a1.75 1.75 0 0 0-1.75 1.75v12.5c0 .966.784 1.75 1.75 1.75h10.5a1.75 1.75 0 0 0 1.75-1.75V1.75zm-1.75-.25a.25.25 0 0 1 .25.25v12.5a.25.25 0 0 1-.25.25h-10.5a.25.25 0 0 1-.25-.25V1.75a.25.25 0 0 1 .25-.25h10.5z"></path>
+					</svg>
+				</div>
+				
 				<div class="feature-icon"
 				     data-tooltip="分享"
 				     :class="{ active: isSharing }">
@@ -1061,15 +1034,15 @@ const updateSongs = (newSongs) => {
 			</div>
 			<div class="volume-control-playing" style="display: flex; flex-direction: row; align-items: center">
 				<h1 style="margin: 0">🔈</h1>
-        <input type="range"
-               id="volumeControl"
-               min="0"
-               max="1"
-               step="0.01"
-               v-model="volume"
-               @input="updateVolumeStyle"
-               :style="{'--volume-percentage': volumePercentage}"
-        />
+				<input type="range"
+				       id="volumeControl"
+				       min="0"
+				       max="1"
+				       step="0.01"
+				       v-model="volume"
+				       @input="updateVolumeStyle"
+				       :style="{'--volume-percentage': volumePercentage}"
+				/>
 			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
@@ -1142,7 +1115,7 @@ h1 {
 	  flex-direction: column;
 	*/
 	min-height: 100vh;
-  background-color: #000000; /* rgba(0, 0, 0, 1); */
+	background-color: #000000; /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
 	
@@ -1299,7 +1272,7 @@ footer {
 /* LEFT CONTENT */
 .main-view {
 	overflow: scroll;
-  background-color: #121212 !important;
+	background-color: #121212 !important;
 }
 
 .main-view > {
@@ -1454,8 +1427,8 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
-  min-width: 350px;
-  max-width: 350px;
+	min-width: 350px;
+	max-width: 350px;
 	background-color: #171717;
 	display: flex;
 	flex-direction: column;
@@ -1933,7 +1906,7 @@ footer {
 	transition: all 0.2s ease;
 	position: relative;
 	cursor: pointer;
-  color: white;
+	color: white;
 }
 
 .feature-icon:hover {
@@ -1971,8 +1944,7 @@ footer {
 }
 
 .feature-icon.active img,
-.feature-icon.active svg
-{
+.feature-icon.active svg {
 	filter: brightness(0) invert(1);
 }
 
@@ -2174,27 +2146,27 @@ html, body {
 
 /* 设置整个页面的输入范围滑条样式 */
 #volumeControl {
-	-webkit-appearance: none;  /* 去掉默认样式 */
+	-webkit-appearance: none; /* 去掉默认样式 */
 	appearance: none;
-	width: 120px;              /* 设置宽度 */
-	height: 4px;              /* 设置高度 */
-	border-radius: 2px;        /* 设置圆角 */
+	width: 120px; /* 设置宽度 */
+	height: 4px; /* 设置高度 */
+	border-radius: 2px; /* 设置圆角 */
 	background: linear-gradient(to right, #1db954 var(--volume-percentage, 100%), #4d4d4d var(--volume-percentage, 100%));
-	outline: none;             /* 去除焦点时的轮廓 */
+	outline: none; /* 去除焦点时的轮廓 */
 	transition: background 0.3s; /* 背景色平滑过渡 */
 }
 
 /* 设置滑块按钮样式 */
 #volumeControl::-webkit-slider-thumb {
-	-webkit-appearance: none;  /* 去掉默认样式 */
+	-webkit-appearance: none; /* 去掉默认样式 */
 	appearance: none;
-	width: 12px;   /* 设置滑块宽度 */
-	height: 12px;  /* 设置滑块高度 */
-	border-radius: 50%;  /* 圆形滑块 */
-	background: #fff;    /* 设置滑块背景颜色为白色 */
-	border: none;  /* 去除边框 */
+	width: 12px; /* 设置滑块宽度 */
+	height: 12px; /* 设置滑块高度 */
+	border-radius: 50%; /* 圆形滑块 */
+	background: #fff; /* 设置滑块背景颜色为白色 */
+	border: none; /* 去除边框 */
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-	cursor: pointer;  /* 设置鼠标悬停时的指针样式 */
+	cursor: pointer; /* 设置鼠标悬停时的指针样式 */
 	transition: all 0.2s ease; /* 添加过渡效果 */
 }
 
@@ -2205,7 +2177,7 @@ html, body {
 
 /* 设置滑块被点击时的样式 */
 #volumeControl:active::-webkit-slider-thumb {
-	background: #8bc34a;  /* 点击时滑块的背景颜色 */
-	border-color: #66bb6a;  /* 点击时滑块边框颜色 */
+	background: #8bc34a; /* 点击时滑块的背景颜色 */
+	border-color: #66bb6a; /* 点击时滑块边框颜色 */
 }
 </style>
