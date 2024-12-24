@@ -16,6 +16,7 @@ import MusicAlbumView from "../components/MusicAlbumView.vue";
 import MainView from "../components/MainView.vue";
 import EpisodeView from "@/components/EpisodeView.vue";
 import ArtistView from "../components/ArtistView.vue";
+import NowPlayingView from '../components/NowPlayingView.vue';
 
 // APIs
 import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
@@ -89,7 +90,6 @@ setInterval(() => {
 
 const theme = useTheme()
 const album_selected = ref(false);
-const showRightContent = ref(true)
 
 const selectAlbum = () => {
 	console.log("selectAlbum");
@@ -590,6 +590,37 @@ const goBack = () => {
  */
 const isSharing = ref(false);
 
+/*
+    queue | now_playing
+ */
+const showNowPlaying = ref(false);
+const showQueue = ref(false);
+const showRightContent = computed(() => {
+  return showQueue.value || showNowPlaying.value
+});
+
+const toggleNowPlaying = async () => {
+  if (showQueue.value) {
+    showQueue.value = false;
+  }
+  showNowPlaying.value = !showNowPlaying.value;
+};
+
+const toggleQueue = () => {
+  showNowPlaying.value = false;
+  showQueue.value = !showQueue.value;
+};
+
+const getNextSong = () => {
+  if (!songs.value.length) return null;
+  const nextIndex = (currentSongIndex.value + 1) % songs.value.length;
+  return songs.value[nextIndex];
+};
+
+const playNextSong = () => {
+  switchSongs(1);
+};
+
 onMounted(() => {
 	/*
         DOMS & EVENTS
@@ -740,7 +771,7 @@ const updateSongs = (newSongs) => {
 				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
-				<div v-if="songs[currentSongIndex] !== undefined" class="music-player music-info">
+				<div v-if="songs[currentSongIndex] !== undefined && showQueue" class="music-player music-info">
 					<div class="album-cover" @click="togglePlayingPage">
 						<img :src="songs[currentSongIndex].picPath" style="margin-top: 10px" id="rotatingImage" alt=""/>
 						<span class="point"></span>
@@ -749,7 +780,7 @@ const updateSongs = (newSongs) => {
 					<p>{{ songs[currentSongIndex].artist }}</p>
 				</div>
 				
-				<div class="current-playlist" style="margin-top: 20px">
+				<div v-if="showQueue" class="current-playlist" style="margin-top: 20px">
 					<el-container class="playlist-container" style="height: 64px">
 						<div class="playlist-item" style="display: flex; flex-direction: row">
 							<img src="../assets/icons/add.png" alt="" style=""/>
@@ -794,6 +825,16 @@ const updateSongs = (newSongs) => {
 						</div>
 					</el-container>
 				</div>
+
+        <NowPlayingView
+            v-if="showNowPlaying"
+            :is-visible="showNowPlaying"
+            :current-song="songs[currentSongIndex]"
+            :next-song="getNextSong()"
+            @play-next="playNextSong"
+            @toggle-queue="toggleQueue"
+            @enter-author-description="(name) => setMidComponents(5, name)"
+        />
 			</div>
 		</div>
 		
@@ -875,6 +916,18 @@ const updateSongs = (newSongs) => {
 						   :style="{'--volume-percentage': volumePercentage}"
 					/>
 				</div>
+
+        <div class="feature-icon"
+             data-tooltip="当前播放"
+             :class="{ active: showNowPlaying }"
+             @click="toggleNowPlaying">
+          <svg role="img" height="16" width="16" viewBox="0 0 16 16" fill="currentColor"
+               color="gray">
+            <path d="M11.196 8 6 5v6l5.196-3z"></path>
+            <path d="M15.002 1.75A1.75 1.75 0 0 0 13.252 0h-10.5a1.75 1.75 0 0 0-1.75 1.75v12.5c0 .966.784 1.75 1.75 1.75h10.5a1.75 1.75 0 0 0 1.75-1.75V1.75zm-1.75-.25a.25.25 0 0 1 .25.25v12.5a.25.25 0 0 1-.25.25h-10.5a.25.25 0 0 1-.25-.25V1.75a.25.25 0 0 1 .25-.25h10.5z"></path>
+          </svg>
+        </div>
+
 				<div class="feature-icon"
 				     data-tooltip="分享"
 				     :class="{ active: isSharing }">
@@ -890,8 +943,8 @@ const updateSongs = (newSongs) => {
 				
 				<div class="feature-icon"
 				     data-tooltip="播放队列"
-				     :class="{ active: showRightContent }"
-				     @click="showRightContent = !showRightContent">
+				     :class="{ active: showQueue }"
+				     @click="toggleQueue">
 					<img src="../assets/icons/queue.png" alt="播放队列">
 				</div>
 			</div>
@@ -1372,6 +1425,8 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
+  min-width: 350px;
+  max-width: 350px;
 	background-color: #171717;
 	display: flex;
 	flex-direction: column;
@@ -1437,7 +1492,7 @@ footer {
 	box-shadow: inset 2px -2px 6px rgba(214, 214, 214, 0.2),
 	inset -3px 3px 3px rgba(255, 255, 255, 0.3);
 	border-radius: 16px;
-	height: 200px;
+	height: 210px;
 }
 
 .album-cover {
@@ -1849,6 +1904,7 @@ footer {
 	transition: all 0.2s ease;
 	position: relative;
 	cursor: pointer;
+  color: white;
 }
 
 .feature-icon:hover {
@@ -1885,7 +1941,9 @@ footer {
 	background: #1db954;
 }
 
-.feature-icon.active img {
+.feature-icon.active img,
+.feature-icon.active svg
+{
 	filter: brightness(0) invert(1);
 }
 
