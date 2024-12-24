@@ -551,7 +551,7 @@ const currentArtist = ref(null);
 const backStack = ref([]);
 
 const setMidComponents = (val, prop = null, isBack = false) => {
-  console.log("from" + midComponents.value + " to " + val)
+  console.log("from" + midComponents.value + " to " + val + " prop " + prop)
   if (val !== midComponents.value && !isBack) {
     backStack.value.push(midComponents.value);
   }

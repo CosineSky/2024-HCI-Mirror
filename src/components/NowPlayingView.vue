@@ -76,7 +76,7 @@ const enterAuthorDescription = (artistName) => {
     <div class="current-playlist">
       <div class="section-container">
         <div class="section-header">
-          <h3>艺术家</h3>
+          <h3>艺人</h3>
         </div>
         <div v-for="(artist, index) in artists"
              :key="artist" 

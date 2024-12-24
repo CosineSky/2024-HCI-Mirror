@@ -153,25 +153,6 @@ const getRandomListeners = () => {
 const monthlyListeners = ref(getRandomListeners());
 
 onMounted(() => {
-  getArtistInfo(props.artistName).then(res => {
-    artist.value = res.data.result;
-    updateBackground(artist.value.avatarUrl);
-
-    // 使用歌手的歌曲ID集合获取具体歌曲信息
-    const songPromises = artist.value.songIds.map(songId =>
-      getSongById({
-        song_id: songId
-      }).then(res => res.data.result)
-    );
-
-    // 等待所有歌曲信息获取完成
-    Promise.all(songPromises).then(songs => {
-      hotSongs.value = songs;
-    }).catch(error => {
-      console.error("Failed to fetch songs:", error);
-    });
-  });
-
   // 初始化喜欢的歌曲集合
   initializeLikedSongs();
 
@@ -195,6 +176,28 @@ onUnmounted(() => {
   }
   popovers.value = null;
 });
+
+watch(() => props.artistName, (newValue) => {
+  getArtistInfo(newValue).then(res => {
+    artist.value = res.data.result;
+    updateBackground(artist.value.avatarUrl);
+
+    const songPromises = artist.value.songIds.map(songId =>
+        getSongById({
+          song_id: songId
+        }).then(res => res.data.result)
+    );
+
+    // 等待所有歌曲信息获取完成
+    Promise.all(songPromises).then(songs => {
+      hotSongs.value = songs;
+    }).catch(error => {
+      console.error("Failed to fetch songs:", error);
+    });
+    console.log(artist.value)
+    console.log(hotSongs.value);
+  });
+},{immediate: true})
 
 const handelScroll = (event) => {
 
