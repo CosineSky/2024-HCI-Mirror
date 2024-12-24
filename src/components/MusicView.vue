@@ -7,6 +7,7 @@ import pauseButton from "../icon/pauseButton.vue";
 
 import {addSongToPlaylist} from "../api/playlist";
 import { loadSongDurations } from '../utils/loadSongDurations';
+import {getSongsByArtist} from "@/api/artist";
 
 /*
     USER
@@ -18,10 +19,6 @@ const currentUserId = ref(userToken.value.id);
 歌词
  */
 const lyrics = ref([]); // 歌词数组
-
-function toggleLyrics() {
-  isLyricsDisplaying.value = !isLyricsDisplaying.value;
-}
 
 const emit = defineEmits(['pauseSong', 'switchSongs', 'switchToArtist', 'back']);
 const props = defineProps({
@@ -52,6 +49,22 @@ const recMusicList = ref([
     album: "NightTheater"
   },
 ])
+
+const artistMusicList = ref([])
+
+const artists = ref([{
+  id:1,
+  avatarUrl:"http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/6ac2a408-1632-4713-bcc3-a54151e29c18.jpg",
+  name:"朴树"
+},
+]);
+const albums = ref([]);
+
+onMounted(() => {
+  getSongsByArtist(songInfo.artist).then(res => {
+    artistMusicList.value = res.data;
+  })
+})
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -202,6 +215,83 @@ const isCurrentSong = computed(() => {
 });
 const enterMusicDescription = (musicId) => {
 }
+
+let timer = ref(null)
+const limit = 230;
+function leftSlide(event){
+  // 保存滚动盒子左侧已滚动的距离
+  const target = event.currentTarget.nextElementSibling;
+  let left=target.scrollLeft
+  console.log(target);
+  let num=1
+  clearInterval(timer)
+
+  timer=setInterval(()=>{
+    let distanceNextTime =(limit/2 - Math.abs( limit/2 - num))/3;
+    //   !left:已经滚动到最左侧
+    //   一次性滚动距离（可调节）
+    if(left<=0||num>=limit){
+      // 停止滚动
+      clearInterval(timer)
+      return
+    }
+    left-=distanceNextTime
+    // 给滚动盒子元素赋值向左滚动距离
+    target.scrollLeft=left < 0 ? 0 : left
+    // 保存向左滚动距离（方便判断一次性滚动多少距离）
+    num+=distanceNextTime
+
+  },18)
+  // 20：速度（可调节）
+}
+function rightSlide(event){
+  const target = event.currentTarget.previousElementSibling;
+  // 保存滚动盒子左侧已滚动的距离
+  let left=target.scrollLeft
+  // 保存元素的整体宽度
+  let scrollWidth=target.scrollWidth
+  // 保存元素的可见宽度
+  let clientWidth=target.clientWidth
+
+  let num=1
+  clearInterval(timer)
+  timer = setInterval(()=>{
+    let distanceNextTime =(limit/2 - Math.abs( limit/2 - num))/3;
+    // 已经滚动距离+可见宽度
+    // left+clientWidth>=scrollWidth：滚动到最右侧
+    // num>=300一次性滚动距离
+    if(left+clientWidth>=scrollWidth||num>=limit){
+      clearInterval(timer.value)
+      return
+    }
+    // 给滚动盒子元素赋值向左滚动距离
+    left+=distanceNextTime
+    target.scrollLeft= left +clientWidth > scrollWidth? scrollWidth - clientWidth : left;
+    // 保存向左滚动距离（方便判断一次性滚动多少距离）
+    num+=distanceNextTime
+  },18)
+  // 20：速度（可调节）
+}
+const buttonTurnUp= (buttonId)=>{
+  const rightButton = document.querySelectorAll('.right_btn');
+  const leftButton = document.querySelectorAll('.left_btn');
+  rightButton[buttonId].style.opacity="1";
+  leftButton[buttonId].style.opacity="1";
+
+}
+const buttonTurnDown= (buttonId)=>{
+  const rightButton = document.querySelectorAll('.right_btn');
+  const leftButton = document.querySelectorAll('.left_btn');
+  rightButton[buttonId].style.opacity="0";
+  leftButton[buttonId].style.opacity="0";
+
+}
+const openArtistView = (name)=>{
+  emit('openArtistView', name);
+}
+const openEpisodeView= (id)=>{
+  emit('openEpisodeView', id);
+}
 </script>
 
 <template>
@@ -344,6 +434,115 @@ const enterMusicDescription = (musicId) => {
           </div>
         </div>
 
+        <div class="other-info">
+          <div style="margin-left:20px;margin-bottom:20px;">
+            <div style="display: flex;text-align: left;justify-content: center;flex-direction: column">
+              <span style="color:white;font-size: 30px;font-weight: bolder">{{songInfo.artist}}</span>
+              <span style="color:grey;font-size: 20px">本艺人的其他歌曲列表
+            </span>
+            </div>
+          </div>
+
+          <div class="recMusicList">
+            <div class="music-item"
+                 v-for="music in artistMusicList"
+                 :key="music.id"
+                 :aria-selected="musicClickedIndex === music.id ? 'True':'False'"
+                 @mouseenter="()=>{musicHoveredIndex = music.id;}"
+                 @mouseleave="()=>{musicHoveredIndex = null}"
+                 @click="musicClickedIndex=music.id"
+                 @dblclick="playFromId(music.id)"
+                 :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
+				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
+				   }">
+
+
+              <div
+                  :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
+                {{
+                  artistMusicList.indexOf(music) + 1
+                }}
+              </div>
+              <play-button @click="playFromId(music.id)" style="position: absolute;left: 33px;cursor: pointer"
+                           v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
+                           :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
+              <pause-button @click="pauseMusic(music.id)"
+                            style="color:#1ed660 ;position: absolute;left: 37px;cursor: pointer"
+                            v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
+              <img width="17" height="17" alt=""
+                   style="position: absolute;left: 42px;"
+                   v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
+                   src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
+
+              <div class="music-detailed-info">
+                <img class="music-image"
+                     :src="music.picPath"
+                     alt="歌曲图片"/>
+                <div class="music-name-author" style="padding-left: 5px;">
+                  <p @click="enterMusicDescription(music.id)" class="music-name"
+                     :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
+                     :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
+                  >{{ music.title }}</p>
+
+                  <p @click="enterAuthorDescription(music.artist)" class="music-author"
+                     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+                    {{ music.artist }}</p>
+                </div>
+              </div>
+
+              <div class="music-album-info"
+                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+                {{ music.album }}
+              </div>
+              <div class="music-right-info">
+                <button class="reco-add-button" @click="addRecommendMusic(music.id)">添加</button>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+        <div class="singer-recommendation" @mouseenter="buttonTurnUp(1)" @mouseleave="buttonTurnDown(1)">
+          <h1>相似艺人</h1>
+          <div id="click-scroll-X" >
+            <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
+            <div class="scroll_wrapper" >
+              <div class="scroll_list">
+                <div v-for="artist in artists"
+                     :key="artist.id"
+                     class="scroll-entry large-scroll-entry"
+                     @click="openArtistView(artist.name)">
+                  <img class="very-big-img" style="border-radius: 50%" :src="artist.avatarUrl" alt="">
+                  <div class="entry-text bolder-white-theme">{{ artist.name}}</div>
+                  <div class="entry-text">艺人</div>
+                </div>
+
+              </div>
+            </div>
+            <div class="right_btn" @click="rightSlide">  <p style="margin-bottom: 2px">></p>  </div>
+          </div>
+        </div>
+        <div class="albums-recommendation" @mouseenter="buttonTurnUp(2)" @mouseleave="buttonTurnDown(2)">
+          <h1>热门专辑</h1>
+          <div id="click-scroll-X" >
+            <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
+            <div class="scroll_wrapper" >
+              <div class="scroll_list">
+                <div v-for="album in albums"
+                     :key="album.id"
+                     class="scroll-entry"
+                     @click="openEpisodeView(album.id)">
+                  <img class="big-img" :src="album.picPath" alt="">
+                  <div class="entry-text bolder-white-theme">{{ album.title }}</div>
+                  <div class="entry-text">{{ album.description }}</div>
+                </div>
+
+              </div>
+            </div>
+            <div class="right_btn" @click="rightSlide">  <p style="margin-bottom: 2px">></p>  </div>
+          </div>
+        </div>
       </div>
 
     </div>
