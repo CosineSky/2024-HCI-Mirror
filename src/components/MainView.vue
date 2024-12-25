@@ -395,7 +395,7 @@ p{
     "c d"
     "e f"
     "g h";
-
+  grid-template-columns: 0.5fr 0.5fr;
   grid-template-rows:0.25fr 0.25fr 0.25fr 0.25fr;
   grid-gap: 7px;
 }

@@ -10,6 +10,8 @@ import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
 import { loadSongDurations } from '../utils/loadSongDurations';
+import {getPlaylistById, getSongById} from "../api/resolve";
+import {getSongsByPlaylist} from "../api/song";
 
 
 /*
@@ -46,17 +48,9 @@ const edit_title = ref("");
 const edit_description = ref("");
 const edit_cover_path = ref("");
 
-const recMusicList = ref([
-	{
-		id: 4,
-		number: 1,
-		name: "NightTheater",
-		author: "Wakadori",
-		img: require("../assets/pictures/songs/1.jpg"),
-		time: "3:30",
-		album: "NightTheater"
-	},
-])
+// let musicList = ref([])
+// 随机歌曲
+const recMusicList = ref([])
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -132,6 +126,19 @@ const debounce = (fn, delay) => {
 
 
 onMounted(() => {
+  let randomMusicIds =[];
+  for (let i = 0; i < 8; i++) {
+    let num = Math.floor(Math.random()*54+69);
+    if(randomMusicIds.indexOf(num) === -1)
+      randomMusicIds.push(num);
+    else i--;
+  }
+  randomMusicIds.forEach((id)=>{
+    getSongById({song_id:id}).then(res => {
+      recMusicList.value.push(res.data.result);
+    })
+  });
+
 	resizeObserver.value = new ResizeObserver(debounce(handleResize, 50));
 	console.log(resizeObserver.value)
 	nextTick(() => {
@@ -220,8 +227,9 @@ const playFromId = (musicId) => {
 		// 从头开始播放
 		musicPlayIndex.value  = props.musicList[0].id;
 	} else {
-		musicPlayIndex.value  = musicId;
+		musicPlayIndex  = musicId;
 	}
+
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
 }
@@ -286,17 +294,42 @@ const quitEdit = () => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "hidden";
 }
+// watch(()=>props.musicList,()=>{
+//   musicList.value = props.musicList
+// })
+
 const addRecommendMusic = (musicId) => {
 	console.log(musicId);
 	//TODO:添加歌曲到指定的歌单
-	ElMessage({
-		message: "添加至: " + props.albumInfo.title,
-		grouping: true,
-		type: 'info',
-		offset: 16,
-		customClass: "reco-message",
-		duration: 4000,
-	})
+  addSongToPlaylist({
+    user_id: currentUserId.value,
+    playlist_id: props.albumInfo.id,
+    song_id: musicId,
+  }).then((res) => {
+    ElMessage({
+      message: "添加至: " + props.albumInfo.title,
+      grouping: true,
+      type: 'info',
+      offset: 16,
+      customClass: "reco-message",
+      duration: 4000,
+    })
+    const selectedMusic = recMusicList.value.find(music =>  {return music.id === musicId;});
+    // musicList.value.push(selectedMusic)
+    recMusicList.value = recMusicList.value.filter(music => music.id !== musicId);
+
+
+  }).catch((e)=>{
+    ElMessage({
+      message: "添加失败 错误:" + e.message,
+      grouping: true,
+      type: 'error',
+      offset: 16,
+      customClass: "reco-message",
+      duration: 4000,
+    })
+  })
+
 }
 
 
@@ -618,14 +651,14 @@ const isCurrentSongInList = computed(() => {
 								recMusicList.indexOf(music) + 1
 							}}
 						</div>
-						<play-button @click="playFromId(music.id)" style="position: absolute;left: 33px;cursor: pointer"
+						<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
 						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
 						<pause-button @click="pauseMusic(music.id)"
-						              style="color:#1ed660 ;position: absolute;left: 37px;cursor: pointer"
+						              style="color:#1ed660 ;position: absolute;left: 14px;cursor: pointer"
 						              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
 						<img width="17" height="17" alt=""
-						     style="position: absolute;left: 42px;"
+						     style="position: absolute;left: 20px;"
 						     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
 						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
 

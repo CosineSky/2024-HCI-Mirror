@@ -265,6 +265,7 @@ function  openEpisodeView(id){
 }
 //TODO:
 const enterArtistDescription = (artistName) => {
+  emit('switchToArtist', artistName);
 }
 
 const playFromId = (musicId) => {
