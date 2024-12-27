@@ -731,7 +731,14 @@ const updateSongs = (newSongs) => {
 				</el-container>
 				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
-					<SearchView :songResult="songResult" :playlistResult="playlistResult"
+					<SearchView :songResult="songResult"
+                      :playlistResult="playlistResult"
+                      :play-list="playlists"
+                      :current-song-id="currentSongId"
+                      :is-paused="isPaused"
+                      @switchSong="switchToSong"
+                      @pauseSong="pauseCurrentSong"
+                      @switchToArtist="(name) => setMidComponents(5, name)"
                       @back="goBack"/>
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
