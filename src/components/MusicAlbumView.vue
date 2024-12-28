@@ -19,7 +19,7 @@ import { getRecommendedSongs } from "../api/song";
 const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
 const currentUserId = ref(userToken.value.id);
 
-const emit = defineEmits(['pauseSong', 'switchSongs', 'switchToArtist', 'back']);
+const emit = defineEmits(['pauseSong', 'switchSongs', 'switchToArtist', 'back', 'playRecommendedSong']);
 const props = defineProps({
 	albumInfo: { // 类型 ：id, userid, title ,description ,picPath,createTime,updateTime,songNum
 		type: Object,
@@ -216,6 +216,13 @@ const playFromId = (musicId) => {
 	}
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
+}
+
+const playRecommendedSongFromId = (musicId) => {
+  musicPlayIndex  = musicId;
+  const songToPlay = recMusicList.value.find(song => song.id === musicId);
+	emit('playRecommendedSong', songToPlay)
+  musicPauseIndex = null;
 }
 
 const addToFavorite = (musicId, albumId) => {
@@ -620,7 +627,7 @@ watch(() => props.musicList, () => {
 					     @mouseenter="()=>{musicHoveredIndex = music.id;}"
 					     @mouseleave="()=>{musicHoveredIndex = null}"
 					     @click="musicClickedIndex=music.id"
-					     @dblclick="playFromId(music.id)"
+					     @dblclick="playRecommendedSongFromId(music.id)"
 					     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
@@ -631,7 +638,7 @@ watch(() => props.musicList, () => {
 								recMusicList.indexOf(music) + 1
 							}}
 						</div>
-						<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
+						<play-button @click="playRecommendedSongFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
 						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
 						<pause-button @click="pauseMusic(music.id)"
@@ -659,6 +666,7 @@ watch(() => props.musicList, () => {
 						</div>
 
 						<div class="music-album-info"
+                 @click="emit('openEpisodeView',music.album)"
 						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 							{{ music.album }}
 						</div>

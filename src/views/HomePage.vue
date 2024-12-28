@@ -440,6 +440,29 @@ const switchToPlaylist = (playlist, songId) => {
 	});
 }
 
+const handleRecommendedSong = (songToPlay) => {
+  const songExists = songs.value.some(song => song.id === songToPlay.id);
+  if (songExists) {
+    const songIndex = songs.value.findIndex(song => song.id === songToPlay.id);
+    songs.value.splice(songIndex, 1)
+  }
+  songs.value.unshift(songToPlay);
+  currentSongIndex.value = 0;
+  if (song) {
+    controlIcons.forEach(controlIcon => {
+      controlIcon.src = PLAY;
+    });
+    song.src = songToPlay.filePath;
+    parseLrc(songToPlay.lyricsPath).then(res => {
+      lyrics.value = res;
+    });
+    song.load();
+    song.play();
+    theme.change(songToPlay.picPath);
+    isPaused.value = false;
+  }
+};
+
 
 /*
     PLAYLISTS
@@ -777,6 +800,7 @@ const updateSongs = (newSongs) => {
                           :playFromLeftBar="playFromLeftBarAlbum"
                           :is-paused="isPaused"
                           @switchSongs="switchToPlaylist"
+                          @playRecommendedSong="handleRecommendedSong"
                           @switchToArtist="(name) => setMidComponents(5, name)"
                           @pauseSong="pauseCurrentSong"
                           @back="goBack"
