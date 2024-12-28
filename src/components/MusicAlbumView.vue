@@ -10,6 +10,7 @@ import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
 import { loadSongDurations } from '../utils/loadSongDurations';
+import { getRecommendedSongs } from "../api/song";
 
 
 /*
@@ -46,17 +47,8 @@ const edit_title = ref("");
 const edit_description = ref("");
 const edit_cover_path = ref("");
 
-const recMusicList = ref([
-	{
-		id: 4,
-		number: 1,
-		name: "NightTheater",
-		author: "Wakadori",
-		img: require("../assets/pictures/songs/1.jpg"),
-		time: "3:30",
-		album: "NightTheater"
-	},
-])
+//推荐歌曲
+const recMusicList = ref([]);
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -312,6 +304,28 @@ const isCurrentSongInList = computed(() => {
   if (!musicPlayIndex || !props.musicList) return false;
   return props.musicList.some(song => song.id === musicPlayIndex);
 });
+
+// 添加获取推荐歌曲的方法
+const getRecommendations = async () => {
+  try {
+    const currentSongIds = props.musicList.map(song => song.id);
+
+    const response = await getRecommendedSongs({
+      currentSongIds: currentSongIds,
+      limit: 3
+    });
+
+    recMusicList.value = response.data.result;
+  } catch (error) {
+    console.error("Failed to fetch recommendations:", error);
+  }
+};
+
+watch(() => props.musicList, () => {
+  if (props.musicList.length > 0) {
+    getRecommendations();
+  }
+}, { immediate: true });
 
 </script>
 
@@ -611,21 +625,20 @@ const isCurrentSongInList = computed(() => {
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
 
-
 						<div
 							:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
 							{{
 								recMusicList.indexOf(music) + 1
 							}}
 						</div>
-						<play-button @click="playFromId(music.id)" style="position: absolute;left: 33px;cursor: pointer"
+						<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
 						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
 						<pause-button @click="pauseMusic(music.id)"
-						              style="color:#1ed660 ;position: absolute;left: 37px;cursor: pointer"
+						              style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
 						              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
 						<img width="17" height="17" alt=""
-						     style="position: absolute;left: 42px;"
+						     style="position: absolute;left: 24px;"
 						     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
 						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
 

@@ -38,3 +38,16 @@ export const getSongsByEpisode = (episodeInfo) => {
             return res;
         });
 }
+
+export const getRecommendedSongs = (params) => {
+    console.log("params" +  params.currentSongIds)
+    return axios.post(`${SONG_MODULE}/recommendations`, null,{
+        params: {
+            currentSongIds: params.currentSongIds.join(","),
+            limit: params.limit,
+        }
+    })
+        .then(res => {
+            return res;
+        });
+};
