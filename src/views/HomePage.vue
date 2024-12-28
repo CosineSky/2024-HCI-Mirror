@@ -27,7 +27,8 @@ import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
 import { formatTime } from '../utils/formatTime';
-import {getPlaylistById} from "../api/resolve";
+import {getArtistById, getPlaylistById, getUserById} from "../api/resolve";
+import {userFollowArtist} from "@/api/user";
 
 
 /*
@@ -597,7 +598,39 @@ const playNextSong = () => {
 	switchSongs(1);
 };
 
+/*
+    followInfo
+ */
+const followedArtistInfo = ref([]);
+const toggleFollow = async (artistId, isFollowed) => {
+  try {
+    await userFollowArtist({
+      user_id: currentUserId.value,
+      artist_id: artistId,
+      isFollowed: isFollowed
+    });
+
+    if (!isFollowed) {
+      const artistResponse = await getArtistById(artistId);
+      followedArtistInfo.value.push(artistResponse.data.result);
+    } else {
+      const artistIndex = followedArtistInfo.value.findIndex(artist => artist.id === artistId);
+      if (artistIndex > -1) {
+        followedArtistInfo.value.splice(artistIndex, 1);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to update artist follow status:", error);
+  }
+};
+
 onMounted(() => {
+  getUserById({ userId: currentUserId.value }).then(async res => {
+    const artistPromises = res.data.result.followedArtistIds.map(id =>
+      getArtistById(id).then(res => res.data.result)
+    );
+    followedArtistInfo.value = await Promise.all(artistPromises);
+  });
 	/*
         DOMS & EVENTS
 	 */
@@ -761,10 +794,12 @@ const updateSongs = (newSongs) => {
           <ArtistView :artist-name="currentArtist"
                       :is-paused="isPaused"
                       :current-song-id="currentSongId"
+                      :is-followed="followedArtistInfo.some(artist => artist.name === currentArtist)"
                       @playSong="playArtistSong"
                       @pauseSong="pauseCurrentSong"
                       @back="goBack"
-                      @updateSongs="updateSongs"/>
+                      @updateSongs="updateSongs"
+                      @toggleFollow="toggleFollow"/>
 				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
@@ -828,9 +863,11 @@ const updateSongs = (newSongs) => {
 					:is-visible="showNowPlaying"
 					:current-song="songs[currentSongIndex]"
 					:next-song="getNextSong()"
+          :followed-artist-ids="followedArtistInfo.map(artist => artist.id)"
 					@play-next="playNextSong"
 					@toggle-queue="toggleQueue"
 					@enter-author-description="(name) => setMidComponents(5, name)"
+          @toggleFollow="toggleFollow"
 				/>
 			</div>
 		</div>

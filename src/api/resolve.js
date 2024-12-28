@@ -1,5 +1,5 @@
 import {axios} from "@/utils/request";
-import {PLAYLIST_MODULE, RESOLVE_MODULE, SONG_MODULE, USER_MODULE} from "@/api/_prefix";
+import {ARTIST_MODULE, PLAYLIST_MODULE, RESOLVE_MODULE, SONG_MODULE, USER_MODULE} from "@/api/_prefix";
 
 /*
     // TODO: newly added
@@ -32,6 +32,14 @@ export const getSongById = (songId) => {
 export const getPlaylistById = (playlistId) => {
     console.log(playlistId)
     return axios.get(`${PLAYLIST_MODULE}/id`, { params: playlistId })
+        .then(res => {
+            return res;
+        });
+}
+
+export const getArtistById = (artistId) => {
+    console.log(artistId)
+    return axios.get(`${ARTIST_MODULE}/${artistId}`)
         .then(res => {
             return res;
         });

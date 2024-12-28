@@ -218,9 +218,9 @@ const removeAlbum = (albumId) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex.value  = props.musicList[0].id;
+		musicPlayIndex  = props.musicList[0].id;
 	} else {
-		musicPlayIndex.value  = musicId;
+		musicPlayIndex  = musicId;
 	}
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;

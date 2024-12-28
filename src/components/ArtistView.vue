@@ -10,9 +10,8 @@ import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
 import {formatTime} from '../utils/formatTime';
 import {loadSongDurations} from '../utils/loadSongDurations';
-import {userFollowArtist} from "@/api/user";
 
-const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs']);
+const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs', 'toggleFollow']);
 const props = defineProps({
   artistName: {
     type: String,
@@ -24,6 +23,9 @@ const props = defineProps({
   currentSongId: {
     type: Number,
     required: true
+  },
+  isFollowed: {
+    type: Boolean
   }
 });
 
@@ -40,22 +42,12 @@ let musicClickedIndex = ref(null);
 let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
-// 添加关注状态
-const isFollowing = ref(false);
-
 // 用户第一次播放该艺人歌曲的标志
 const isFirstPlay = ref(true);
 
 // 关注/取消关注逻辑
 const toggleFollow = () => {
-  userFollowArtist({
-    user_id: currentUserId.value,
-    artist_id: artist.value.id,
-    isFollowed: isFollowing.value
-  }).catch(error => {
-    console.error("Failed to update artist follow status:", error);
-  })
-  isFollowing.value = !isFollowing.value;
+  emit('toggleFollow',artist.value.id,props.isFollowed);
 };
 
 // 添加喜欢歌曲的状态管理
@@ -155,12 +147,8 @@ const getRandomListeners = () => {
 
 const monthlyListeners = ref(getRandomListeners());
 
-const followedArtistIds = ref([]);
 
 onMounted(() => {
-  getUserById({userId: currentUserId.value}).then(res => {
-    followedArtistIds.value = res.data.result.followedArtistIds;
-  })
   // 初始化喜欢的歌曲集合
   initializeLikedSongs();
 
@@ -190,11 +178,6 @@ watch(() => props.artistName, async (newValue) => {
     const artistResponse = await getArtistInfo(newValue);
     artist.value = artistResponse.data.result;
     
-    if (!followedArtistIds.value.length) {
-      const userResponse = await getUserById({ userId: currentUserId.value });
-      followedArtistIds.value = userResponse.data.result.followedArtistIds;
-    }
-    isFollowing.value = followedArtistIds.value.includes(artist.value.id);
     updateBackground(artist.value.avatarUrl);
 
     const songPromises = artist.value.songIds.map(songId =>
@@ -372,9 +355,9 @@ const isCurrentSongInList = computed(() => {
         </div>
         <!-- 替换原来的el-popover为关注按钮 -->
         <button class="follow-button" 
-                :class="{ 'following': isFollowing }"
+                :class="{ 'following': props.isFollowed }"
                 @click="toggleFollow">
-          {{ isFollowing ? '已关注' : '关注' }}
+          {{ props.isFollowed ? '已关注' : '关注' }}
         </button>
       </div>
 
