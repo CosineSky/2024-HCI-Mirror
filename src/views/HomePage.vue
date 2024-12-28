@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref, watch} from "vue"
+import {computed, onMounted, ref, watch, onUnmounted} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -535,31 +535,59 @@ function receiveDataFromHome() {
  */
 const midComponents = ref(0);
 const currentArtist = ref(null);
-const backStack = ref([]);
+const navigationHistory = ref([]);
 
-const setMidComponents = (val, prop = null, isBack = false) => {
-  console.log("from" + midComponents.value + " to " + val)
-  if (val !== midComponents.value && !isBack) {
-    backStack.value.push(midComponents.value);
-  }
-  
-  midComponents.value = val;
+const setMidComponents = (index, props = null) => {
+  console.log("from" + midComponents.value + " to " + index)
+  navigationHistory.value.push({
+    index: midComponents.value,
+    props: {
+      artistName: currentArtist?.value,
+      albumInfo: displayingPlaylist?.value,
+      musicList: displayingSongs?.value,
+      playList: playlists?.value,
+      songResult: songResult?.value,
+      playlistResult: playlistResult?.value,
+      episodeInfo: displayingEpisode?.value,
+      playFromLeftBar: playFromLeftBarAlbum?.value,
+      playlistInfo: currentPlaylist?.value,
+    }
+  });
 
-  
-  if (val === 5) {
-    currentArtist.value = prop;
-  } else if (val === 6) {
-    displayingMusicId.value = prop;
+  midComponents.value = index;
+
+  switch(index) {
+    case 5: // ArtistView
+      if (props) {
+        currentArtist.value = props;
+      }
+      break;
+    case 6:
+      if (props) {
+        displayingMusicId.value = props;
+      }
+      break;
   }
 };
 
 const goBack = () => {
-	if (backStack.value.length > 0) {
-		const lastIndex = backStack.value.pop();
-		setMidComponents(lastIndex, currentArtist.value, true);
-	} else {
-		setMidComponents(0, null);
-	}
+  if (navigationHistory.value.length > 0) {
+    const previousState = navigationHistory.value.pop();
+    midComponents.value = previousState.index;
+    if (previousState.props) {
+      currentArtist.value = previousState.props.artistName;
+      displayingPlaylist.value = previousState.props.albumInfo;
+      displayingSongs.value = previousState.props.musicList;
+      playlists.value = previousState.props.playList;
+      songResult.value = previousState.props.songResult;
+      playlistResult.value = previousState.props.playlistResult;
+      displayingEpisode.value = previousState.props.episodeInfo;
+      playFromLeftBarAlbum.value = previousState.props.playFromLeftBar;
+      currentPlaylist.value = previousState.props.playlistInfo;
+    }
+  } else {
+    midComponents.value = 0;
+  }
 };
 
 /*
@@ -719,7 +747,6 @@ const updateSongs = (newSongs) => {
 	songs.value = newSongs;
 	displayingSongs.value = newSongs;
 };
-
 </script>
 
 <template>
