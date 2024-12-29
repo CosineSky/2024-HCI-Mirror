@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, onUnmounted} from "vue";
 import {userInfo, userLogin, userRegister, userReset, userSendCaptcha} from "../api/user.js";
 import {useTheme} from "../store/theme";
 import {router} from "../router";
@@ -67,6 +67,19 @@ onMounted(() => {
   let bContainer = document.querySelector("#b-container");
   let allButtons = document.querySelectorAll(".submit");
 
+  const initializeLoginForm = () => {
+    // 设置初始状态为登录表单
+    switchCtn.classList.add("is-txr");
+    switchCircle[0].classList.add("is-txr");
+    switchCircle[1].classList.add("is-txr");
+
+    switchC1.classList.add("is-hidden");
+    switchC2.classList.remove("is-hidden");
+    aContainer.classList.add("is-txl");
+    bContainer.classList.add("is-txl");
+    bContainer.classList.add("is-z");
+  }
+
   let getButtons = (e) => e.preventDefault()
   let changeForm = () => {
     // 修改类名
@@ -84,15 +97,28 @@ onMounted(() => {
     bContainer.classList.toggle("is-txl");
     bContainer.classList.toggle("is-z");
   }
+
   // 点击切换
-  let shell = () => {
-    let i;
-    for (i = 0; i < allButtons.length; i++)
-      allButtons[i].addEventListener("click", getButtons);
-    for (i = 0; i < switchBtn.length; i++)
-      switchBtn[i].addEventListener("click", changeForm)
+  const setupEventListeners = () => {
+    allButtons.forEach(button => {
+      button.addEventListener("click", getButtons);
+    });
+    switchBtn.forEach(btn => {
+      btn.addEventListener("click", changeForm);
+    });
   }
-  window.addEventListener("load", shell);
+
+  initializeLoginForm();
+  setupEventListeners();
+
+  onUnmounted(() => {
+    allButtons.forEach(button => {
+      button.removeEventListener("click", getButtons);
+    });
+    switchBtn.forEach(btn => {
+      btn.removeEventListener("click", changeForm);
+    });
+  });
 })
 
 function handleLogin() {
@@ -245,7 +271,7 @@ function handleResetPassword() {
         <div class="switch_circle switch_circle-t"></div>
         <div class="switch_container" id="switch-c1">
           <h2 class="switch_title title" style="letter-spacing: 0;">Welcome Back！</h2>
-          <p class="switch_description description">已经有账号了嘛，去登入账号继续跟随节拍前行吧！！！</p >
+          <p class="switch_description description">已经有账号了嘛，去登录账号继续跟随节拍前行吧！！！</p >
           <button class="switch_button button switch-btn" @click="reset = false">SIGN IN</button>
         </div>
 
