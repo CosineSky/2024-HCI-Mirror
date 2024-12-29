@@ -1,154 +1,261 @@
 <script setup>
-import {onMounted, ref} from "vue";
-import {userInfo, userLogin, userRegister} from "../api/user.js";
+import {computed, onMounted, ref} from "vue";
+import {userInfo, userLogin, userRegister, userReset, userSendCaptcha} from "../api/user.js";
 import {useTheme} from "../store/theme";
 import {router} from "../router";
+import {ElMessage} from "element-plus";
+import {md5} from "js-md5";
 
 const theme = useTheme()
 
-const login_email = ref("cossky@outlook.com")
-const login_password = ref("1145141919810")
-const login_prompt = ref("")
+const loginPhone = ref('');
+const registerPhone = ref('');
+const resetPasswordPhone = ref('');
+const loginPassword = ref('');
+const registerPassword = ref('');
+const registerPasswordConfirm = ref('');
+const resetPassword = ref('');
+const resetPasswordConfirm = ref('');//再次输入密码
+const registerCaptcha = ref('');
+const resetPasswordCaptcha = ref('');
+const name = ref('');
+const reset = ref(false);
+const sendingCaptcha = ref(false);
 
-const register_name = ref("CosSky")
-const register_email = ref("cossky@outlook.com")
-const register_password = ref("1145141919810")
-const register_prompt = ref("")
-
-function handleLogin() {
-	userLogin({
-		email: login_email.value,
-		password: login_password.value,
-	}).then(res => {
-		if (res.data.code === '000' || res.data.code === '200') {
-			sessionStorage.setItem('token', res.data.result)
-            userInfo().then(res => {
-                sessionStorage.setItem('user-token', JSON.stringify(res.data.result))
-	            console.log("Storing session: ", res.data.result);
-	            router.push({path: "/home"})
-	            // document.documentElement.requestFullscreen();
-            })
-		} else if (res.data.code === '400') {
-  
-		}
-	}).catch(() => {
-        login_prompt.value = "Wrong email or password! :(";
-    })
-}
-function handleRegister() {
-	userRegister({
-		username: register_name.value,
-		email: register_email.value,
-		password: register_password.value,
-	}).then(res => {
-		if (res.data.code === '000' || res.data.code === '200') {
-            let userForms = document.getElementById('user_options-forms')
-            userForms.classList.remove('bounceLeft')
-            userForms.classList.add('bounceRight')
-		} else if (res.data.code === '400') {
-
-		}
-	}).catch(() => {
-        register_prompt.value = "Email already taken! :(";
-    })
-}
+// 电话号码的规则
+const chinaMobileRegex = /^(?:(?:\+|00)86)?1(?:3\d|4[5-79]|5[0-35-9]|6[5-7]|7[0-8]|8\d|9[01256789])\d{8}$/
+const registerTelLegal = computed(() => chinaMobileRegex.test(registerPhone.value))
+const loginTelLegal = computed(() => chinaMobileRegex.test(loginPhone.value))
+const resetPasswordTelLegal = computed(() => chinaMobileRegex.test(resetPasswordPhone.value))
+//密码
+const hasRegisterPasswordInput = computed(() => registerPassword.value !== '')
+const hasRegisterConfirmPasswordInput = computed(() => registerPasswordConfirm.value !== '')
+const hasLoginPassword = computed(() => loginPassword !== '')
+const hasResetPassword = computed(() => resetPassword !== '')
+const hasResetConfirmPassword = computed(() => resetPasswordConfirm !== '')
+//验证码
+const hasRegisterCaptcha = computed(() => registerCaptcha !== '')
+const hasResetCaptcha = computed(() => resetPasswordCaptcha !== '')
+//昵称
+const hasName = computed(() => name.value !== '')
+//按钮可用性
+const registerDisabled = computed(() => {
+  return !(registerTelLegal.value && hasName.value && hasRegisterPasswordInput.value && hasRegisterConfirmPasswordInput.value && (registerPassword.value === registerPasswordConfirm.value) && hasRegisterCaptcha)
+})
+const loginDisabled = computed(() => {
+  return !(loginTelLegal.value && hasLoginPassword.value)
+})
+const resetDisabled = computed(() => {
+  return !(resetPasswordPhone.value && hasResetCaptcha.value && hasResetPassword.value && hasResetConfirmPassword.value && (resetPassword.value === resetPasswordConfirm.value))
+})
+const registerSendCaptchaDisabled = computed(() => {
+  return !registerTelLegal.value
+})
+const resetSendCaptchaDisabled = computed(() => {
+  return !resetPasswordTelLegal.value
+})
 
 onMounted(() => {
-	theme.reset();
-	
-	/**
-	 * Variables
-	 */
-	const signupButton = document.getElementById('signup-button'),
-		loginButton = document.getElementById('login-button'),
-		userForms = document.getElementById('user_options-forms')
+  theme.reset();
 
-	/**
-	 * Add event listener to the "Sign Up" button
-	 */
-	signupButton.addEventListener('click', () => {
-		userForms.classList.remove('bounceRight')
-		userForms.classList.add('bounceLeft')
-        register_prompt.value = "";
-	}, false)
+  let switchCtn = document.querySelector("#switch-cnt");
+  let switchC1 = document.querySelector("#switch-c1");
+  let switchC2 = document.querySelector("#switch-c2");
+  let switchCircle = document.querySelectorAll(".switch_circle");
+  let switchBtn = document.querySelectorAll(".switch-btn");
+  let aContainer = document.querySelector("#a-container");
+  let bContainer = document.querySelector("#b-container");
+  let allButtons = document.querySelectorAll(".submit");
 
-	/**
-	 * Add event listener to the "Login" button
-	 */
-	loginButton.addEventListener('click', () => {
-		userForms.classList.remove('bounceLeft')
-		userForms.classList.add('bounceRight')
-        login_prompt.value = "";
-	}, false)
+  let getButtons = (e) => e.preventDefault()
+  let changeForm = () => {
+    // 修改类名
+    switchCtn.classList.add("is-gx");
+    setTimeout(function () {
+      switchCtn.classList.remove("is-gx");
+    }, 1500)
+    switchCtn.classList.toggle("is-txr");
+    switchCircle[0].classList.toggle("is-txr");
+    switchCircle[1].classList.toggle("is-txr");
+
+    switchC1.classList.toggle("is-hidden");
+    switchC2.classList.toggle("is-hidden");
+    aContainer.classList.toggle("is-txl");
+    bContainer.classList.toggle("is-txl");
+    bContainer.classList.toggle("is-z");
+  }
+  // 点击切换
+  let shell = () => {
+    let i;
+    for (i = 0; i < allButtons.length; i++)
+      allButtons[i].addEventListener("click", getButtons);
+    for (i = 0; i < switchBtn.length; i++)
+      switchBtn[i].addEventListener("click", changeForm)
+  }
+  window.addEventListener("load", shell);
 })
+
+function handleLogin() {
+  const hashedPassword = md5.create().update(loginPassword.value);
+  userLogin({
+    phone: loginPhone.value,
+    password: hashedPassword.hex()
+  }).then(res => {
+    if (res.data.code === '000' || res.data.code === '200') {
+      const token = res.data.result
+      sessionStorage.setItem('token', token)
+      userInfo().then(res => {
+        sessionStorage.setItem('user-token', JSON.stringify(res.data.result))
+        router.push({path: "/home"})
+      })
+    } else if (res.data.code === '400') {
+      loginPassword.value = ''
+    }
+  })
+}
+
+function handleRegister() {
+  const hashedPassword = md5.create().update(registerPassword.value);
+  userRegister({
+    name: name.value,
+    phone: registerPhone.value,
+    password: hashedPassword.hex(),
+    captcha: registerCaptcha.value
+  }).then(res => {
+    if (res.data.code === '000' || res.data.code === '200') {  //类型守卫，它检查 res.data 对象中是否存在名为 code 的属性
+      location.reload()
+    } else if (res.data.code === '400') {
+    }
+  })
+}
+
+function handleSendCaptcha(phone) {
+  userSendCaptcha({
+    phone: phone
+  }).then(res => {
+    if (res.data.code === '000' || res.data.code === '200') {
+    } else if (res.data.code === '400') {
+    }
+  })
+  //sendCaptcha.value = !sendCaptcha.value;
+  //重发验证码一分钟倒计时
+  const sendCaptchaButton = document.getElementById('sendCaptcha');
+  sendingCaptcha.value = true;
+  let seconds = 60;
+  const countdown = setInterval(() => {
+    seconds--;
+    sendCaptchaButton.textContent = `${seconds}s RETRY`;
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      sendCaptchaButton.textContent = 'SEND CAPTCHA';
+      sendingCaptcha.value = false;
+    }
+  }, 1000);
+}
+
+function handleResetPassword() {
+  const hashedPassword = md5.create().update(resetPassword.value);
+  userReset({
+    phone: resetPasswordPhone.value,
+    password: hashedPassword.hex(),
+    captcha: resetPasswordCaptcha.value
+  }).then(res => {
+    if (res.data.code === '000' || res.data.code === '200') {
+      location.reload();
+    } else if (res.data.code === '400') {
+    }
+  })
+}
 
 </script>
 
 <template>
 	<body>
 		<video autoplay muted loop id="video-background">
-			<source src="../assets/videos/1.mp4" type="video/mp4">
+			<source src="../assets/videos/3.mp4" type="video/mp4">
 			Your browser does not support the video tag.
 		</video>
 		<img class="logo" src="../assets/pictures/logos/logo1.png" alt="">
-		<section class="user">
-			<div class="user_options-container">
-				<div class="user_options-text">
-					<div class="user_options-unregistered">
-						<h2 class="user_registered-title">欢迎回来，音乐达人！</h2>
-						<p class="user_registered-text">输入你的账号和密码，继续跟随节拍前行。还记得你上次在“我的歌单”里收藏了哪些歌曲吗？快来和我们一起重温那些美妙的旋律吧！如果还没有账户，可以点击下方注册哦~</p>
-						<button class="user_unregistered-signup" id="signup-button">Sign up</button>
-					</div>
+    <div class="shell">
+      <div v-if="!reset" class="container a-container" id="a-container">
+        <form action="" method="" class="form" id="a-form">
+          <h2 class="form_title title">创建账号</h2>
+          <input type="text" class="form_input"
+                 placeholder="Name" v-model="name">
+          <input type="text" class="form_input"
+                 placeholder="Phone" v-model="registerPhone">
+          <input type="text" class="form_input"
+                 placeholder="Captcha" v-model="registerCaptcha">
+          <input type="password" class="form_input"
+                 placeholder="Password" v-model="registerPassword">
+          <input type="password" class="form_input" :class = "{ 'error': registerPassword !==  registerPasswordConfirm}"
+                 placeholder="Confirm Password" v-model="registerPasswordConfirm">
+          <div style="display:flex; justify-content: space-between">
+            <button style="margin-right: 10px" class="form_button button submit" @click="handleRegister"
+                    :disabled = 'registerDisabled'
+            >SIGN UP</button>
+            <button id="sendCaptcha" style="margin-left: 10px"
+                    class="form_button button submit" @click="handleSendCaptcha(registerPhone)"
+                    :disabled = 'registerSendCaptchaDisabled || sendingCaptcha'
+            >SEND CAPTCHA</button>
+          </div>
 
-					<div class="user_options-registered">
-						<h2 class="user_unregistered-title">你和成为音乐达人只有一步之遥！</h2>
-						<p class="user_unregistered-text">注册一个账户，解锁无限曲库、个性化歌单和更多神奇功能！填写以下信息，马上开始你的音乐之旅！如果已有账户，点击下方登录吧！</p>
-						<button class="user_registered-login" id="login-button">Login</button>
-					</div>
-				</div>
+        </form>
+      </div>
 
-				<div class="user_options-forms" id="user_options-forms">
-					<div class="user_forms-login">
-						<h2 class="forms_title">Login</h2>
-						<form class="forms_form">
-							<fieldset class="forms_fieldset">
-								<div class="forms_field">
-									<input type="email" v-model="login_email" placeholder="Email" class="forms_field-input" required autofocus />
-								</div>
-								<div class="forms_field">
-									<input type="password" v-model="login_password" placeholder="Password" class="forms_field-input" required />
-								</div>
-							</fieldset>
-                            <p style="font-family: 'Comic Sans MS', serif; color: red">{{ login_prompt }}</p>
-							<div class="forms_buttons">
-								<button type="button" class="forms_buttons-forgot">忘记密码?</button>
-								<input @click="handleLogin" type="submit" value="Log In" class="forms_buttons-action">
-							</div>
-						</form>
-					</div>
-					<div class="user_forms-signup">
-						<h2 class="forms_title">Sign Up</h2>
-						<form class="forms_form">
-							<fieldset class="forms_fieldset">
-								<div class="forms_field">
-									<input type="text" v-model="register_name" placeholder="Username" class="forms_field-input" required />
-								</div>
-								<div class="forms_field">
-									<input type="email" v-model="register_email" placeholder="Email" class="forms_field-input" required />
-								</div>
-								<div class="forms_field">
-									<input type="password" v-model="register_password" placeholder="Password" class="forms_field-input" required />
-								</div>
-							</fieldset>
-                            <p style="font-family: 'Comic Sans MS', serif; color: red">{{ register_prompt }}</p>
-							<div class="forms_buttons">
-								<input @click="handleRegister" type="submit" value="Sign up" class="forms_buttons-action">
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</section>
+      <div v-if="reset" class="container a-container" id="a-container">
+        <form action="" method="" class="form" id="a-form">
+          <h2 class="form_title title">重置密码</h2>
+          <input type="text" class="form_input"
+                 placeholder="Phone" v-model="resetPasswordPhone">
+          <input type="text" class="form_input"
+                 placeholder="Captcha" v-model="resetPasswordCaptcha">
+          <input type="password" class="form_input"
+                 placeholder="Password" v-model="resetPassword">
+          <input type="password" class="form_input" :class = "{ 'error': resetPassword !==  resetPasswordConfirm}"
+                 placeholder="Confirm Password" v-model="resetPasswordConfirm">
+          <div style="display: flex; justify-content: space-between ">
+            <button style="margin-right: 10px" class="form_button button submit" @click="handleResetPassword"
+                    :disabled = 'resetDisabled'
+            >RESET</button>
+            <button id="sendCaptcha" style="margin-left: 10px"
+                    class="form_button button submit" @click="handleSendCaptcha(registerPhone)"
+                    :disabled = 'resetSendCaptchaDisabled || sendingCaptcha'
+            >SEND CAPTCHA</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="container b-container" id="b-container">
+        <form action="" method="" class="form" id="b-form">
+          <h2 class="form_title title">登录账号</h2>
+          <input type="text" class="form_input"
+                 placeholder="Phone" v-model="loginPhone">
+          <input type="password" class="form_input"
+                 placeholder="Password" v-model="loginPassword">
+          <button class="switch_button button switch-btn" @click="() => {reset = true}">FORGET PASSWORD?</button >
+          <button class="form_button button submit" @click="handleLogin"
+                  :disabled = 'loginDisabled'
+          >SIGN IN</button>
+        </form>
+      </div>
+
+      <div class="switch" id="switch-cnt">
+        <div class="switch_circle"></div>
+        <div class="switch_circle switch_circle-t"></div>
+        <div class="switch_container" id="switch-c1">
+          <h2 class="switch_title title" style="letter-spacing: 0;">Welcome Back！</h2>
+          <p class="switch_description description">已经有账号了嘛，去登入账号继续跟随节拍前行吧！！！</p >
+          <button class="switch_button button switch-btn" @click="reset = false">SIGN IN</button>
+        </div>
+
+        <div class="switch_container is-hidden" id="switch-c2">
+          <h2 class="switch_title title" style="letter-spacing: 0;">Hello Friend！</h2>
+          <p class="switch_description description">去注册一个账号，成为尊贵的粉丝会员，让我们踏入奇妙的旅途！</p >
+          <button class="switch_button button switch-btn">SIGN UP</button>
+        </div>
+      </div>
+    </div>
 	</body>
 </template>
 
@@ -165,19 +272,285 @@ onMounted(() => {
 	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
+  user-select: none;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-	font-family: "Nunito", sans-serif;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-image: url("../assets/videos/1.mp4");
-	background-repeat: no-repeat;
-	background-size: cover;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  color: #a0a5a8;
+}
+
+.shell {
+  position: relative;
+  width: 1000px;
+  min-width: 1000px;
+  min-height: 600px;
+  height: 600px;
+  padding: 25px;
+  background-color: #ecf0f3;
+  box-shadow: 10px 10px 10px #d1d9e6, -10px -10px 10px #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 设置响应式 */
+@media (max-width: 1200px) {
+  .shell {
+    transform: scale(0.7);
+  }
+}
+
+@media (max-width: 1000px) {
+  .shell {
+    transform: scale(0.6);
+  }
+}
+
+@media (max-width: 800px) {
+  .shell {
+    transform: scale(0.5);
+  }
+}
+
+@media (max-width: 600px) {
+  .shell {
+    transform: scale(0.4);
+  }
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  width: 600px;
+  height: 100%;
+  padding: 25px;
+  background-color: #ecf0f3;
+  transition: 1.25s;
+}
+
+.form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.iconfont {
+  margin: 0 5px;
+  border: rgba(0, 0, 0, 0.5) 2px solid;
+  border-radius: 50%;
+  font-size: 25px;
+  padding: 3px;
+  opacity: 0.5;
+  transition: 0.1s;
+}
+
+.iconfont:hover {
+  opacity: 1;
+  transition: 0.15s;
+  cursor: pointer;
+}
+
+.form_input {
+  width: 350px;
+  height: 40px;
+  margin: 4px 0;
+  padding-left: 25px;
+  font-size: 13px;
+  color: black;
+  letter-spacing: 0.15px;
+  border: none;
+  outline: none;
+  background-color: #ecf0f3;
+  transition: 0.25s ease;
+  border-radius: 8px;
+  box-shadow: inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #f9f9f9;
+}
+
+.form_input:focus {
+  box-shadow: inset 4px 4px 4px #d1d9e6, inset -4px -4px 4px #f9f9f9;
+}
+
+.error {
+  color: red; /* 错误边框颜色 */
+}
+
+.form_span {
+  margin-top: 30px;
+  margin-bottom: 12px;
+}
+
+.form_link {
+  color: #181818;
+  font-size: 15px;
+  margin-top: 25px;
+  border-bottom: 1px solid #a0a5a8;
+  line-height: 2;
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 3;
+  color: #181818;
+  letter-spacing: 10px;
+}
+
+.description {
+  font-size: 14px;
+  letter-spacing: 0.25px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.button {
+  width: 180px;
+  height: 50px;
+  border-radius: 25px;
+  margin-top: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1.15px;
+  background-color: #4B70E2;
+  color: #f9f9f9;
+  box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #f9f9f9;
+  border: none;
+  outline: none;
+}
+
+.a-container {
+  z-index: 100;
+  left: calc(100% - 600px);
+}
+
+.b-container {
+  left: calc(100% - 600px);
+  z-index: 0;
+}
+
+.switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 400px;
+  padding: 50px;
+  z-index: 200;
+  transition: 1.25s;
+  background-color: #ecf0f3;
+  overflow: hidden;
+  box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #d1d9e6;
+}
+
+.switch_circle {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background-color: #ecf0f3;
+  box-shadow: inset 8px 8px 12px #b8bec7, inset -8px -8px 12px #fff;
+  bottom: -60%;
+  left: -60%;
+  transition: 1.25s;
+}
+
+.switch_circle-t {
+  top: -30%;
+  left: 60%;
+  width: 300px;
+  height: 300px;
+}
+
+.switch_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: absolute;
+  width: 400px;
+  padding: 50px 55px;
+  transition: 1.25s;
+}
+
+.switch_button {
+  cursor: pointer;
+}
+
+.switch_button:hover,
+.submit:hover {
+  box-shadow: 6px 6px 10px #d1d9e6, -6px -6px 10px #f9f9f9;
+  transform: scale(0.985);
+  transition: 0.25s;
+}
+
+.switch_button:active,
+.switch_button:focus {
+  box-shadow: 2px 2px 6px #d1d9e6, -2px -2px 6px #f9f9f9;
+  transform: scale(0.97);
+  transition: 0.25s;
+}
+
+.is-txr {
+  left: calc(100% - 400px);
+  transition: 1.25s;
+  transform-origin: left;
+}
+
+.is-txl {
+  left: 0;
+  transition: 1.25s;
+  transform-origin: right;
+}
+
+.is-z {
+  z-index: 200;
+  transition: 1.25s;
+}
+
+.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  transition: 1.25s;
+}
+
+.is-gx {
+  animation: is-gx 1.25s;
+}
+
+@keyframes is-gx {
+
+  0%,
+  10%,
+  100% {
+    width: 400px;
+  }
+
+  30%,
+  50% {
+    width: 500px;
+  }
+}
+
+.iconfont {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
 }
 
 .logo {
@@ -197,320 +570,4 @@ body {
 	object-fit: cover; /* 确保视频填充整个视口 */
 	z-index: -1; /* 将视频置于内容后面 */
 }
-
-button {
-	background-color: transparent;
-	padding: 0;
-	border: 0;
-	outline: 0;
-	cursor: pointer;
-}
-
-input {
-	background-color: transparent;
-	padding: 0;
-	border: 0;
-	outline: 0;
-}
-input[type=submit] {
-	cursor: pointer;
-}
-input::-moz-placeholder {
-	font-size: 0.85rem;
-	font-family: "Montserrat", sans-serif;
-	font-weight: 300;
-	letter-spacing: 0.1rem;
-	color: #ccc;
-}
-input:-ms-input-placeholder {
-	font-size: 0.85rem;
-	font-family: "Montserrat", sans-serif;
-	font-weight: 300;
-	letter-spacing: 0.1rem;
-	color: #ccc;
-}
-input::placeholder {
-	font-size: 0.85rem;
-	font-family: "Montserrat", sans-serif;
-	font-weight: 300;
-	letter-spacing: 0.1rem;
-	color: #ccc;
-}
-
-/**
- * * Bounce to the left side
- * */
-@-webkit-keyframes bounceLeft {
-	0% {
-		transform: translate3d(100%, -50%, 0);
-	}
-	50% {
-		transform: translate3d(-30px, -50%, 0);
-	}
-	100% {
-		transform: translate3d(0, -50%, 0);
-	}
-}
-@keyframes bounceLeft {
-	0% {
-		transform: translate3d(100%, -50%, 0);
-	}
-	50% {
-		transform: translate3d(-30px, -50%, 0);
-	}
-	100% {
-		transform: translate3d(0, -50%, 0);
-	}
-}
-/**
- * * Bounce to the left side
- * */
-@-webkit-keyframes bounceRight {
-	0% {
-		transform: translate3d(0, -50%, 0);
-	}
-	50% {
-		transform: translate3d(calc(100% + 30px), -50%, 0);
-	}
-	100% {
-		transform: translate3d(100%, -50%, 0);
-	}
-}
-@keyframes bounceRight {
-	0% {
-		transform: translate3d(0, -50%, 0);
-	}
-	50% {
-		transform: translate3d(calc(100% + 30px), -50%, 0);
-	}
-	100% {
-		transform: translate3d(100%, -50%, 0);
-	}
-}
-/**
- * * Show Sign Up form
- * */
-@-webkit-keyframes showSignUp {
-	100% {
-		opacity: 1;
-		visibility: visible;
-		transform: translate3d(0, 0, 0);
-	}
-}
-@keyframes showSignUp {
-	100% {
-		opacity: 1;
-		visibility: visible;
-		transform: translate3d(0, 0, 0);
-	}
-}
-/**
- * * Page background
- * */
-.user {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	height: 100vh;
-	background-size: cover;
-}
-.user_options-container {
-	position: relative;
-	width: 80%;
-}
-.user_options-text {
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-	background-color: rgba(34, 34, 34, 0.85);
-	border-radius: 3px;
-}
-
-/**
- * * Registered and Unregistered user box and text
- * */
-.user_options-registered,
-.user_options-unregistered {
-	width: 50%;
-	padding: 75px 45px;
-	color: #fff;
-	font-weight: 300;
-}
-
-.user_registered-title,
-.user_unregistered-title {
-	margin-bottom: 15px;
-	font-size: 1.66rem;
-	line-height: 1em;
-}
-
-.user_unregistered-text,
-.user_registered-text {
-	font-size: 0.83rem;
-	line-height: 1.4em;
-}
-
-.user_registered-login,
-.user_unregistered-signup {
-	margin-top: 30px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-	padding: 10px 30px;
-	color: #fff;
-	text-transform: uppercase;
-	line-height: 1em;
-	letter-spacing: 0.2rem;
-	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-.user_registered-login:hover,
-.user_unregistered-signup:hover {
-	color: rgba(34, 34, 34, 0.85);
-	background-color: #ccc;
-}
-
-/**
- * * Login and signup forms
- * */
-.user_options-forms {
-	position: absolute;
-	top: 50%;
-	left: 30px;
-	width: calc(50% - 30px);
-	min-height: 420px;
-	background-color: #fff;
-	border-radius: 3px;
-	box-shadow: 2px 0 15px rgba(0, 0, 0, 0.25);
-	overflow: hidden;
-	transform: translate3d(100%, -50%, 0);
-	transition: transform 0.4s ease-in-out;
-}
-.user_options-forms .user_forms-login {
-	transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
-}
-.user_options-forms .forms_title {
-	margin-bottom: 45px;
-	font-size: 1.5rem;
-	font-weight: 500;
-	line-height: 1em;
-	text-transform: uppercase;
-	color: #e8716d;
-	letter-spacing: 0.1rem;
-}
-.user_options-forms .forms_field:not(:last-of-type) {
-	margin-bottom: 20px;
-}
-.user_options-forms .forms_field-input {
-	width: 100%;
-	border-bottom: 1px solid #ccc;
-	padding: 6px 20px 6px 6px;
-	font-family: "Montserrat", sans-serif;
-	font-size: 1rem;
-	font-weight: 300;
-	color: gray;
-	letter-spacing: 0.1rem;
-	transition: border-color 0.2s ease-in-out;
-}
-.user_options-forms .forms_field-input:focus {
-	border-color: gray;
-}
-.user_options-forms .forms_buttons {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-top: 35px;
-}
-.user_options-forms .forms_buttons-forgot {
-	font-family: "Montserrat", sans-serif;
-	letter-spacing: 0.1rem;
-	color: #ccc;
-	text-decoration: underline;
-	transition: color 0.2s ease-in-out;
-}
-.user_options-forms .forms_buttons-forgot:hover {
-	color: #b3b3b3;
-}
-.user_options-forms .forms_buttons-action {
-	background-color: #e8716d;
-	border-radius: 3px;
-	padding: 10px 35px;
-	font-size: 1rem;
-	font-family: "Montserrat", sans-serif;
-	font-weight: 300;
-	color: #fff;
-	text-transform: uppercase;
-	letter-spacing: 0.1rem;
-	transition: background-color 0.2s ease-in-out;
-}
-.user_options-forms .forms_buttons-action:hover {
-	background-color: #e14641;
-}
-.user_options-forms .user_forms-signup,
-.user_options-forms .user_forms-login {
-	position: absolute;
-	top: 70px;
-	left: 40px;
-	width: calc(100% - 80px);
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.5s ease-in-out;
-}
-.user_options-forms .user_forms-signup {
-	transform: translate3d(120px, 0, 0);
-}
-.user_options-forms .user_forms-signup .forms_buttons {
-	justify-content: flex-end;
-}
-.user_options-forms .user_forms-login {
-	transform: translate3d(0, 0, 0);
-	opacity: 1;
-	visibility: visible;
-}
-
-/**
- * * Triggers
- * */
-.user_options-forms.bounceLeft {
-	-webkit-animation: bounceLeft 1s forwards;
-	animation: bounceLeft 1s forwards;
-}
-.user_options-forms.bounceLeft .user_forms-signup {
-	-webkit-animation: showSignUp 1s forwards;
-	animation: showSignUp 1s forwards;
-}
-.user_options-forms.bounceLeft .user_forms-login {
-	opacity: 0;
-	visibility: hidden;
-	transform: translate3d(-120px, 0, 0);
-}
-.user_options-forms.bounceRight {
-	-webkit-animation: bounceRight 1s forwards;
-	animation: bounceRight 1s forwards;
-}
-
-/**
- * * Responsive 990px
- * */
-@media screen and (max-width: 990px) {
-	.user_options-forms {
-		min-height: 350px;
-	}
-	.user_options-forms .forms_buttons {
-		flex-direction: column;
-	}
-	.user_options-forms .user_forms-login .forms_buttons-action {
-		margin-top: 30px;
-	}
-	.user_options-forms .user_forms-signup,
-	.user_options-forms .user_forms-login {
-		top: 40px;
-	}
-
-	.user_options-registered,
-	.user_options-unregistered {
-		padding: 50px 45px;
-	}
-}
-
-
 </style>

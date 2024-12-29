@@ -22,6 +22,7 @@
     "colorthief": "^2.4.0",
     "core-js": "^3.38.1",
     "element-plus": "^2.8.2",
+    "js-md5": "^0.8.3",
     "pinia": "^2.2.2",
     "swiper": "^11.1.14",
     "tippy.js": "^6.3.7",
