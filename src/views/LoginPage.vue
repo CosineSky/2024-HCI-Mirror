@@ -5,6 +5,7 @@ import {useTheme} from "../store/theme";
 import {router} from "../router";
 import {ElMessage} from "element-plus";
 import {md5} from "js-md5";
+import NotificationToast from '../components/NotificationToast.vue';
 
 const theme = useTheme()
 
@@ -24,36 +25,35 @@ const sendingCaptcha = ref(false);
 
 // 电话号码的规则
 const chinaMobileRegex = /^(?:(?:\+|00)86)?1(?:3\d|4[5-79]|5[0-35-9]|6[5-7]|7[0-8]|8\d|9[01256789])\d{8}$/
-const registerTelLegal = computed(() => chinaMobileRegex.test(registerPhone.value))
-const loginTelLegal = computed(() => chinaMobileRegex.test(loginPhone.value))
-const resetPasswordTelLegal = computed(() => chinaMobileRegex.test(resetPasswordPhone.value))
-//密码
-const hasRegisterPasswordInput = computed(() => registerPassword.value !== '')
-const hasRegisterConfirmPasswordInput = computed(() => registerPasswordConfirm.value !== '')
-const hasLoginPassword = computed(() => loginPassword !== '')
-const hasResetPassword = computed(() => resetPassword !== '')
-const hasResetConfirmPassword = computed(() => resetPasswordConfirm !== '')
-//验证码
-const hasRegisterCaptcha = computed(() => registerCaptcha !== '')
-const hasResetCaptcha = computed(() => resetPasswordCaptcha !== '')
-//昵称
-const hasName = computed(() => name.value !== '')
-//按钮可用性
-const registerDisabled = computed(() => {
-  return !(registerTelLegal.value && hasName.value && hasRegisterPasswordInput.value && hasRegisterConfirmPasswordInput.value && (registerPassword.value === registerPasswordConfirm.value) && hasRegisterCaptcha)
-})
-const loginDisabled = computed(() => {
-  return !(loginTelLegal.value && hasLoginPassword.value)
-})
-const resetDisabled = computed(() => {
-  return !(resetPasswordPhone.value && hasResetCaptcha.value && hasResetPassword.value && hasResetConfirmPassword.value && (resetPassword.value === resetPasswordConfirm.value))
-})
-const registerSendCaptchaDisabled = computed(() => {
-  return !registerTelLegal.value
-})
-const resetSendCaptchaDisabled = computed(() => {
-  return !resetPasswordTelLegal.value
-})
+
+const toasts = ref([]);
+let toastId = 0;
+
+const showToast = (message, type = 'info') => {
+  const id = toastId++;
+  toasts.value.push({
+    id,
+    message,
+    type
+  });
+  
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(toast => toast.id !== id);
+  }, 3000);
+};
+
+// 修改表单验证和提示
+const validatePhone = (phone) => {
+  if (!phone) {
+    showToast('请输入手机号码', 'error');
+    return false;
+  }
+  if (!chinaMobileRegex.test(phone)) {
+    showToast('请输入正确的手机号码格式', 'error');
+    return false;
+  }
+  return true;
+};
 
 onMounted(() => {
   theme.reset();
@@ -122,25 +122,97 @@ onMounted(() => {
 })
 
 function handleLogin() {
+  if (!validatePhone(loginPhone.value)) return;
+  
+  if (!loginPassword.value) {
+    showToast('请输入密码', 'error');
+    return;
+  }
+
   const hashedPassword = md5.create().update(loginPassword.value);
   userLogin({
     phone: loginPhone.value,
     password: hashedPassword.hex()
   }).then(res => {
     if (res.data.code === '000' || res.data.code === '200') {
-      const token = res.data.result
-      sessionStorage.setItem('token', token)
+      showToast('登录成功', 'success');
+      const token = res.data.result;
+      sessionStorage.setItem('token', token);
       userInfo().then(res => {
-        sessionStorage.setItem('user-token', JSON.stringify(res.data.result))
-        router.push({path: "/home"})
-      })
+        sessionStorage.setItem('user-token', JSON.stringify(res.data.result));
+        router.push({path: "/home"});
+      });
     } else if (res.data.code === '400') {
-      loginPassword.value = ''
+      showToast(res.data.msg || '手机号或密码错误', 'error');
+      loginPassword.value = '';
     }
-  })
+  }).catch(() => {
+    showToast('登录失败，请稍后重试', 'error');
+  });
 }
 
+// 添加表单验证方法
+const validateRegisterForm = () => {
+  if (!name.value) {
+    showToast('请输入用户名', 'error');
+    return false;
+  }
+  if (!validatePhone(registerPhone.value)) return false;
+  if (!registerCaptcha.value) {
+    showToast('请输入验证码', 'error');
+    return false;
+  }
+  if (!registerPassword.value) {
+    showToast('请输入密码', 'error');
+    return false;
+  }
+  if (!registerPasswordConfirm.value) {
+    showToast('请确认密码', 'error');
+    return false;
+  }
+  if (registerPassword.value !== registerPasswordConfirm.value) {
+    showToast('两次输入的密码不一致', 'error');
+    return false;
+  }
+  return true;
+};
+
+const validateResetForm = () => {
+  if (!validatePhone(resetPasswordPhone.value)) return false;
+  if (!resetPasswordCaptcha.value) {
+    showToast('请输入验证码', 'error');
+    return false;
+  }
+  if (!resetPassword.value) {
+    showToast('请输入新密码', 'error');
+    return false;
+  }
+  if (!resetPasswordConfirm.value) {
+    showToast('请确认新密码', 'error');
+    return false;
+  }
+  if (resetPassword.value !== resetPasswordConfirm.value) {
+    showToast('两次输入的密码不一致', 'error');
+    return false;
+  }
+  return true;
+};
+
+const validateSendCaptcha = (phone) => {
+  if (!phone) {
+    showToast('请输入手机号码', 'error');
+    return false;
+  }
+  if (!chinaMobileRegex.test(phone)) {
+    showToast('请输入正确的手机号码格式', 'error');
+    return false;
+  }
+  return true;
+};
+
 function handleRegister() {
+  if (!validateRegisterForm()) return;
+  
   const hashedPassword = md5.create().update(registerPassword.value);
   userRegister({
     name: name.value,
@@ -148,23 +220,59 @@ function handleRegister() {
     password: hashedPassword.hex(),
     captcha: registerCaptcha.value
   }).then(res => {
-    if (res.data.code === '000' || res.data.code === '200') {  //类型守卫，它检查 res.data 对象中是否存在名为 code 的属性
-      location.reload()
+    if (res.data.code === '000' || res.data.code === '200') {
+      showToast('注册成功', 'success');
+      location.reload();
     } else if (res.data.code === '400') {
+      showToast(res.data.msg || '注册失败，请重试', 'error');
     }
-  })
+  }).catch(() => {
+    showToast('注册失败，请稍后重试', 'error');
+  });
+}
+
+function handleResetPassword() {
+  if (!validateResetForm()) return;
+
+  const hashedPassword = md5.create().update(resetPassword.value);
+  userReset({
+    phone: resetPasswordPhone.value,
+    password: hashedPassword.hex(),
+    captcha: resetPasswordCaptcha.value
+  }).then(res => {
+    if (res.data.code === '000' || res.data.code === '200') {
+      showToast('密码重置成功', 'success');
+      location.reload();
+    } else if (res.data.code === '400') {
+      showToast(res.data.msg || '重置失败，请重试', 'error');
+    }
+  }).catch(() => {
+    showToast('重置失败，请稍后重试', 'error');
+  });
 }
 
 function handleSendCaptcha(phone) {
+  if (!validateSendCaptcha(phone)) return;
+  if (sendingCaptcha.value) {
+    showToast('请等待倒计时结束后再次发送', 'info');
+    return;
+  }
+
   userSendCaptcha({
     phone: phone
   }).then(res => {
     if (res.data.code === '000' || res.data.code === '200') {
+      showToast('验证码发送成功', 'success');
+      startCountdown();
     } else if (res.data.code === '400') {
+      showToast(res.data.msg || '发送失败，请重试', 'error');
     }
-  })
-  //sendCaptcha.value = !sendCaptcha.value;
-  //重发验证码一分钟倒计时
+  }).catch(() => {
+    showToast('发送失败，请稍后重试', 'error');
+  });
+}
+
+function startCountdown() {
   const sendCaptchaButton = document.getElementById('sendCaptcha');
   sendingCaptcha.value = true;
   let seconds = 60;
@@ -179,20 +287,6 @@ function handleSendCaptcha(phone) {
   }, 1000);
 }
 
-function handleResetPassword() {
-  const hashedPassword = md5.create().update(resetPassword.value);
-  userReset({
-    phone: resetPasswordPhone.value,
-    password: hashedPassword.hex(),
-    captcha: resetPasswordCaptcha.value
-  }).then(res => {
-    if (res.data.code === '000' || res.data.code === '200') {
-      location.reload();
-    } else if (res.data.code === '400') {
-    }
-  })
-}
-
 </script>
 
 <template>
@@ -204,6 +298,14 @@ function handleResetPassword() {
 		<img class="logo" src="../assets/pictures/logos/logo1.png" alt="">
     <div class="shell">
       <div v-if="!reset" class="container a-container" id="a-container">
+        <div class="toast-list">
+          <NotificationToast
+            v-for="toast in toasts"
+            :key="toast.id"
+            :message="toast.message"
+            :type="toast.type"
+          />
+        </div>
         <form action="" method="" class="form" id="a-form">
           <h2 class="form_title title">创建账号</h2>
           <input type="text" class="form_input"
@@ -217,19 +319,28 @@ function handleResetPassword() {
           <input type="password" class="form_input" :class = "{ 'error': registerPassword !==  registerPasswordConfirm}"
                  placeholder="Confirm Password" v-model="registerPasswordConfirm">
           <div style="display:flex; justify-content: space-between">
-            <button style="margin-right: 10px" class="form_button button submit" @click="handleRegister"
-                    :disabled = 'registerDisabled'
-            >SIGN UP</button>
+            <button style="margin-right: 10px" class="form_button button submit" @click="handleRegister">
+              SIGN UP
+            </button>
             <button id="sendCaptcha" style="margin-left: 10px"
-                    class="form_button button submit" @click="handleSendCaptcha(registerPhone)"
-                    :disabled = 'registerSendCaptchaDisabled || sendingCaptcha'
-            >SEND CAPTCHA</button>
+                    class="form_button button submit"
+                    @click="handleSendCaptcha(registerPhone)">
+              SEND CAPTCHA
+            </button>
           </div>
 
         </form>
       </div>
 
       <div v-if="reset" class="container a-container" id="a-container">
+        <div class="toast-list">
+          <NotificationToast
+            v-for="toast in toasts"
+            :key="toast.id"
+            :message="toast.message"
+            :type="toast.type"
+          />
+        </div>
         <form action="" method="" class="form" id="a-form">
           <h2 class="form_title title">重置密码</h2>
           <input type="text" class="form_input"
@@ -241,18 +352,27 @@ function handleResetPassword() {
           <input type="password" class="form_input" :class = "{ 'error': resetPassword !==  resetPasswordConfirm}"
                  placeholder="Confirm Password" v-model="resetPasswordConfirm">
           <div style="display: flex; justify-content: space-between ">
-            <button style="margin-right: 10px" class="form_button button submit" @click="handleResetPassword"
-                    :disabled = 'resetDisabled'
-            >RESET</button>
+            <button style="margin-right: 10px" class="form_button button submit" @click="handleResetPassword">
+              RESET
+            </button>
             <button id="sendCaptcha" style="margin-left: 10px"
-                    class="form_button button submit" @click="handleSendCaptcha(registerPhone)"
-                    :disabled = 'resetSendCaptchaDisabled || sendingCaptcha'
-            >SEND CAPTCHA</button>
+                    class="form_button button submit"
+                    @click="handleSendCaptcha(registerPhone)">
+              SEND CAPTCHA
+            </button>
           </div>
         </form>
       </div>
 
       <div class="container b-container" id="b-container">
+        <div class="toast-list">
+          <NotificationToast
+            v-for="toast in toasts"
+            :key="toast.id"
+            :message="toast.message"
+            :type="toast.type"
+          />
+        </div>
         <form action="" method="" class="form" id="b-form">
           <h2 class="form_title title">登录账号</h2>
           <input type="text" class="form_input"
@@ -260,9 +380,9 @@ function handleResetPassword() {
           <input type="password" class="form_input"
                  placeholder="Password" v-model="loginPassword">
           <button class="switch_button button switch-btn" @click="() => {reset = true}">FORGET PASSWORD?</button >
-          <button class="form_button button submit" @click="handleLogin"
-                  :disabled = 'loginDisabled'
-          >SIGN IN</button>
+          <button class="form_button button submit" @click="handleLogin">
+            SIGN IN
+          </button>
         </form>
       </div>
 
@@ -595,5 +715,17 @@ body {
 	height: 100%;
 	object-fit: cover; /* 确保视频填充整个视口 */
 	z-index: -1; /* 将视频置于内容后面 */
+}
+
+.toast-list {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
