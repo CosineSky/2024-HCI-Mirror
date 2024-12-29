@@ -62,7 +62,7 @@ const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundCol
 const songDurations = ref(new Map());
 watch(() => props.musicList, (newSongs) => {
   loadSongDurations(newSongs, songDurations);
-}, { immediate: true });
+}, { immediate: true ,deep: true});
 
 // 放缩时的组件处理
 const handleResize = () => {

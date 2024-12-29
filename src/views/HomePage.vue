@@ -422,8 +422,9 @@ const switchToPlaylist = (playlist, songId) => {
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
-		songs.value = res.data.result;
-		displayingSongs.value = res.data.result;
+    const songsList = res.data.result;
+    songs.value = [...songsList];
+    displayingSongs.value = [...songsList];
 		currentSongId.value = songId;
 		for (let i = 0; i < songs.value.length; i++) {
 			if (songs.value[i].id === songId) {
@@ -448,6 +449,7 @@ const handleRecommendedSong = (songToPlay) => {
   }
   songs.value.unshift(songToPlay);
   currentSongIndex.value = 0;
+  currentSongId.value = songToPlay.id;
   if (song) {
     controlIcons.forEach(controlIcon => {
       controlIcon.src = PLAY;
