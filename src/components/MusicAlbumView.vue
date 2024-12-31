@@ -255,8 +255,12 @@ const removeMusicFromAlbum = (albumId, songId) => {
 	removeSongFromPlaylist({
 		playlist_id: albumId,
 		song_id: songId,
-	})
+	}).then(() => {
+    const songIndex = props.musicList.findIndex(song => song.id === songId);
+    props.musicList.splice(songIndex, 1)
+  })
 }
+
 const enterMusicDescription = (musicId) => {
 }
 const enterArtistDescription = (artistName) => {
