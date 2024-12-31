@@ -505,7 +505,6 @@ const currentEpisode = ref(2); //当前专辑
 const currentEpisodeId = ref(2);//当前专辑id
 const displayingEpisode = ref(2);
 const receiveDisplayingEpisode = (episode) => {
-	setMidComponents(4);
   displayingEpisode.value = episode;
 	getSongsByPlaylist({
 		playlist_id: episode.id,
@@ -514,6 +513,7 @@ const receiveDisplayingEpisode = (episode) => {
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
+  setMidComponents(4);
 };
 
 const receiveDisplayingEpisodeByName = (episodeName) => {
@@ -825,7 +825,9 @@ const updateSongs = (newSongs) => {
                       @switchSong="switchToSong"
                       @pauseSong="pauseCurrentSong"
                       @switchToArtist="(name) => setMidComponents(5, name)"
-                      @back="goBack"/>
+                      @back="goBack"
+                      @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
+          />
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">

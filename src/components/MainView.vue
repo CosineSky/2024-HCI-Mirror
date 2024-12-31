@@ -20,22 +20,31 @@ const emit = defineEmits([])
 /*条目区 都写死*/
 const defautAlbum = ref({
 	id: 2,
-	title: "default",
-	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/53a10825-f3a3-48e9-81ec-86d662606c67.png"
+	title: "点赞的歌曲",
+	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/53a10825-f3a3-48e9-81ec-86d662606c67.png",
+  updateTime:"最近",
+  description:"歌单"
 })
 const mostPlayedAlbum = ref({
 	id: 3,
 	title: "最受欢迎的专辑",
-	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/60fa504f-23ee-4446-8ef8-0f5049963865.png"
+	picPath: "http://bucket-cloudsky.oss-cn-nanjing.aliyuncs.com/60fa504f-23ee-4446-8ef8-0f5049963865.png",
+  updateTime:"最近",
+  description:"推荐歌单"
 })
 const weeklyRecommend = ref({
 	id: 5,
+  title:"每周推荐",
 	picPath: "https://i.scdn.co/image/ab67616d00004851970e7892dab13cdb11387690",
-
+  updateTime:"最近",
+  description:"推荐歌单"
 })
 const newSongsRecommend = ref({
 	id: 6,
-	picPath: "https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d"
+  title:"每日推荐",
+	picPath: "https://i.scdn.co/image/ab67616d000048511b822a1e27037ac21e4eaa6d",
+  updateTime:"最近",
+  description:"推荐歌单"
 })
 /*先固定就这两位*/
 const artistRecommend = ref([

@@ -36,10 +36,11 @@ const currentTab = ref('songs')
 const handleTabClick = (tab) => {
   currentTab.value = tab
 }
-const songDurations = ref(new Map());
-watch(() => props.musicList, (newSongs) => {
-  loadSongDurations(newSongs, songDurations);
-}, { immediate: true });
+
+// const songDurations = ref(new Map());
+// watch(() => props.musicList, (newSongs) => {
+//   loadSongDurations(newSongs, songDurations);
+// }, { immediate: true });
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -65,14 +66,14 @@ const pauseMusic = (musicId) => {
 const enterArtistDescription = (artistName) => {
   emit('switchToArtist', artistName);
 }
-const addToFavorite = (musicId, albumId) => {
+const addToFavorite = (musicId, albumId,albumTitle) => {
   addSongToPlaylist({
     user_id: currentUserId.value,
     playlist_id: albumId,
     song_id: musicId,
   }).then(() => {
     ElMessage({
-      message: "添加至: " + props.albumInfo.title,
+      message: "添加至: " + albumTitle,
       grouping: true,
       type: 'info',
       offset: 16,
@@ -144,8 +145,7 @@ onUnmounted(() => {
                :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }"> <!--@click事件写在script中的函数里 无法及时触发:style中的样式!!!-->
-
-            <div
+            <div style="width: 20px"
                 :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
               {{
                 songResult.indexOf(music) + 1
@@ -177,6 +177,10 @@ onUnmounted(() => {
                   {{ music.artist }}</p>
               </div>
             </div>
+            <!--          从歌单界面进入专辑-->
+            <div class="music-album-info" @click="emit('openEpisodeView',music.album)" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+              {{ music.album }}
+            </div>
             <div class="music-right-info">
               <el-popover
                   :ref="getPopoverIndex"
@@ -191,14 +195,12 @@ onUnmounted(() => {
                   <check-mark class="check-mark" v-tippy="'加入歌单'"
                               :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
                 </template>
-
                 <ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
                   <div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">
                     选择歌单收藏
                   </div>
                   <hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
-
-                  <li class="album-to-add" @click="addToFavorite(music.id,album.id)"
+                  <li class="album-to-add" @click="addToFavorite(music.id,album.id,album.title)"
                       v-for="album in playList">
                     <div style="
 										height:40px;
@@ -206,8 +208,7 @@ onUnmounted(() => {
 										align-items: center;
 										justify-content: space-between;
 										font-size: 20px;
-										font-weight:400"
-                    >
+										font-weight:400">
                       <div style="display: flex; flex-direction: row">
                         <img :src="album.picPath" style="height: 40px; width:40px; border-radius: 4px" alt=""/>
                         <div style="
@@ -217,25 +218,23 @@ onUnmounted(() => {
                       </div>
                       <div style="font-size: 14px; color: #a4a4a4">{{ album.songNum }}首</div>
                     </div>
-
                   </li>
                 </ul>
               </el-popover>
-              <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
-                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
-                   v-show="songDurations.get(music.id) !== undefined">
-                {{ formatTime(songDurations.get(music.id)) }}
-              </div>
-              <el-popover
-                  :ref="getPopoverIndex"
-                  class="music-dropdown-options"
-                  popper-class="my-popover"
-                  :width="400"
-                  trigger="click"
-                  :hide-after=0
-              >
-
-              </el-popover>
+<!--              <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"-->
+<!--                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"-->
+<!--                   v-show="songDurations.get(music.id) !== undefined">-->
+<!--                {{ formatTime(songDurations.get(music.id)) }}-->
+<!--              </div>-->
+<!--              <el-popover-->
+<!--                  :ref="getPopoverIndex"-->
+<!--                  class="music-dropdown-options"-->
+<!--                  popper-class="my-popover"-->
+<!--                  :width="400"-->
+<!--                  trigger="click"-->
+<!--                  :hide-after=0-->
+<!--              >-->
+<!--              </el-popover>-->
             </div>
           </div>
         </div>
@@ -260,7 +259,40 @@ onUnmounted(() => {
 	</div>
 </template>
 
+
 <style scoped>
+ul{
+background-color: #282828;
+list-style-type: none;
+padding: 0;
+margin: 0;
+border-radius: 10px;
+}
+
+li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+  padding: 15px 12px;
+}
+
+li:hover {
+  background-color: #363636;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+
+p {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
 .search-view {
 	padding: 0;
   width: 100%;
@@ -396,6 +428,20 @@ onUnmounted(() => {
 }
 
 .music-author:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+/*专辑信息*/
+.music-album-info {
+  width: 30%;
+  text-align: left ;
+  position: absolute;
+  left: 60%;
+  color: #b2b2b2;
+  text-overflow: ellipsis;
+}
+
+.music-album-info:hover {
   cursor: pointer;
   text-decoration: underline;
 }

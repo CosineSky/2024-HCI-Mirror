@@ -226,14 +226,14 @@ const playRecommendedSongFromId = (musicId) => {
   musicPauseIndex = null;
 }
 
-const addToFavorite = (musicId, albumId) => {
+const addToFavorite = (musicId, albumId,albumTitle) => {
   addSongToPlaylist({
     user_id: currentUserId.value,
     playlist_id: albumId,
     song_id: musicId,
   }).then(() => {
     ElMessage({
-      message: "添加至: " + props.albumInfo.title,
+      message: "添加至: " + albumTitle,
       grouping: true,
       type: 'info',
       offset: 16,
@@ -581,7 +581,7 @@ watch(() => props.musicList, () => {
 								</div>
 								<hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
 
-								<li class="album-to-add" @click="addToFavorite(music.id,album.id)"
+								<li class="album-to-add" @click="addToFavorite(music.id,album.id,album.title)"
 								    v-for="album in playList">
 									<div style="
 										height:40px;
@@ -936,6 +936,8 @@ p {
 
 /*专辑信息*/
 .music-album-info {
+  width: 20%;
+  text-align: left ;
 	position: absolute;
 	left: 60%;
 	color: #b2b2b2;
