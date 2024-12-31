@@ -526,8 +526,8 @@ const receiveDisplayingEpisodeByName = (episodeName) => {
     displayingEpisode.value = episode;
     console.log(episode);
     getSongsByPlaylist({playlist_id:  episode.id}).then((res) => {
-      displayingSongs.value = res.data.result;
       setMidComponents(4);
+      displayingSongs.value = res.data.result;
     }).catch(e => {
       console.log("Failed to get songs!");
     });

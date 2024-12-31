@@ -286,11 +286,11 @@ const enterArtistDescription = (artistName) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex.value = props.musicList[0].id;
+		musicPlayIndex = props.musicList[0].id;
 	} else {
-		musicPlayIndex.value = musicId;
+		musicPlayIndex = musicId;
 	}
-	emit('switchSongs', props.episodeInfo, musicPlayIndex.value);
+	emit('switchSongs', props.episodeInfo, musicPlayIndex);
 	musicPauseIndex = null;
 }
 const addToFavorite = (musicId, albumId,albumTitle) => {
@@ -315,6 +315,22 @@ const enterMusicDescription = (musicId) => {
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
 }
+
+watch(() => props.currentSongId, (newId) => {
+  if (newId) {
+    musicPlayIndex = newId;
+    musicClickedIndex = newId;
+    musicPauseIndex = props.isPaused ? newId : null;
+  }
+}, {immediate: true});
+
+watch(() => props.isPaused, (newValue) => {
+  if (newValue) {
+    musicPauseIndex = musicPlayIndex;
+  } else {
+    musicPauseIndex = null;
+  }
+});
 
 </script>
 
