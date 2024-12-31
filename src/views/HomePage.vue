@@ -36,7 +36,7 @@ import {userFollowArtist} from "@/api/user";
  */
 const textColor = ref("#000");
 const backgroundColor = ref("#ffffff");
-const gradientColor = computed(() => `linear-gradient(to top right, ${backgroundColor.value}, #000000)`)
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 const isFullScreen = ref(false);
 
 function toggleFullScreen() {
@@ -83,11 +83,6 @@ function updateCurrentLine() {
 		}
 	}
 }
-
-setInterval(() => {
-	// console.log(progresses.length, controlIcons.length, playModeIcons.length);
-}, 1000);
-
 
 const theme = useTheme()
 const album_selected = ref(false);
@@ -138,7 +133,7 @@ function updateSongInfo() {
 			song.load();
 			song.play();
 			isPaused.value = false;
-			theme.change(songs.value[currentSongIndex.value].picPath);
+			theme.full(songs.value[currentSongIndex.value].picPath);
 		}
 	} catch (e) {
 		console.log("Uncaught Error in updateSongInfo!", e);
@@ -406,7 +401,7 @@ const switchToSong = (index, isDiffPlaylist) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songs.value[index].picPath);
+		theme.full(songs.value[index].picPath);
 		isPaused.value = false;
 	}
 }
@@ -417,7 +412,7 @@ const switchToPlaylist = (playlist, songId) => {
 	currentPlaylist.value = playlist;
 	displayingPlaylist.value = playlist;
 	currentPlaylistId.value = playlist.id;
-	theme.change(currentPlaylist.value.picPath);
+	theme.full(currentPlaylist.value.picPath);
 	
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
@@ -460,7 +455,7 @@ const handleRecommendedSong = (songToPlay) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songToPlay.picPath);
+		theme.full(songToPlay.picPath);
 		isPaused.value = false;
 	}
 };
@@ -691,7 +686,7 @@ onMounted(() => {
 	/*
         DOMS & EVENTS
 	 */
-	theme.change(defaultBg);
+	theme.full(defaultBg);
 	registerDOMs();
 	
 	/*
@@ -706,7 +701,7 @@ onMounted(() => {
 		currentPlaylist.value = playlists.value[0];
 		displayingPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;
-		theme.change(currentPlaylist.value.picPath);
+		theme.full(currentPlaylist.value.picPath);
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
@@ -757,7 +752,7 @@ const playArtistSong = (songToPlay) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songToPlay.picPath);
+		theme.full(songToPlay.picPath);
 		isPaused.value = false;  // 设置为播放状态
 	}
 };
@@ -777,6 +772,7 @@ const updateSongs = (newSongs) => {
 	displayingSongs.value = newSongs;
 };
 </script>
+
 
 <template>
 	<div class="body" v-show="!isPlayingPage" @click="unSelectAlbum">
@@ -986,10 +982,10 @@ const updateSongs = (newSongs) => {
 					</button>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-top: 10px">
-					<p style="margin-right: 10px; padding-bottom: 40px; color: white">{{ formatTime(currentTime) }}</p>
+					<p style="margin-right: 10px; margin-bottom: 60px; color: white">{{ formatTime(currentTime) }}</p>
 					<input type="range" value="0" id="progress" class="idProgress"
 					       style="margin: 0 0 10px 0; width: 500px"/>
-					<p style="margin-left: 10px; padding-bottom: 40px; color: white">{{ formatTime(duration) }}</p>
+					<p style="margin-left: 10px; margin-bottom: 60px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
 			
@@ -1064,13 +1060,12 @@ const updateSongs = (newSongs) => {
 			</div>
 		</div>
 		
-		<!--		<div class="player" :style="{ backgroundImage: gradientColor }">-->
 		<div class="player">
 			<div class="background"></div>
 			<div class="player-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
 					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover"
-					     @load="updateBackground"/>
+					     @load="updateBackground(songs[currentSongIndex].picPath)"/>
 				</div>
 				<div class="track-info-container">
 					<div v-if="songs[currentSongIndex] !== undefined" class="music-info"
@@ -1114,10 +1109,10 @@ const updateSongs = (newSongs) => {
 							</button>
 						</div>
 						<div v-if="songs[currentSongIndex] !== undefined" style="display: flex; flex-direction: row;">
-							<p style="margin-right: 10px">{{ formatTime(currentTime) }}</p>
+							<p style="margin-right: 10px; margin-top: 14px">{{ formatTime(currentTime) }}</p>
 							<input type="range" value="0" id="progress" class="idProgress"
 							       style="margin: 20px 0 10px 0; width: 700px"/>
-							<p style="margin-left: 10px">{{ formatTime(duration) }}</p>
+							<p style="margin-left: 10px; margin-top: 14px">{{ formatTime(duration) }}</p>
 						</div>
 					</div>
 				</div>
