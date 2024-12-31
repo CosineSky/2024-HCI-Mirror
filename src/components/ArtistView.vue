@@ -10,6 +10,7 @@ import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
 import {formatTime} from '../utils/formatTime';
 import {loadSongDurations} from '../utils/loadSongDurations';
+import {userFollowArtist} from "../api/user";
 
 const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs', 'toggleFollow']);
 const props = defineProps({

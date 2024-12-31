@@ -49,7 +49,7 @@ import VueTippy from 'vue-tippy'
 
 
 axios.defaults.baseURL = ("http://localhost:8081")
-// axios.defaults.baseURL = ("http://172.29.4.13:8081")
+// axios.defaults.baseURL = ("http://172.29.4.13:8082")
 axios.defaults.timeout = 30000;
 
 createApp(App)

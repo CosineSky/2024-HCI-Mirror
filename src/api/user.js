@@ -74,6 +74,7 @@ export const userInfo = () => {
 }
 
 export const userFollowArtist = (followArtistInfo) => {
+    console.log(followArtistInfo)
     return axios.post(`${USER_MODULE}/followArtist`,null,{
         params:{
             userId: followArtistInfo.user_id,
