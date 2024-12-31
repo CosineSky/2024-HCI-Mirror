@@ -16,6 +16,17 @@ export const getPlaylistsByUser = (userInfo) => {
 }
 
 /*
+    title: string
+ */
+export const getPlaylistsByTitle = (titleInfo) => {
+    console.log(titleInfo)
+    return axios.get(`${PLAYLIST_MODULE}/fetchByTitle`, { params: titleInfo })
+        .then(res => {
+            return res;
+        });
+}
+
+/*
     // TODO - modified
     - user_name: string
     - playlist_name: string
