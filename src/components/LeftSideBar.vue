@@ -6,7 +6,7 @@ import searchIcon from "../icon/searchIcon.vue";
 import plusIcon from "../icon/plusIcon.vue";
 import playButton from "../icon/playButton.vue";
 import {createPlaylist, getPlaylistsByUser} from "../api/playlist";
-import {ElPopover} from "element-plus";
+import {ElMessage, ElPopover} from "element-plus";
 
 
 
@@ -62,7 +62,7 @@ function startResizing(event) {
 }
 
 function addAlbum() {
-	console.log("Hi")
+	ElMessage.success("已成功创建新歌单！");
 	createPlaylist({
 		user_id: currentUserId.value,
 	}).then(() => {

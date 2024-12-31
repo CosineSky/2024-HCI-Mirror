@@ -9,8 +9,8 @@ import pauseButton from "../icon/pauseButton.vue";
 
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
-import { loadSongDurations } from '../utils/loadSongDurations';
-import { getRecommendedSongs } from "../api/song";
+import {loadSongDurations} from '../utils/loadSongDurations';
+import {getRecommendedSongs} from "../api/song";
 
 
 /*
@@ -29,10 +29,10 @@ const props = defineProps({
 		type: Array,
 		required: true,
 	},
-  playList: { //指当前收藏的歌单列表
-    type: Array,
-    required: true,
-  },
+	playList: { //指当前收藏的歌单列表
+		type: Array,
+		required: true,
+	},
 	playFromLeftBar: null,
 	currentSongId: {
 		type: Number,
@@ -61,8 +61,8 @@ const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundCol
 //获取歌曲时长
 const songDurations = ref(new Map());
 watch(() => props.musicList, (newSongs) => {
-  loadSongDurations(newSongs, songDurations);
-}, { immediate: true ,deep: true});
+	loadSongDurations(newSongs, songDurations);
+}, {immediate: true, deep: true});
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -79,7 +79,7 @@ const handleResize = () => {
 		albumText.forEach(album => {
 			album.style.visibility = "hidden";
 		});
-
+		
 	} else {
 		albums.forEach(album => {
 			album.style.visibility = "visible";
@@ -102,12 +102,12 @@ const handleResize = () => {
 		headerAlbumName.style.fontSize = "80px";
 		headerAlbumName.style.marginBottom = "35px";
 	}
-
-  //🙏 权宜之计
-  const fixedTipArea = document.querySelector(".fixed-tips");
-  const fixedPlayArea = document.querySelector(".fixed-play-area");
-  fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
-  fixedTipArea.style.width = (albumContent.clientWidth - 16) + "px";
+	
+	//🙏 权宜之计
+	const fixedTipArea = document.querySelector(".fixed-tips");
+	const fixedPlayArea = document.querySelector(".fixed-play-area");
+	fixedPlayArea.style.width = (albumContent.clientWidth - 20) + "px";
+	fixedTipArea.style.width = (albumContent.clientWidth - 16) + "px";
 }
 
 const debounce = (fn, delay) => {
@@ -132,10 +132,10 @@ onMounted(() => {
 			resizeObserver.value.observe(albumContent);
 		}
 	})
-
-  musicPlayIndex = props.currentSongId;
-  musicClickedIndex = props.currentSongId;
-  musicPauseIndex = props.isPaused ? props.currentSongId : null;
+	
+	musicPlayIndex = props.currentSongId;
+	musicClickedIndex = props.currentSongId;
+	musicPauseIndex = props.isPaused ? props.currentSongId : null;
 })
 
 onUnmounted(() => {
@@ -203,50 +203,51 @@ const removeAlbum = (albumId) => {
 	removePlaylist({
 		playlist_id: albumId,
 	}).then(res => {
-		console.log("Hi")
+		ElMessage.success("删除歌单成功！");
+		
 	})
 }
 
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex  = props.musicList[0].id;
+		musicPlayIndex = props.musicList[0].id;
 	} else {
-		musicPlayIndex  = musicId;
+		musicPlayIndex = musicId;
 	}
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
 }
 
 const playRecommendedSongFromId = (musicId) => {
-  musicPlayIndex  = musicId;
-  const songToPlay = recMusicList.value.find(song => song.id === musicId);
+	musicPlayIndex = musicId;
+	const songToPlay = recMusicList.value.find(song => song.id === musicId);
 	emit('playRecommendedSong', songToPlay)
-  musicPauseIndex = null;
+	musicPauseIndex = null;
 }
 
 const addToFavorite = (musicId, albumId) => {
-  addSongToPlaylist({
-    user_id: currentUserId.value,
-    playlist_id: albumId,
-    song_id: musicId,
-  }).then(() => {
-    ElMessage({
-      message: "添加至: " + props.albumInfo.title,
-      grouping: true,
-      type: 'info',
-      offset: 16,
-      customClass: "reco-message",
-      duration: 4000,
-    })
-  })
+	addSongToPlaylist({
+		user_id: currentUserId.value,
+		playlist_id: albumId,
+		song_id: musicId,
+	}).then(() => {
+		ElMessage({
+			message: "添加至: " + props.albumInfo.title,
+			grouping: true,
+			type: 'info',
+			offset: 16,
+			customClass: "reco-message",
+			duration: 4000,
+		})
+	})
 }
 watch(() => props.isPaused, (newValue) => {
-  if (newValue) {
-    musicPauseIndex = musicPlayIndex;
-  } else {
-    musicPauseIndex = null;
-  }
+	if (newValue) {
+		musicPauseIndex = musicPlayIndex;
+	} else {
+		musicPauseIndex = null;
+	}
 });
 
 const removeMusicFromAlbum = (albumId, songId) => {
@@ -263,7 +264,7 @@ const enterArtistDescription = (artistName) => {
 
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
-  emit('pauseSong');
+	emit('pauseSong');
 }
 
 const editAlbumDescription = (albumId) => {
@@ -278,7 +279,9 @@ const confirmEdit = (albumId) => {
 		description: edit_description.value,
 		picPath: "",
 	}).then(() => {
-
+		const editDesc = document.querySelector(".edit-desc");
+		editDesc.style.visibility = "hidden";
+		ElMessage.success("修改歌单信息成功！");
 	})
 }
 const quitEdit = () => {
@@ -302,37 +305,37 @@ const addRecommendMusic = (musicId) => {
 watch(() => props.currentSongId, (newId) => {
 	if (newId) {
 		musicPlayIndex = newId;
-    musicClickedIndex = newId;
+		musicClickedIndex = newId;
 		musicPauseIndex = props.isPaused ? newId : null;
 	}
-}, { immediate: true });
+}, {immediate: true});
 // 判断当前播放的歌曲是否在歌单中
 const isCurrentSongInList = computed(() => {
-  if (!musicPlayIndex || !props.musicList) return false;
-  return props.musicList.some(song => song.id === musicPlayIndex);
+	if (!musicPlayIndex || !props.musicList) return false;
+	return props.musicList.some(song => song.id === musicPlayIndex);
 });
 
 // 添加获取推荐歌曲的方法
 const getRecommendations = async () => {
-  try {
-    const currentSongIds = props.musicList.map(song => song.id);
-
-    const response = await getRecommendedSongs({
-      currentSongIds: currentSongIds,
-      limit: 3
-    });
-
-    recMusicList.value = response.data.result;
-  } catch (error) {
-    console.error("Failed to fetch recommendations:", error);
-  }
+	try {
+		const currentSongIds = props.musicList.map(song => song.id);
+		
+		const response = await getRecommendedSongs({
+			currentSongIds: currentSongIds,
+			limit: 3
+		});
+		
+		recMusicList.value = response.data.result;
+	} catch (error) {
+		console.error("Failed to fetch recommendations:", error);
+	}
 };
 
 watch(() => props.musicList, () => {
-  if (props.musicList.length > 0) {
-    getRecommendations();
-  }
-}, { immediate: true });
+	if (props.musicList.length > 0) {
+		getRecommendations();
+	}
+}, {immediate: true});
 
 </script>
 
@@ -340,7 +343,8 @@ watch(() => props.musicList, () => {
 	<div class="album-content" :style="{backgroundImage: gradientColor}" @mousewheel="handelScroll">
 		<div class="back-button" data-tooltip="返回" @click="$emit('back')">
 			<svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
-				<path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
+				<path
+					d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"></path>
 			</svg>
 		</div>
 		<div class="header">
@@ -364,7 +368,7 @@ watch(() => props.musicList, () => {
 		<div class="content">
 			<div class="play-area">
 				<div class="play-button">
-<!--          musicPlayIndex改为了musicPlayIndex-->
+					<!--          musicPlayIndex改为了musicPlayIndex-->
 					<play-button v-if="!isCurrentSongInList||musicPauseIndex!==null"
 					             @click="playFromId(musicPauseIndex)"
 					             style="position: absolute; top:20%;left:24%;color: #000000"/>
@@ -385,7 +389,7 @@ watch(() => props.musicList, () => {
 					</template>
 					<ul @click="closePopover">
 						<li @click="()=>{editAlbumDescription(albumInfo.id)}">编辑歌单详情</li>
-						<li @click="">删除歌单</li>
+						<li @click="()=>{removeAlbum(albumInfo.id)}">删除歌单</li>
 					</ul>
 				</el-popover>
 			</div>
@@ -474,10 +478,11 @@ watch(() => props.musicList, () => {
 							<button @click="confirmEdit(albumInfo.id)" data-testid="playlist-edit-details-save-button"
 							        data-encore-id="buttonPrimary"
 							        class="edit-desc-button-1 encore-text-body-medium-bold">
-								<span class="edit-desc-button-1-1">收藏</span>
+								<span class="edit-desc-button-1-1">修改</span>
 							</button>
 						</div>
-						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">继续下一步，则表示你已同意获取你选择上传的图像。</p>
+						<p class="encore-text encore-text-marginal-bold final-tip" data-encore-id="text">
+							继续下一步，则表示你已同意获取你选择上传的图像。</p>
 					</div>
 				</div>
 			</div>
@@ -500,65 +505,66 @@ watch(() => props.musicList, () => {
 				     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }"> <!--@click事件写在script中的函数里 无法及时触发:style中的样式!!!-->
-
-          <div
-              :style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
-            {{
-              musicList.indexOf(music) + 1
-            }}
-          </div>
-          <play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
-                       v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
-                       :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
-
-          <pause-button @click="pauseMusic(music.id)"
-                        style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
-                        v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
-          <img width="17" height="17" alt=""
-               style="position: absolute;left: 24px;"
-               v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
-               src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
-
-          <div class="music-detailed-info">
-            <img class="music-image"
-                 :src="music.picPath"
-                 alt="歌曲图片"/>
-            <div class="music-name-author" style="padding-left: 5px;">
-              <p @click="enterMusicDescription(music.id)" class="music-name"
-                 :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
-                 :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
-              >{{ music.title }}</p>
-
-              <p @click="enterArtistDescription(music.artist)" class="music-author"
-                 :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-                {{ music.artist }}</p>
-            </div>
-          </div>
-<!--          从歌单界面进入专辑-->
-          <div class="music-album-info" @click="emit('openEpisodeView',music.album)" :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
-            {{ music.album }}
-          </div>
-          <div class="music-right-info">
-            <el-popover
-                :ref="getPopoverIndex"
-                class="music-dropdown-options"
-                popper-class="my-popover"
-                :width="400"
-                trigger="click"
-                :hide-after=0
-
-                >
-              <template #reference>
-                <check-mark class="check-mark" v-tippy="'加入歌单'"
-                            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
-              </template>
-
+					
+					<div
+						:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
+						{{
+							musicList.indexOf(music) + 1
+						}}
+					</div>
+					<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
+					             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
+					             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
+					
+					<pause-button @click="pauseMusic(music.id)"
+					              style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
+					              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
+					<img width="17" height="17" alt=""
+					     style="position: absolute;left: 24px;"
+					     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
+					     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
+					
+					<div class="music-detailed-info">
+						<img class="music-image"
+						     :src="music.picPath"
+						     alt="歌曲图片"/>
+						<div class="music-name-author" style="padding-left: 5px;">
+							<p @click="enterMusicDescription(music.id)" class="music-name"
+							   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
+							   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
+							>{{ music.title }}</p>
+							
+							<p @click="enterArtistDescription(music.artist)" class="music-author"
+							   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+								{{ music.artist }}</p>
+						</div>
+					</div>
+					<!--          从歌单界面进入专辑-->
+					<div class="music-album-info" @click="emit('openEpisodeView',music.album)"
+					     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+						{{ music.album }}
+					</div>
+					<div class="music-right-info">
+						<el-popover
+							:ref="getPopoverIndex"
+							class="music-dropdown-options"
+							popper-class="my-popover"
+							:width="400"
+							trigger="click"
+							:hide-after=0
+						
+						>
+							<template #reference>
+								<check-mark class="check-mark" v-tippy="'加入歌单'"
+								            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
+							</template>
+							
 							<ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
 								<div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">
 									选择歌单收藏
 								</div>
 								<hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
-
+								
 								<li class="album-to-add" @click="addToFavorite(music.id,album.id)"
 								    v-for="album in playList">
 									<div style="
@@ -570,22 +576,24 @@ watch(() => props.musicList, () => {
 										font-weight:400"
 									>
 										<div style="display: flex; flex-direction: row">
-											<img :src="album.picPath" style="height: 40px; width:40px; border-radius: 4px" alt=""/>
+											<img :src="album.picPath"
+											     style="height: 40px; width:40px; border-radius: 4px" alt=""/>
 											<div style="
 												margin-left: 10px;
 												font-size: 18px;
-											">{{ album.title }}</div>
+											">{{ album.title }}
+											</div>
 										</div>
 										<div style="font-size: 14px; color: #a4a4a4">{{ album.songNum }}首</div>
 									</div>
-
+								
 								</li>
 							</ul>
 						</el-popover>
 						<div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
 						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
-            v-show="songDurations.get(music.id) !== undefined">
-              {{ formatTime(songDurations.get(music.id)) }}
+						     v-show="songDurations.get(music.id) !== undefined">
+							{{ formatTime(songDurations.get(music.id)) }}
 						</div>
 						<el-popover
 							:ref="getPopoverIndex"
@@ -602,13 +610,13 @@ watch(() => props.musicList, () => {
 								<li @click="removeMusicFromAlbum(albumInfo.id, music.id)">删除歌曲</li>
 							</ul>
 						</el-popover>
-
+					
 					</div>
-
+				
 				</div>
-
+			
 			</div>
-
+			
 			<!--TODO:推荐歌曲的细节处理-->
 			<div class="other-info">
 				<div style="margin-left:20px;margin-bottom:20px;">
@@ -631,14 +639,15 @@ watch(() => props.musicList, () => {
 					     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
-
+						
 						<div
 							:style="{visibility: musicHoveredIndex === music.id||musicPlayIndex === music.id ? 'hidden' : 'visible' }">
 							{{
 								recMusicList.indexOf(music) + 1
 							}}
 						</div>
-						<play-button @click="playRecommendedSongFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
+						<play-button @click="playRecommendedSongFromId(music.id)"
+						             style="position: absolute;left: 14px;cursor: pointer"
 						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
 						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
 						<pause-button @click="pauseMusic(music.id)"
@@ -648,7 +657,7 @@ watch(() => props.musicList, () => {
 						     style="position: absolute;left: 24px;"
 						     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
 						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
-
+						
 						<div class="music-detailed-info">
 							<img class="music-image"
 							     :src="music.picPath"
@@ -658,30 +667,30 @@ watch(() => props.musicList, () => {
 								   :style="{color : musicPlayIndex ===music.id? '#1ED660':''}"
 								   :class="[musicPlayIndex === music.id ? 'music-after-click' : '']"
 								>{{ music.title }}</p>
-
+								
 								<p @click="enterArtistDescription(music.artist)" class="music-author"
-                   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
+								   :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 									{{ music.artist }}</p>
 							</div>
 						</div>
-
+						
 						<div class="music-album-info"
-                 @click="emit('openEpisodeView',music.album)"
+						     @click="emit('openEpisodeView',music.album)"
 						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 							{{ music.album }}
 						</div>
 						<div class="music-right-info">
 							<button class="reco-add-button" @click="addRecommendMusic(music.id)">添加</button>
-
+						
 						</div>
-
+					
 					</div>
-
+				
 				</div>
 			</div>
-
+		
 		</div>
-
+	
 	</div>
 </template>
 
@@ -1344,7 +1353,7 @@ li:hover {
 }
 
 .back-button {
-  z-index: 3;
+	z-index: 3;
 	position: relative;
 	margin: 24px 0 0 24px;
 	width: 32px;
@@ -1356,7 +1365,7 @@ li:hover {
 	border-radius: 50%;
 	color: #fff;
 	transition: all 0.2s ease;
-
+	
 	&:hover {
 		transform: scale(1.1);
 		background-color: rgba(0, 0, 0, .8);
