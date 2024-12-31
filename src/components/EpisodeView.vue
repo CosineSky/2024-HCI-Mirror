@@ -6,7 +6,7 @@ import checkMark from "../icon/checkMark.vue";
 import {ElMessage, ElPopover} from "element-plus";
 import {backgroundColor, updateBackground} from "../utils/getBackgroundColor";
 import pauseButton from "../icon/pauseButton.vue";
-import {removePlaylist, removeSongFromPlaylist} from "../api/playlist";
+import {addSongToPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
 import {getPlaylistById} from "../api/resolve";
 import {getSongsByPlaylist} from "../api/song";
@@ -44,6 +44,9 @@ const props = defineProps({
 // const musicList = ref([])
 // 推荐专辑随即从200-220取8个
 const relatedEpisode = ref([]);
+
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -207,6 +210,20 @@ const closePopover = (e) => {
 
 let timer = ref(null)
 const limit = 250;
+const buttonTurnUp= (buttonId)=>{
+  const rightButton = document.querySelectorAll('.right_btn');
+  const leftButton = document.querySelectorAll('.left_btn');
+  rightButton[buttonId].style.opacity="1";
+  leftButton[buttonId].style.opacity="1";
+
+}
+const buttonTurnDown= (buttonId)=>{
+  const rightButton = document.querySelectorAll('.right_btn');
+  const leftButton = document.querySelectorAll('.left_btn');
+  rightButton[buttonId].style.opacity="0";
+  leftButton[buttonId].style.opacity="0";
+
+}
 function leftSlide(event){
   // 保存滚动盒子左侧已滚动的距离
   const target = event.currentTarget.nextElementSibling;
@@ -260,11 +277,10 @@ function rightSlide(event){
   },18)
   // 20：速度（可调节）
 }
-function  openEpisodeView(id){
 
-}
 //TODO:
 const enterArtistDescription = (artistName) => {
+  emit('switchToArtist', artistName);
 }
 
 const playFromId = (musicId) => {
@@ -277,11 +293,24 @@ const playFromId = (musicId) => {
 	emit('switchSongs', props.episodeInfo, musicPlayIndex.value);
 	musicPauseIndex = null;
 }
-const addToFavorite = (musicId) => {
+const addToFavorite = (musicId, albumId,albumTitle) => {
+  addSongToPlaylist({
+    user_id: currentUserId.value,
+    playlist_id: albumId,
+    song_id: musicId,
+  }).then(() => {
+    ElMessage({
+      message: "添加至: " + albumTitle,
+      grouping: true,
+      type: 'info',
+      offset: 16,
+      customClass: "reco-message",
+      duration: 4000,
+    })
+  })
 }
 const enterMusicDescription = (musicId) => {
 }
-
 
 const pauseMusic = (musicId) => {
 	musicPauseIndex = musicId;
@@ -303,10 +332,9 @@ const pauseMusic = (musicId) => {
 				<p class="header-album-name" style="font-weight: bolder;font-size:80px;margin:10px 0 35px 10px;">
 					{{ episodeInfo.title }}</p>
 				<div class="header-content-detail">
-					<p class="header-creator" @click="enterArtistDescription">{{ episodeInfo.artist }}</p>
+					<p class="header-creator" @click="enterArtistDescription(musicList[0].artist)">{{ musicList[0].artist }}</p>
 					<p style="padding-right:  6px ">•</p>
-					<p v-if="episodeInfo.createTime !== undefined">
-						{{ episodeInfo.createTime.substring(0, 4) }} </p>
+					<p>2024</p>
 					<p style="padding: 0 2px 0 6px">•</p>
 					<p style="margin-left:6px">{{ musicList.length }} 首歌曲</p>
 				</div>
@@ -413,35 +441,59 @@ const pauseMusic = (musicId) => {
 								<check-mark class="check-mark"
 								            :style="{visibility: musicHoveredIndex === music.id ? 'visible' : 'hidden'}"/>
 							</template>
-							<ul @click="closePopover">
-								<!--          TODO: 这里需要所有的歌单-->
-								<li @click="addToFavorite(music.id)"></li>
+							<ul @click="closePopover" style="overflow: scroll;max-height: 400px;">
+                <div style="padding: 6px 0 6px 10px;font-weight: bold;color:darkgrey;font-size:16px">
+                  选择歌单收藏
+                </div>
+                <hr style="    border: 0;padding-top: 1px;background: linear-gradient(to right, transparent, #98989b, transparent);">
+
+                <li class="album-to-add" @click="addToFavorite(music.id,album.id,album.title)"
+                    v-for="album in playList">
+                  <div style="
+										height:40px;
+										display: flex;
+										align-items: center;
+										justify-content: space-between;
+										font-size: 20px;
+										font-weight:400"
+                  >
+                    <div style="display: flex; flex-direction: row">
+                      <img :src="album.picPath" style="height: 40px; width:40px; border-radius: 4px" alt=""/>
+                      <div style="
+												margin-left: 10px;
+												font-size: 18px;
+											">{{ album.title }}</div>
+                    </div>
+                    <div style="font-size: 14px; color: #a4a4a4">{{ album.songNum }}首</div>
+                  </div>
+
+                </li>
 							</ul>
 						</el-popover>
-            <div style="margin-left: auto;margin-right: 15px; color: #b2b2b2"
+            <div style="margin-left: auto;margin-right: 40px; color: #b2b2b2"
                  :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}"
                  v-show="songDurations.get(music.id) !== undefined">
               {{ formatTime(songDurations.get(music.id)) }}
             </div>
-						<el-popover
-							:ref="getPopoverIndex"
-							class="music-dropdown-options"
-							popper-class="my-popover"
-							:width="400"
-							trigger="click"
-							:hide-after=0
-						>
-							<template #reference>
-								<dots class="music-more-info"/>
-							</template>
-							<ul @click="closePopover">
+<!--						<el-popover-->
+<!--							:ref="getPopoverIndex"-->
+<!--							class="music-dropdown-options"-->
+<!--							popper-class="my-popover"-->
+<!--							:width="400"-->
+<!--							trigger="click"-->
+<!--							:hide-after=0-->
+<!--						>-->
+<!--							<template #reference>-->
+<!--								<dots class="music-more-info"/>-->
+<!--							</template>-->
+<!--							<ul @click="closePopover">-->
 
-							</ul>
-						</el-popover>
+<!--							</ul>-->
+<!--						</el-popover>-->
 					</div>
 				</div>
 			</div>
-      <div class="related-episodes">
+      <div class="related-episodes" @mouseenter="buttonTurnUp(0)" @mouseleave="buttonTurnDown(0)">
         <h1>相关专辑</h1>
         <div id="click-scroll-X" >
           <div class="left_btn" @click="leftSlide"> <p style="margin-bottom: 2px"><</p> </div>
@@ -455,12 +507,12 @@ const pauseMusic = (musicId) => {
                 <div class="entry-text bolder-white-theme">{{ ep.title }}</div>
                 <div class="entry-text">{{ ep.createTime.substring(0,4) }}</div>
               </div>
-
             </div>
           </div>
           <div class="right_btn" @click="rightSlide">  <p style="margin-bottom: 2px">></p>  </div>
         </div>
       </div>
+
 		</div>
 	</div>
 </template>
@@ -775,10 +827,10 @@ li:hover {
     bottom: 140px;
   }
   .right_btn{
-    right: -10px;
+    right: -1px;
   }
   .left_btn{
-    left: -10px;
+    left: -1px;
   }
   .scroll_wrapper {
 

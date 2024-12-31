@@ -19,15 +19,15 @@ import ArtistView from "../components/ArtistView.vue";
 import NowPlayingView from '../components/NowPlayingView.vue';
 
 // APIs
-import {getSongsByPlaylist} from "../api/song";
+import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
 import {getPlaylistsByUser} from "../api/playlist";
 
 // Others
 import {useTheme} from "../store/theme";
 import {parseLrc} from "../utils/parseLyrics"
 import {updateBackground} from "../utils/getBackgroundColor";
-import {formatTime} from '../utils/formatTime';
-import {getArtistById, getUserById} from "../api/resolve";
+import { formatTime } from '../utils/formatTime';
+import {getArtistById, getPlaylistById, getUserById} from "../api/resolve";
 import {userFollowArtist} from "@/api/user";
 
 
@@ -36,7 +36,7 @@ import {userFollowArtist} from "@/api/user";
  */
 const textColor = ref("#000");
 const backgroundColor = ref("#ffffff");
-const gradientColor = computed(() => `linear-gradient(to top right, ${backgroundColor.value}, #000000)`)
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 const isFullScreen = ref(false);
 
 function toggleFullScreen() {
@@ -138,7 +138,7 @@ function updateSongInfo() {
 			song.load();
 			song.play();
 			isPaused.value = false;
-			theme.change(songs.value[currentSongIndex.value].picPath);
+			theme.full(songs.value[currentSongIndex.value].picPath);
 		}
 	} catch (e) {
 		console.log("Uncaught Error in updateSongInfo!", e);
@@ -205,7 +205,7 @@ const registerDOMs = () => {
 	progresses = document.querySelectorAll('.idProgress');
 	controlIcons = document.querySelectorAll('.idControlIcon');
 	playModeIcons = document.querySelectorAll('.idPlayModeIcon');
-	
+
 	
 	function shareSong() {
 		console.log("Hello!");
@@ -406,7 +406,7 @@ const switchToSong = (index, isDiffPlaylist) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songs.value[index].picPath);
+		theme.full(songs.value[index].picPath);
 		isPaused.value = false;
 	}
 }
@@ -417,7 +417,7 @@ const switchToPlaylist = (playlist, songId) => {
 	currentPlaylist.value = playlist;
 	displayingPlaylist.value = playlist;
 	currentPlaylistId.value = playlist.id;
-	theme.change(currentPlaylist.value.picPath);
+	theme.full(currentPlaylist.value.picPath);
 	
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
@@ -460,7 +460,7 @@ const handleRecommendedSong = (songToPlay) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songToPlay.picPath);
+		theme.full(songToPlay.picPath);
 		isPaused.value = false;
 	}
 };
@@ -505,7 +505,7 @@ const currentEpisode = ref(2); //当前专辑
 const currentEpisodeId = ref(2);//当前专辑id
 const displayingEpisode = ref(2);
 const receiveDisplayingEpisode = (episode) => {
-	setMidComponents(4);
+	// setMidComponents(4);
 	displayingEpisode.value = episode;
 	getSongsByPlaylist({
 		playlist_id: episode.id,
@@ -514,11 +514,12 @@ const receiveDisplayingEpisode = (episode) => {
 	}).catch(e => {
 		console.log("Failed to get songs!");
 	});
+  setMidComponents(4);
 };
 
 const receiveDisplayingEpisodeByName = (episodeName) => {
 	setMidComponents(4);
-	
+
 	//TODO:
 	// getPlaylistByName();
 	displayingEpisode.value = episode;
@@ -582,9 +583,9 @@ const setMidComponents = (index, props = null) => {
 			playlistInfo: currentPlaylist?.value,
 		}
 	});
-	
+
 	midComponents.value = index;
-	
+
 	switch (index) {
 		case 5: // ArtistView
 			if (props) {
@@ -666,7 +667,7 @@ const toggleFollow = async (artistId, isFollowed) => {
 			artist_id: artistId,
 			isFollowed: isFollowed
 		});
-		
+
 		if (!isFollowed) {
 			const artistResponse = await getArtistById(artistId);
 			followedArtistInfo.value.push(artistResponse.data.result);
@@ -691,7 +692,7 @@ onMounted(() => {
 	/*
         DOMS & EVENTS
 	 */
-	theme.change(defaultBg);
+	theme.full(defaultBg);
 	registerDOMs();
 	
 	/*
@@ -706,7 +707,7 @@ onMounted(() => {
 		currentPlaylist.value = playlists.value[0];
 		displayingPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;
-		theme.change(currentPlaylist.value.picPath);
+		theme.full(currentPlaylist.value.picPath);
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
@@ -724,7 +725,7 @@ onMounted(() => {
 	}).catch(e => {
 		console.log("Failed to get playlists!");
 	});
-	
+
 	const volumeControl = document.getElementById('volumeControl');
 	if (volumeControl) {
 		volumeControl.style.setProperty('--volume-percentage', '100%');
@@ -735,7 +736,7 @@ let playFromLeftBarAlbum = ref(null);
 const playArtistSong = (songToPlay) => {
 	// 检查歌曲是否已经在播放列表中
 	const existingIndex = songs.value.findIndex(song => song.id === songToPlay.id);
-	
+
 	if (existingIndex !== -1) {
 		// 如果歌曲已存在，直接播放该歌曲
 		currentSongIndex.value = existingIndex;
@@ -746,7 +747,7 @@ const playArtistSong = (songToPlay) => {
 		currentSongIndex.value = 0;
 		currentSongId.value = songToPlay.id;
 	}
-	
+
 	if (song) {
 		controlIcons.forEach(controlIcon => {
 			controlIcon.src = PLAY;
@@ -822,14 +823,16 @@ const updateSongs = (newSongs) => {
 				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
 					<SearchView :songResult="songResult"
-					            :playlistResult="playlistResult"
-					            :play-list="playlists"
-					            :current-song-id="currentSongId"
-					            :is-paused="isPaused"
-					            @switchSong="switchToSong"
-					            @pauseSong="pauseCurrentSong"
-					            @switchToArtist="(name) => setMidComponents(5, name)"
-					            @back="goBack"/>
+                      :playlistResult="playlistResult"
+                      :play-list="playlists"
+                      :current-song-id="currentSongId"
+                      :is-paused="isPaused"
+                      @switchSong="switchToSong"
+                      @pauseSong="pauseCurrentSong"
+                      @switchToArtist="(name) => setMidComponents(5, name)"
+                      @back="goBack"
+                      @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
+          />
 				</el-container>
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
@@ -884,7 +887,7 @@ const updateSongs = (newSongs) => {
 						</div>
 					</el-container>
 					<el-container class="playlist-container"
-					              style="overflow: auto; height: 384px; display: flex; flex-direction: column">
+					              style="overflow: auto; height: 384px; display: flex; flex-direction: column;gap:6px;margin-top: 8px" >
 						<div v-for="(song, index) in songs" class="playlist-item"
 						     style="display: flex; flex-direction: row">
 							<div @click="switchToSong(index, false)" style="cursor: pointer">
@@ -914,7 +917,7 @@ const updateSongs = (newSongs) => {
 						</div>
 					</el-container>
 				</div>
-				
+
 				<NowPlayingView
 					v-if="showNowPlaying"
 					:is-visible="showNowPlaying"
@@ -986,14 +989,14 @@ const updateSongs = (newSongs) => {
 					</button>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-top: 10px">
-					<p style="margin-right: 10px; padding-bottom: 40px; color: white">{{ formatTime(currentTime) }}</p>
+					<p style="margin-right: 10px; margin-bottom: 60px; color: white">{{ formatTime(currentTime) }}</p>
 					<input type="range" value="0" id="progress" class="idProgress"
 					       style="margin: 0 0 10px 0; width: 500px"/>
-					<p style="margin-left: 10px; padding-bottom: 40px; color: white">{{ formatTime(duration) }}</p>
+					<p style="margin-left: 10px; margin-bottom: 60px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
-			
-			
+
+
 			<div class="right-controls">
 				<div class="volume-control" style="display: flex; flex-direction: row; align-items: center">
 					<h1 style="margin: 0">🔈</h1>
@@ -1007,7 +1010,7 @@ const updateSongs = (newSongs) => {
 					       :style="{'--volume-percentage': volumePercentage}"
 					/>
 				</div>
-				
+
 				<div class="feature-icon"
 				     data-tooltip="当前播放"
 				     :class="{ active: showNowPlaying }"
@@ -1019,7 +1022,7 @@ const updateSongs = (newSongs) => {
 							d="M15.002 1.75A1.75 1.75 0 0 0 13.252 0h-10.5a1.75 1.75 0 0 0-1.75 1.75v12.5c0 .966.784 1.75 1.75 1.75h10.5a1.75 1.75 0 0 0 1.75-1.75V1.75zm-1.75-.25a.25.25 0 0 1 .25.25v12.5a.25.25 0 0 1-.25.25h-10.5a.25.25 0 0 1-.25-.25V1.75a.25.25 0 0 1 .25-.25h10.5z"></path>
 					</svg>
 				</div>
-				
+
 				<div class="feature-icon"
 				     data-tooltip="分享"
 				     :class="{ active: isSharing }">
@@ -1070,7 +1073,7 @@ const updateSongs = (newSongs) => {
 			<div class="player-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
 					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover"
-					     @load="updateBackground"/>
+					     @load="updateBackground(songs[currentSongIndex].picPath)"/>
 				</div>
 				<div class="track-info-container">
 					<div v-if="songs[currentSongIndex] !== undefined" class="music-info"
@@ -1114,10 +1117,10 @@ const updateSongs = (newSongs) => {
 							</button>
 						</div>
 						<div v-if="songs[currentSongIndex] !== undefined" style="display: flex; flex-direction: row;">
-							<p style="margin-right: 10px">{{ formatTime(currentTime) }}</p>
+							<p style="margin-right: 10px; margin-top: 14px">{{ formatTime(currentTime) }}</p>
 							<input type="range" value="0" id="progress" class="idProgress"
 							       style="margin: 20px 0 10px 0; width: 700px"/>
-							<p style="margin-left: 10px">{{ formatTime(duration) }}</p>
+							<p style="margin-left: 10px; margin-top: 14px">{{ formatTime(duration) }}</p>
 						</div>
 					</div>
 				</div>
@@ -1517,8 +1520,8 @@ footer {
 /* RIGHT CONTENT */
 
 .right-content {
-	min-width: 350px;
-	max-width: 350px;
+  min-width: 350px;
+  max-width: 350px;
 	background-color: #171717;
 	display: flex;
 	flex-direction: column;
@@ -1996,7 +1999,7 @@ footer {
 	transition: all 0.2s ease;
 	position: relative;
 	cursor: pointer;
-	color: white;
+  color: white;
 }
 
 .feature-icon:hover {
