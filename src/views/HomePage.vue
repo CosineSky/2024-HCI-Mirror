@@ -711,7 +711,7 @@ onMounted(() => {
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
 			songs.value = res.data.result;
-			displayingSongs.value = res.data.result;
+			displayingSongs.value = [...res.data.result];
 			currentSongId.value = songs.value[0].id;
 			
 			// TODO: currentSongIndex != currentSongId ?
@@ -774,7 +774,7 @@ const pauseCurrentSong = () => {
 
 const updateSongs = (newSongs) => {
 	songs.value = newSongs;
-	displayingSongs.value = newSongs;
+	displayingSongs.value = [...newSongs];
 };
 </script>
 
