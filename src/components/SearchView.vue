@@ -94,7 +94,7 @@ const addToFavorite = (musicId, albumId,albumTitle) => {
       type: 'info',
       offset: 16,
       customClass: "reco-message",
-      duration: 4000,
+      duration: 1000,
     })
   })
 }
@@ -274,7 +274,7 @@ watch(() => props.isPaused, (newValue) => {
 			</div>
 			<ul v-if="currentTab === 'playlists'">
 				<li v-for="(playlist, index) in playlistResult" :key="playlist.id">
-					<div class="playlist-item">
+					<div class="playlist-item" @click="emit('openEpisodeView',playlist.title)">
 						<span class="song-index">{{ index + 1 }}</span>
 						<img :src="playlist.picPath" class="playlist-pic pic" alt=""/>
 						<div class="playlist-info info">

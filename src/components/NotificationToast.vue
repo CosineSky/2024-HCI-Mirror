@@ -31,6 +31,8 @@ const props = defineProps({
 const show = ref(false);
 let timer = null;
 
+const size = 10;
+
 onMounted(() => {
   show.value = true;
   if (props.duration > 0) {
