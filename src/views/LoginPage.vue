@@ -277,10 +277,10 @@ function startCountdown() {
 	let seconds = 60;
 	const countdown = setInterval(() => {
 		seconds--;
-		sendCaptchaButton.textContent = `${seconds}s RETRY`;
+		sendCaptchaButton.textContent = `${seconds}s 后尝试`;
 		if (seconds <= 0) {
 			clearInterval(countdown);
-			sendCaptchaButton.textContent = 'SEND CAPTCHA';
+			sendCaptchaButton.textContent = '发送验证码';
 			sendingCaptcha.value = false;
 		}
 	}, 1000);
@@ -308,24 +308,24 @@ function startCountdown() {
 			<form action="" method="" class="form" id="a-form">
 				<h2 class="form_title title">创建账号</h2>
 				<input type="text" class="form_input"
-				       placeholder="Name" v-model="name">
+				       placeholder="昵称" v-model="name">
 				<input type="text" class="form_input"
-				       placeholder="Phone" v-model="registerPhone">
-				<input type="text" class="form_input"
-				       placeholder="Captcha" v-model="registerCaptcha">
+				       placeholder="手机号" v-model="registerPhone">
 				<input type="password" class="form_input"
-				       placeholder="Password" v-model="registerPassword">
+				       placeholder="密码" v-model="registerPassword">
 				<input type="password" class="form_input"
 				       :class="{ 'error': registerPassword !==  registerPasswordConfirm}"
-				       placeholder="Confirm Password" v-model="registerPasswordConfirm">
+				       placeholder="确认密码" v-model="registerPasswordConfirm">
+				<input type="text" class="form_input"
+				       placeholder="验证码" v-model="registerCaptcha">
 				<div style="display:flex; justify-content: space-between">
-					<button style="margin-right: 10px" class="form_button button submit" @click="handleRegister">
-						SIGN UP
-					</button>
-					<button id="sendCaptcha" style="margin-left: 10px"
+					<button id="sendCaptcha" style="margin-right: 10px"
 					        class="form_button button submit"
 					        @click="handleSendCaptcha(registerPhone)">
-						SEND CAPTCHA
+						发送验证码
+					</button>
+					<button style="margin-left: 10px" class="form_button button submit" @click="handleRegister">
+						注册账户
 					</button>
 				</div>
 			
@@ -344,21 +344,21 @@ function startCountdown() {
 			<form action="" method="" class="form" id="a-form">
 				<h2 class="form_title title">重置密码</h2>
 				<input type="text" class="form_input"
-				       placeholder="Phone" v-model="resetPasswordPhone">
+				       placeholder="手机号" v-model="resetPasswordPhone">
 				<input type="text" class="form_input"
-				       placeholder="Captcha" v-model="resetPasswordCaptcha">
+				       placeholder="验证码" v-model="resetPasswordCaptcha">
 				<input type="password" class="form_input"
-				       placeholder="Password" v-model="resetPassword">
+				       placeholder="新密码" v-model="resetPassword">
 				<input type="password" class="form_input" :class="{ 'error': resetPassword !==  resetPasswordConfirm}"
-				       placeholder="Confirm Password" v-model="resetPasswordConfirm">
+				       placeholder="确认密码" v-model="resetPasswordConfirm">
 				<div style="display: flex; justify-content: space-between ">
 					<button style="margin-right: 10px" class="form_button button submit" @click="handleResetPassword">
-						RESET
+						重置密码
 					</button>
 					<button id="sendCaptcha" style="margin-left: 10px"
 					        class="form_button button submit"
 					        @click="handleSendCaptcha(registerPhone)">
-						SEND CAPTCHA
+						发送验证码
 					</button>
 				</div>
 			</form>
@@ -376,13 +376,15 @@ function startCountdown() {
 			<form action="" method="" class="form" id="b-form">
 				<h2 class="form_title title">登录账号</h2>
 				<input type="text" class="form_input"
-				       placeholder="Phone" v-model="loginPhone">
+				       placeholder="手机号" v-model="loginPhone">
 				<input type="password" class="form_input"
-				       placeholder="Password" v-model="loginPassword">
-				<button class="switch_button button switch-btn" @click="() => {reset = true}">FORGET PASSWORD?</button>
-				<button class="form_button button submit" @click="handleLogin">
-					SIGN IN
-				</button>
+				       placeholder="密码" v-model="loginPassword">
+				<div style="display: flex; flex-direction: column; justify-content: center">
+					<button class="form_button button submit" @click="handleLogin">登录</button>
+					<button class="switch_button button switch-btn" style="margin-top: 20px" @click="() => {reset = true}">
+						忘记密码？</button>
+				</div>
+
 			</form>
 		</div>
 		
@@ -392,13 +394,13 @@ function startCountdown() {
 			<div class="switch_container" id="switch-c1">
 				<h2 class="switch_title title" style="letter-spacing: 0;">Welcome Back！</h2>
 				<p class="switch_description description">已经有账号了嘛，去登录账号继续跟随节拍前行吧！！！</p>
-				<button class="switch_button button switch-btn" @click="reset = false">SIGN IN</button>
+				<button class="switch_button button button-light switch-btn" @click="reset = false">去登录</button>
 			</div>
 			
 			<div class="switch_container is-hidden" id="switch-c2">
 				<h2 class="switch_title title" style="letter-spacing: 0;">Hello Friend！</h2>
 				<p class="switch_description description">去注册一个账号，成为尊贵的粉丝会员，让我们踏入奇妙的旅途！</p>
-				<button class="switch_button button switch-btn">SIGN UP</button>
+				<button class="switch_button button button-light switch-btn">去注册</button>
 			</div>
 		</div>
 	</div>
@@ -439,7 +441,6 @@ body {
 	height: 600px;
 	padding: 25px;
 	background-color: #ecf0f3;
-	box-shadow: 10px 10px 10px #d1d9e6, -10px -10px 10px #f9f9f9;
 	border-radius: 12px;
 	overflow: hidden;
 }
@@ -572,6 +573,10 @@ body {
 	box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #f9f9f9;
 	border: none;
 	outline: none;
+}
+
+.button-light {
+	background-color: #4b9ee2;
 }
 
 .a-container {
