@@ -36,6 +36,8 @@ const currentTab = ref('songs')
 const handleTabClick = (tab) => {
   currentTab.value = tab
 }
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
 
 // const songDurations = ref(new Map());
 // watch(() => props.musicList, (newSongs) => {
@@ -48,13 +50,16 @@ let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
 
 const playFromId = (musicId) => {
-  if (musicId === null || musicId === undefined) {
+
+  if (musicId === null ) {
     // 从头开始播放
     musicPlayIndex  = props.currentSongId;
   } else {
     musicPlayIndex  = musicId;
+    // console.log(musicPlayIndex)
   }
-  emit('switchSong', musicPlayIndex, true);
+  console.log(musicPlayIndex)
+  emit('switchSong', props.albumInfo, true);
   musicPauseIndex = null;
 }
 

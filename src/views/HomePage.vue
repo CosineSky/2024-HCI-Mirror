@@ -20,7 +20,7 @@ import NowPlayingView from '../components/NowPlayingView.vue';
 
 // APIs
 import {getSongsByEpisode, getSongsByPlaylist} from "../api/song";
-import {getPlaylistsByUser} from "../api/playlist";
+import {getPlaylistsByTitle, getPlaylistsByUser} from "../api/playlist";
 
 // Others
 import {useTheme} from "../store/theme";
@@ -29,6 +29,7 @@ import {updateBackground} from "../utils/getBackgroundColor";
 import { formatTime } from '../utils/formatTime';
 import {getArtistById, getPlaylistById, getUserById} from "../api/resolve";
 import {userFollowArtist} from "@/api/user";
+import {ElMessage} from "element-plus";
 
 
 /*
@@ -518,18 +519,23 @@ const receiveDisplayingEpisode = (episode) => {
 };
 
 const receiveDisplayingEpisodeByName = (episodeName) => {
-	setMidComponents(4);
 
-	//TODO:
-	// getPlaylistByName();
-	displayingEpisode.value = episode;
-	getSongsByPlaylist({
-		playlist_id: episodeName.id,
-	}).then((res) => {
-		displayingSongs.value = res.data.result;
-	}).catch(e => {
-		console.log("Failed to get songs!");
-	});
+  console.log(episodeName);
+  getPlaylistsByTitle({title:episodeName}).then((res) => {
+    const episode = res.data.result;
+    displayingEpisode.value = episode;
+    console.log(episode);
+    getSongsByPlaylist({playlist_id:  episode.id}).then((res) => {
+      displayingSongs.value = res.data.result;
+      setMidComponents(4);
+    }).catch(e => {
+      console.log("Failed to get songs!");
+    });
+  }).catch(e=>{
+    ElMessage.warning("本歌单未被收录")
+  })
+
+
 }
 /*
     SEARCH
