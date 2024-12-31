@@ -564,6 +564,10 @@ const navigationHistory = ref([]);
 
 const setMidComponents = (index, props = null) => {
 	console.log("from" + midComponents.value + " to " + index)
+  if(midComponents.value === 2 && index === 2){
+    goBack();
+    return;
+  }
 	navigationHistory.value.push({
 		index: midComponents.value,
 		props: {
