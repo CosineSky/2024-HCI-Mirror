@@ -49,4 +49,23 @@ const router = createRouter({
     ]
 })
 
+router.beforeEach((to, _, next) => {
+    const token = sessionStorage.getItem('token');
+    console.log(token)
+
+    if (to.meta.title) {
+        document.title = to.meta.title
+    }
+
+    if ( token == null) {
+        if(to.path !== '/login'){
+            next('/login')
+        }else {
+            next()
+        }
+    }else {
+        next()
+    }
+})
+
 export {router}

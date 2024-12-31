@@ -10,8 +10,7 @@ import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
 import { loadSongDurations } from '../utils/loadSongDurations';
-import {getPlaylistById, getSongById} from "../api/resolve";
-import {getSongsByPlaylist} from "../api/song";
+import { getRecommendedSongs } from "../api/song";
 
 
 /*
@@ -48,9 +47,8 @@ const edit_title = ref("");
 const edit_description = ref("");
 const edit_cover_path = ref("");
 
-// let musicList = ref([])
-// 随机歌曲
-const recMusicList = ref([])
+//推荐歌曲
+const recMusicList = ref([]);
 
 let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
@@ -64,7 +62,7 @@ const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundCol
 const songDurations = ref(new Map());
 watch(() => props.musicList, (newSongs) => {
   loadSongDurations(newSongs, songDurations);
-}, { immediate: true });
+}, { immediate: true ,deep: true});
 
 // 放缩时的组件处理
 const handleResize = () => {
@@ -126,19 +124,6 @@ const debounce = (fn, delay) => {
 
 
 onMounted(() => {
-  let randomMusicIds =[];
-  for (let i = 0; i < 8; i++) {
-    let num = Math.floor(Math.random()*54+69);
-    if(randomMusicIds.indexOf(num) === -1)
-      randomMusicIds.push(num);
-    else i--;
-  }
-  randomMusicIds.forEach((id)=>{
-    getSongById({song_id:id}).then(res => {
-      recMusicList.value.push(res.data.result);
-    })
-  });
-
 	resizeObserver.value = new ResizeObserver(debounce(handleResize, 50));
 	console.log(resizeObserver.value)
 	nextTick(() => {
@@ -225,13 +210,20 @@ const removeAlbum = (albumId) => {
 const playFromId = (musicId) => {
 	if (musicId === null) {
 		// 从头开始播放
-		musicPlayIndex.value  = props.musicList[0].id;
+		musicPlayIndex  = props.musicList[0].id;
 	} else {
 		musicPlayIndex  = musicId;
 	}
 
 	emit('switchSongs', props.albumInfo, musicPlayIndex);
 	musicPauseIndex = null;
+}
+
+const playRecommendedSongFromId = (musicId) => {
+  musicPlayIndex  = musicId;
+  const songToPlay = recMusicList.value.find(song => song.id === musicId);
+	emit('playRecommendedSong', songToPlay)
+  musicPauseIndex = null;
 }
 
 const addToFavorite = (musicId, albumId) => {
@@ -294,10 +286,6 @@ const quitEdit = () => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "hidden";
 }
-// watch(()=>props.musicList,()=>{
-//   musicList.value = props.musicList
-// })
-
 const addRecommendMusic = (musicId) => {
 	console.log(musicId);
 	//TODO:添加歌曲到指定的歌单
@@ -345,6 +333,28 @@ const isCurrentSongInList = computed(() => {
   if (!musicPlayIndex || !props.musicList) return false;
   return props.musicList.some(song => song.id === musicPlayIndex);
 });
+
+// 添加获取推荐歌曲的方法
+const getRecommendations = async () => {
+  try {
+    const currentSongIds = props.musicList.map(song => song.id);
+
+    const response = await getRecommendedSongs({
+      currentSongIds: currentSongIds,
+      limit: 3
+    });
+
+    recMusicList.value = response.data.result;
+  } catch (error) {
+    console.error("Failed to fetch recommendations:", error);
+  }
+};
+
+watch(() => props.musicList, () => {
+  if (props.musicList.length > 0) {
+    getRecommendations();
+  }
+}, { immediate: true });
 
 </script>
 
@@ -639,7 +649,7 @@ const isCurrentSongInList = computed(() => {
 					     @mouseenter="()=>{musicHoveredIndex = music.id;}"
 					     @mouseleave="()=>{musicHoveredIndex = null}"
 					     @click="musicClickedIndex=music.id"
-					     @dblclick="playFromId(music.id)"
+					     @dblclick="playRecommendedSongFromId(music.id)"
 					     :style="{backgroundColor: musicClickedIndex===music.id? '#404040':
 				     musicHoveredIndex === music.id ? 'rgba(54,54,54,0.7)' :'rgba(0,0,0,0)',
 				   }">
@@ -651,14 +661,14 @@ const isCurrentSongInList = computed(() => {
 								recMusicList.indexOf(music) + 1
 							}}
 						</div>
-						<play-button @click="playFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
+						<play-button @click="playRecommendedSongFromId(music.id)" style="position: absolute;left: 14px;cursor: pointer"
 						             v-if="(musicHoveredIndex === music.id&&musicPlayIndex!==music.id)||musicPauseIndex===music.id"
 						             :style="{color: musicPauseIndex===music.id ? '#1ed660' : 'white'}"/>
 						<pause-button @click="pauseMusic(music.id)"
-						              style="color:#1ed660 ;position: absolute;left: 14px;cursor: pointer"
+						              style="color:#1ed660 ;position: absolute;left: 17px;cursor: pointer"
 						              v-if="musicPlayIndex===music.id&&musicHoveredIndex === music.id&&musicPauseIndex!==music.id"/>
 						<img width="17" height="17" alt=""
-						     style="position: absolute;left: 20px;"
+						     style="position: absolute;left: 24px;"
 						     v-if="musicPlayIndex===music.id&&musicHoveredIndex !== music.id&&musicPauseIndex!==music.id"
 						     src="https://open.spotifycdn.com/cdn/images/equaliser-animated-green.f5eb96f2.gif">
 
@@ -679,6 +689,7 @@ const isCurrentSongInList = computed(() => {
 						</div>
 
 						<div class="music-album-info"
+                 @click="emit('openEpisodeView',music.album)"
 						     :style="{color:musicHoveredIndex === music.id? 'white' : '#b2b2b2'}">
 							{{ music.album }}
 						</div>

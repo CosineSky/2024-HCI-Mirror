@@ -1,32 +1,66 @@
 import { axios } from '../utils/request';
 import { USER_MODULE } from './_prefix';
 
-
 /*
-    email: string
+    phone: string,
     password: string
  */
 export const userLogin = (loginInfo) => {
-    console.log(loginInfo)
-    return axios.post(`${USER_MODULE}/login`, loginInfo,
-        { headers: { 'Content-Type': 'application/json' } })
-        .then(res => {
-            return res;
-        });
+    return axios.post(`${USER_MODULE}/login`, null, {params: loginInfo})
+        .then((res) => {
+            return res
+        })
 }
 
 /*
-    user_name: string
-    email: string
-    password: string
+    name: string,
+    phone: string,
+    password: string,
+    captcha: string
  */
 export const userRegister = (registerInfo) => {
-    console.log(registerInfo)
-    return axios.post(`${USER_MODULE}/register`, registerInfo,
-        { headers: { 'Content-Type': 'application/json' } })
-        .then(res => {
-            return res;
-        });
+    return axios.post(`${USER_MODULE}/register?`, null, {params: registerInfo})
+        .then((res) => {
+            return res
+        })
+}
+
+/*
+    phone: string
+ */
+export const userSendCaptcha = (captchaInfo) => {
+    console.log(captchaInfo.phone)
+    return axios.post(`${USER_MODULE}/send`, null, {
+        params: {
+            phone: captchaInfo.phone
+        }
+    })
+        .then((res) => {
+            return res
+        })
+}
+
+/*
+    phone?: string,
+    password?: string,
+    captcha?: string,
+ */
+export const userReset = (resetInfo) => {
+    console.log(resetInfo)
+    return axios.post(`${USER_MODULE}/reset`, resetInfo, {headers: {'Content-Type': 'application/json'}})
+        .then((res) => {
+            return res
+        })
+}
+
+/*
+    phone:string
+ */
+export const getUserByPhone = (phone) => {
+    return axios.get(`${USER_MODULE}/getUserByPhone`, {params: phone})
+        .then((res) => {
+            return res
+        })
 }
 
 /*

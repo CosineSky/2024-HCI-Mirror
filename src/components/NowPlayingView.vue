@@ -1,36 +1,36 @@
 <script setup>
-import {defineProps, defineEmits, ref, computed, watch} from 'vue';
+import {defineProps, defineEmits, ref, computed, watch, onMounted} from 'vue';
 import {getArtistInfo} from "@/api/artist";
 
 const props = defineProps({
   isVisible: Boolean,
   currentSong: Object,
   nextSong: Object,
+  followedArtistIds:Array
 });
 
-const isFollowing = ref(false);
+const userToken = ref(JSON.parse(sessionStorage.getItem('user-token')));
+const currentUserId = ref(userToken.value.id);
+
+const artistsInfo = ref([]);
 
 const artists = computed(() => {
   if (!props.currentSong?.artist) return [];
   return props.currentSong.artist.split('/').map(name => name.trim());
 });
 
-const artistImage = ref([]);
 
 const setArtistInfo = async () => {
-  artistImage.value = [];
-  
-  console.log('Artists:', artists.value)
+  artistsInfo.value = [];
+
   for (const artist of artists.value) {
     try {
       const artistInfo = await getArtistInfo(artist);
-      artistImage.value.push(artistInfo.data.result.avatarUrl);
+      artistsInfo.value.push(artistInfo.data.result);
     } catch (error) {
       console.error('Failed to fetch artist info:', error);
     }
   }
-  
-  console.log('Artist Images:', artistImage.value)
 };
 
 watch(artists, () => {
@@ -39,16 +39,12 @@ watch(artists, () => {
   }
 }, { immediate: true });
 
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value;
-  // TODO: 调用后端API实现关注/取消关注
-  // followArtist({
-  //   artistId: artist.value.id,
-  //   isFollow: isFollowing.value
-  // });
+const toggleFollow = async (index) => {
+  const artist = artistsInfo.value[index];
+  emit('toggleFollow',artist.id,props.followedArtistIds.includes(artistsInfo.value[index].id));
 };
 
-const emit = defineEmits(['playNext', 'toggleQueue', 'enterAuthorDescription']);
+const emit = defineEmits(['playNext', 'toggleQueue', 'enterAuthorDescription', 'toggleFollow']);
 
 const playNext = () => {
   emit('playNext');
@@ -61,6 +57,7 @@ const toggleQueue = () => {
 const enterAuthorDescription = (artistName) => {
   emit('enterAuthorDescription', artistName);
 }
+
 </script>
 
 <template>
@@ -81,16 +78,16 @@ const enterAuthorDescription = (artistName) => {
         <div v-for="(artist, index) in artists"
              :key="artist" 
              class="artist-info">
-          <img :src="artistImage[index]"
+          <img :src="artistsInfo[index]?.avatarUrl"
                class="artist-image" 
                alt="艺术家"
                @click="enterAuthorDescription(artist)"/>
           <div class="artist-details">
             <h4>{{ artist }}</h4>
             <button class="follow-button"
-                    :class="{ 'following': isFollowing }"
-                    @click="toggleFollow">
-              {{ isFollowing ? '已关注' : '关注' }}
+                    :class="{ 'following': props.followedArtistIds.includes(artistsInfo[index]?.id) }"
+                    @click="toggleFollow(index)">
+              {{ props.followedArtistIds.includes(artistsInfo[index]?.id) ? '已关注' : '关注' }}
             </button>
           </div>
         </div>
