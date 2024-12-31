@@ -20,7 +20,9 @@ export const getPlaylistsByUser = (userInfo) => {
  */
 export const getPlaylistsByTitle = (titleInfo) => {
     console.log(titleInfo)
-    return axios.get(`${PLAYLIST_MODULE}/fetchByTitle`, { params: titleInfo })
+    return axios.get(`${PLAYLIST_MODULE}/title`, { params: {
+        title: titleInfo.title
+        } })
         .then(res => {
             return res;
         });

@@ -9,6 +9,7 @@ import { SONG_MODULE } from './_prefix';
     + playlist_id: number
  */
 export const getSongsByPlaylist = (playlistInfo) => {
+    console.log(playlistInfo)
     return axios.get(`${SONG_MODULE}/fetch`, { params: playlistInfo })
         .then(res => {
             return res;
