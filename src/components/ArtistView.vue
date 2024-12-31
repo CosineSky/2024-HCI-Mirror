@@ -10,6 +10,7 @@ import {addSongToPlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {getSongsByPlaylist} from "../api/song";
 import {formatTime} from '../utils/formatTime';
 import {loadSongDurations} from '../utils/loadSongDurations';
+import {userFollowArtist} from "../api/user";
 
 const emit = defineEmits(['playSong', 'pauseSong', 'back', 'updateSongs', 'toggleFollow']);
 const props = defineProps({
@@ -898,6 +899,7 @@ li:hover {
 
 /* 修改返回按钮样式 */
 .back-button {
+  z-index: 3;
   position: relative;
   margin: 24px 0 0 24px;
   width: 32px;

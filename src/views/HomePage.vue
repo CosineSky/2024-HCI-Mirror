@@ -1,7 +1,7 @@
 /* eslint-disable */
 <script setup>
 // Vue Basics
-import {computed, onMounted, ref, watch, onUnmounted} from "vue"
+import {computed, onMounted, ref, watch} from "vue"
 
 // Assets
 import defaultBg from '../assets/pictures/Eason.png'
@@ -36,7 +36,7 @@ import {userFollowArtist} from "@/api/user";
  */
 const textColor = ref("#000");
 const backgroundColor = ref("#ffffff");
-const gradientColor = computed(() => `linear-gradient(to top right, ${backgroundColor.value}, #000000)`)
+const gradientColor = computed(() => `linear-gradient(to bottom, ${backgroundColor.value} , #1F1F1F 50%)`)
 const isFullScreen = ref(false);
 
 function toggleFullScreen() {
@@ -138,7 +138,7 @@ function updateSongInfo() {
 			song.load();
 			song.play();
 			isPaused.value = false;
-			theme.change(songs.value[currentSongIndex.value].picPath);
+			theme.full(songs.value[currentSongIndex.value].picPath);
 		}
 	} catch (e) {
 		console.log("Uncaught Error in updateSongInfo!", e);
@@ -406,7 +406,7 @@ const switchToSong = (index, isDiffPlaylist) => {
 		});
 		song.load();
 		song.play();
-		theme.change(songs.value[index].picPath);
+		theme.full(songs.value[index].picPath);
 		isPaused.value = false;
 	}
 }
@@ -417,14 +417,14 @@ const switchToPlaylist = (playlist, songId) => {
 	currentPlaylist.value = playlist;
 	displayingPlaylist.value = playlist;
 	currentPlaylistId.value = playlist.id;
-	theme.change(currentPlaylist.value.picPath);
+	theme.full(currentPlaylist.value.picPath);
 	
 	getSongsByPlaylist({
 		playlist_id: currentPlaylistId.value,
 	}).then((res) => {
-    const songsList = res.data.result;
-    songs.value = [...songsList];
-    displayingSongs.value = [...songsList];
+		const songsList = res.data.result;
+		songs.value = [...songsList];
+		displayingSongs.value = [...songsList];
 		currentSongId.value = songId;
 		for (let i = 0; i < songs.value.length; i++) {
 			if (songs.value[i].id === songId) {
@@ -442,27 +442,27 @@ const switchToPlaylist = (playlist, songId) => {
 }
 
 const handleRecommendedSong = (songToPlay) => {
-  const songExists = songs.value.some(song => song.id === songToPlay.id);
-  if (songExists) {
-    const songIndex = songs.value.findIndex(song => song.id === songToPlay.id);
-    songs.value.splice(songIndex, 1)
-  }
-  songs.value.unshift(songToPlay);
-  currentSongIndex.value = 0;
-  currentSongId.value = songToPlay.id;
-  if (song) {
-    controlIcons.forEach(controlIcon => {
-      controlIcon.src = PLAY;
-    });
-    song.src = songToPlay.filePath;
-    parseLrc(songToPlay.lyricsPath).then(res => {
-      lyrics.value = res;
-    });
-    song.load();
-    song.play();
-    theme.change(songToPlay.picPath);
-    isPaused.value = false;
-  }
+	const songExists = songs.value.some(song => song.id === songToPlay.id);
+	if (songExists) {
+		const songIndex = songs.value.findIndex(song => song.id === songToPlay.id);
+		songs.value.splice(songIndex, 1)
+	}
+	songs.value.unshift(songToPlay);
+	currentSongIndex.value = 0;
+	currentSongId.value = songToPlay.id;
+	if (song) {
+		controlIcons.forEach(controlIcon => {
+			controlIcon.src = PLAY;
+		});
+		song.src = songToPlay.filePath;
+		parseLrc(songToPlay.lyricsPath).then(res => {
+			lyrics.value = res;
+		});
+		song.load();
+		song.play();
+		theme.full(songToPlay.picPath);
+		isPaused.value = false;
+	}
 };
 
 
@@ -505,7 +505,8 @@ const currentEpisode = ref(2); //当前专辑
 const currentEpisodeId = ref(2);//当前专辑id
 const displayingEpisode = ref(2);
 const receiveDisplayingEpisode = (episode) => {
-  displayingEpisode.value = episode;
+	// setMidComponents(4);
+	displayingEpisode.value = episode;
 	getSongsByPlaylist({
 		playlist_id: episode.id,
 	}).then((res) => {
@@ -517,18 +518,18 @@ const receiveDisplayingEpisode = (episode) => {
 };
 
 const receiveDisplayingEpisodeByName = (episodeName) => {
-  setMidComponents(4);
+	setMidComponents(4);
 
-  //TODO:
-  // getPlaylistByName();
-  displayingEpisode.value = episode;
-  getSongsByPlaylist({
-    playlist_id: episodeName.id,
-  }).then((res) => {
-    displayingSongs.value = res.data.result;
-  }).catch(e => {
-    console.log("Failed to get songs!");
-  });
+	//TODO:
+	// getPlaylistByName();
+	displayingEpisode.value = episode;
+	getSongsByPlaylist({
+		playlist_id: episodeName.id,
+	}).then((res) => {
+		displayingSongs.value = res.data.result;
+	}).catch(e => {
+		console.log("Failed to get songs!");
+	});
 }
 /*
     SEARCH
@@ -563,56 +564,60 @@ const currentArtist = ref(null);
 const navigationHistory = ref([]);
 
 const setMidComponents = (index, props = null) => {
-  console.log("from" + midComponents.value + " to " + index)
-  navigationHistory.value.push({
-    index: midComponents.value,
-    props: {
-      artistName: currentArtist?.value,
-      albumInfo: displayingPlaylist?.value,
-      musicList: displayingSongs?.value,
-      playList: playlists?.value,
-      songResult: songResult?.value,
-      playlistResult: playlistResult?.value,
-      episodeInfo: displayingEpisode?.value,
-      playFromLeftBar: playFromLeftBarAlbum?.value,
-      playlistInfo: currentPlaylist?.value,
-    }
-  });
-
-  midComponents.value = index;
-
-  switch(index) {
-    case 5: // ArtistView
-      if (props) {
-        currentArtist.value = props;
-      }
-      break;
-    case 6:
-      if (props) {
-        displayingMusicId.value = props;
-      }
-      break;
+	console.log("from" + midComponents.value + " to " + index)
+  if(midComponents.value === 2 && index === 2){
+    goBack();
+    return;
   }
+	navigationHistory.value.push({
+		index: midComponents.value,
+		props: {
+			artistName: currentArtist?.value,
+			albumInfo: displayingPlaylist?.value,
+			musicList: displayingSongs?.value,
+			playList: playlists?.value,
+			songResult: songResult?.value,
+			playlistResult: playlistResult?.value,
+			episodeInfo: displayingEpisode?.value,
+			playFromLeftBar: playFromLeftBarAlbum?.value,
+			playlistInfo: currentPlaylist?.value,
+		}
+	});
+
+	midComponents.value = index;
+
+	switch (index) {
+		case 5: // ArtistView
+			if (props) {
+				currentArtist.value = props;
+			}
+			break;
+		case 6:
+			if (props) {
+				displayingMusicId.value = props;
+			}
+			break;
+	}
 };
 
 const goBack = () => {
-  if (navigationHistory.value.length > 0) {
-    const previousState = navigationHistory.value.pop();
-    midComponents.value = previousState.index;
-    if (previousState.props) {
-      currentArtist.value = previousState.props.artistName;
-      displayingPlaylist.value = previousState.props.albumInfo;
-      displayingSongs.value = previousState.props.musicList;
-      playlists.value = previousState.props.playList;
-      songResult.value = previousState.props.songResult;
-      playlistResult.value = previousState.props.playlistResult;
-      displayingEpisode.value = previousState.props.episodeInfo;
-      playFromLeftBarAlbum.value = previousState.props.playFromLeftBar;
-      currentPlaylist.value = previousState.props.playlistInfo;
-    }
-  } else {
-    midComponents.value = 0;
-  }
+	if (navigationHistory.value.length > 0) {
+		const previousState = navigationHistory.value.pop();
+		midComponents.value = previousState.index;
+		if (previousState.props) {
+			currentArtist.value = previousState.props.artistName;
+			displayingPlaylist.value = previousState.props.albumInfo;
+			displayingSongs.value = previousState.props.musicList;
+			playlists.value = previousState.props.playList;
+			songResult.value = previousState.props.songResult;
+			playlistResult.value = previousState.props.playlistResult;
+			displayingEpisode.value = previousState.props.episodeInfo;
+			playFromLeftBarAlbum.value = previousState.props.playFromLeftBar;
+			currentPlaylist.value = previousState.props.playlistInfo;
+		}
+	} else {
+		midComponents.value = 0;
+	}
 };
 
 /*
@@ -656,38 +661,38 @@ const playNextSong = () => {
  */
 const followedArtistInfo = ref([]);
 const toggleFollow = async (artistId, isFollowed) => {
-  try {
-    await userFollowArtist({
-      user_id: currentUserId.value,
-      artist_id: artistId,
-      isFollowed: isFollowed
-    });
+	try {
+		await userFollowArtist({
+			user_id: currentUserId.value,
+			artist_id: artistId,
+			isFollowed: isFollowed
+		});
 
-    if (!isFollowed) {
-      const artistResponse = await getArtistById(artistId);
-      followedArtistInfo.value.push(artistResponse.data.result);
-    } else {
-      const artistIndex = followedArtistInfo.value.findIndex(artist => artist.id === artistId);
-      if (artistIndex > -1) {
-        followedArtistInfo.value.splice(artistIndex, 1);
-      }
-    }
-  } catch (error) {
-    console.error("Failed to update artist follow status:", error);
-  }
+		if (!isFollowed) {
+			const artistResponse = await getArtistById(artistId);
+			followedArtistInfo.value.push(artistResponse.data.result);
+		} else {
+			const artistIndex = followedArtistInfo.value.findIndex(artist => artist.id === artistId);
+			if (artistIndex > -1) {
+				followedArtistInfo.value.splice(artistIndex, 1);
+			}
+		}
+	} catch (error) {
+		console.error("Failed to update artist follow status:", error);
+	}
 };
 
 onMounted(() => {
-  getUserById({ userId: currentUserId.value }).then(async res => {
-    const artistPromises = res.data.result.followedArtistIds.map(id =>
-      getArtistById(id).then(res => res.data.result)
-    );
-    followedArtistInfo.value = await Promise.all(artistPromises);
-  });
+	getUserById({userId: currentUserId.value}).then(async res => {
+		const artistPromises = res.data.result.followedArtistIds.map(id =>
+			getArtistById(id).then(res => res.data.result)
+		);
+		followedArtistInfo.value = await Promise.all(artistPromises);
+	});
 	/*
         DOMS & EVENTS
 	 */
-	theme.change(defaultBg);
+	theme.full(defaultBg);
 	registerDOMs();
 	
 	/*
@@ -702,7 +707,7 @@ onMounted(() => {
 		currentPlaylist.value = playlists.value[0];
 		displayingPlaylist.value = playlists.value[0];
 		currentPlaylistId.value = currentPlaylist.value.id;
-		theme.change(currentPlaylist.value.picPath);
+		theme.full(currentPlaylist.value.picPath);
 		getSongsByPlaylist({
 			playlist_id: currentPlaylistId.value,
 		}).then((res) => {
@@ -785,35 +790,35 @@ const updateSongs = (newSongs) => {
 		<div class="content" :class="{ 'full-width': !showRightContent }">
 			<div class="main-view" :class="{ 'expanded': !showRightContent }">
 				<div v-if="midComponents === 0" class="playlist-container"
-				              style="overflow: scroll; border-radius: 12px">
+				     style="overflow: scroll; border-radius: 12px">
 					<MainView @openArtistView="(name) => setMidComponents(5, name)"
-                    @openEpisodeView="(episode) => receiveDisplayingEpisode(episode)"
-                    @openMusicView=""
-                    @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
-            /><!---->
+					          @openEpisodeView="(episode) => receiveDisplayingEpisode(episode)"
+					          @openMusicView=""
+					          @openAlbumView="(album) => receiveDisplayingPlaylist(album)"
+					/><!---->
 				</div>
 				<!--height: 730px -->
 				<div v-if="midComponents === 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
-          <MusicAlbumView :album-info="displayingPlaylist"
-                          :music-list="displayingSongs"
-                          :play-list="playlists"
-                          :current-song-id="currentSongId"
-                          :playFromLeftBar="playFromLeftBarAlbum"
-                          :is-paused="isPaused"
-                          @switchSongs="switchToPlaylist"
-                          @playRecommendedSong="handleRecommendedSong"
-                          @switchToArtist="(name) => setMidComponents(5, name)"
-                          @pauseSong="pauseCurrentSong"
-                          @back="goBack"
-                          @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
-          />
+					<MusicAlbumView :album-info="displayingPlaylist"
+					                :music-list="displayingSongs"
+					                :play-list="playlists"
+					                :current-song-id="currentSongId"
+					                :playFromLeftBar="playFromLeftBarAlbum"
+					                :is-paused="isPaused"
+					                @switchSongs="switchToPlaylist"
+					                @playRecommendedSong="handleRecommendedSong"
+					                @switchToArtist="(name) => setMidComponents(5, name)"
+					                @pauseSong="pauseCurrentSong"
+					                @back="goBack"
+					                @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
+					/>
 				</div>
 				<el-container v-if="midComponents === 2" class="playlist-container"
 				              style="overflow: scroll; height: 730px ;border-radius: 12px">
 					<Comment :song-id=currentSongId :user-id=currentUserId
-                   @back="goBack"
-          ></Comment>
+					         @back="goBack"
+					></Comment>
 				</el-container>
 				<el-container v-if="midComponents === 3" class="playlist-container"
 				              style="overflow: auto; height: 730px ;border-radius: 12px">
@@ -832,29 +837,29 @@ const updateSongs = (newSongs) => {
 				<div v-if="midComponents === 4" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
 					<EpisodeView :episode-info="displayingEpisode"
-                       :music-list="displayingSongs"
-                       :play-list="playlists"
-                       :current-song-id="currentSongId"
-                       :playFromLeftBar="playFromLeftBarAlbum"
-                       :is-paused="isPaused"
-                       @switchSongs="switchToPlaylist"
-                       @switchToArtist="(name) => setMidComponents(5, name)"
-                       @pauseSong="pauseCurrentSong"
-                       @back="goBack"
-                       @openEpisodeView="(episode)=>{receiveDisplayingEpisode(episode)}"
-                       />
-        </div>
-        <div v-if="midComponents === 5" class="playlist-container"
-             style="overflow: scroll; border-radius: 12px">
-          <ArtistView :artist-name="currentArtist"
-                      :is-paused="isPaused"
-                      :current-song-id="currentSongId"
-                      :is-followed="followedArtistInfo.some(artist => artist.name === currentArtist)"
-                      @playSong="playArtistSong"
-                      @pauseSong="pauseCurrentSong"
-                      @back="goBack"
-                      @updateSongs="updateSongs"
-                      @toggleFollow="toggleFollow"/>
+					             :music-list="displayingSongs"
+					             :play-list="playlists"
+					             :current-song-id="currentSongId"
+					             :playFromLeftBar="playFromLeftBarAlbum"
+					             :is-paused="isPaused"
+					             @switchSongs="switchToPlaylist"
+					             @switchToArtist="(name) => setMidComponents(5, name)"
+					             @pauseSong="pauseCurrentSong"
+					             @back="goBack"
+					             @openEpisodeView="(episode)=>{receiveDisplayingEpisode(episode)}"
+					/>
+				</div>
+				<div v-if="midComponents === 5" class="playlist-container"
+				     style="overflow: scroll; border-radius: 12px">
+					<ArtistView :artist-name="currentArtist"
+					            :is-paused="isPaused"
+					            :current-song-id="currentSongId"
+					            :is-followed="followedArtistInfo.some(artist => artist.name === currentArtist)"
+					            @playSong="playArtistSong"
+					            @pauseSong="pauseCurrentSong"
+					            @back="goBack"
+					            @updateSongs="updateSongs"
+					            @toggleFollow="toggleFollow"/>
 				</div>
 			</div>
 			<div v-if="showRightContent" class="right-content">
@@ -918,11 +923,11 @@ const updateSongs = (newSongs) => {
 					:is-visible="showNowPlaying"
 					:current-song="songs[currentSongIndex]"
 					:next-song="getNextSong()"
-          :followed-artist-ids="followedArtistInfo.map(artist => artist.id)"
+					:followed-artist-ids="followedArtistInfo.map(artist => artist.id)"
 					@play-next="playNextSong"
 					@toggle-queue="toggleQueue"
 					@enter-author-description="(name) => setMidComponents(5, name)"
-          @toggleFollow="toggleFollow"
+					@toggleFollow="toggleFollow"
 				/>
 			</div>
 		</div>
@@ -984,10 +989,10 @@ const updateSongs = (newSongs) => {
 					</button>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-top: 10px">
-					<p style="margin-right: 10px; padding-bottom: 40px; color: white">{{ formatTime(currentTime) }}</p>
+					<p style="margin-right: 10px; margin-bottom: 60px; color: white">{{ formatTime(currentTime) }}</p>
 					<input type="range" value="0" id="progress" class="idProgress"
 					       style="margin: 0 0 10px 0; width: 500px"/>
-					<p style="margin-left: 10px; padding-bottom: 40px; color: white">{{ formatTime(duration) }}</p>
+					<p style="margin-left: 10px; margin-bottom: 60px; color: white">{{ formatTime(duration) }}</p>
 				</div>
 			</el-card>
 
@@ -1068,7 +1073,7 @@ const updateSongs = (newSongs) => {
 			<div class="player-content">
 				<div v-if="songs[currentSongIndex] !== undefined" class="album-cover-container">
 					<img :src="songs[currentSongIndex].picPath" alt="Album Cover" class="album-cover"
-					     @load="updateBackground"/>
+					     @load="updateBackground(songs[currentSongIndex].picPath)"/>
 				</div>
 				<div class="track-info-container">
 					<div v-if="songs[currentSongIndex] !== undefined" class="music-info"
@@ -1112,25 +1117,25 @@ const updateSongs = (newSongs) => {
 							</button>
 						</div>
 						<div v-if="songs[currentSongIndex] !== undefined" style="display: flex; flex-direction: row;">
-							<p style="margin-right: 10px">{{ formatTime(currentTime) }}</p>
+							<p style="margin-right: 10px; margin-top: 14px">{{ formatTime(currentTime) }}</p>
 							<input type="range" value="0" id="progress" class="idProgress"
 							       style="margin: 20px 0 10px 0; width: 700px"/>
-							<p style="margin-left: 10px">{{ formatTime(duration) }}</p>
+							<p style="margin-left: 10px; margin-top: 14px">{{ formatTime(duration) }}</p>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="volume-control-playing" style="display: flex; flex-direction: row; align-items: center">
 				<h1 style="margin: 0">🔈</h1>
-        <input type="range"
-               id="volumeControl"
-               min="0"
-               max="1"
-               step="0.01"
-               v-model="volume"
-               @input="updateVolumeStyle"
-               :style="{'--volume-percentage': volumePercentage}"
-        />
+				<input type="range"
+				       id="volumeControl"
+				       min="0"
+				       max="1"
+				       step="0.01"
+				       v-model="volume"
+				       @input="updateVolumeStyle"
+				       :style="{'--volume-percentage': volumePercentage}"
+				/>
 			</div>
 			<div class="corner-buttons">
 				<button @click="toggleLyrics" class="corner-button">
@@ -1203,7 +1208,7 @@ h1 {
 	  flex-direction: column;
 	*/
 	min-height: 100vh;
-  background-color: #000000; /* rgba(0, 0, 0, 1); */
+	background-color: #000000; /* rgba(0, 0, 0, 1); */
 	background-repeat: no-repeat;
 	background-size: cover;
 	
@@ -1360,7 +1365,7 @@ footer {
 /* LEFT CONTENT */
 .main-view {
 	overflow: scroll;
-  background-color: #121212 !important;
+	background-color: #121212 !important;
 }
 
 .main-view > {
