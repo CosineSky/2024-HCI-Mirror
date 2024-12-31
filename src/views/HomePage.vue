@@ -807,7 +807,7 @@ const updateSongs = (newSongs) => {
 				<div v-if="midComponents === 1" class="playlist-container"
 				     style="overflow: scroll; border-radius: 12px">
 					<MusicAlbumView :album-info="displayingPlaylist"
-					                :music-list="displayingSongs"
+					                v-model:music-list="displayingSongs"
 					                :play-list="playlists"
 					                :current-song-id="currentSongId"
 					                :playFromLeftBar="playFromLeftBarAlbum"

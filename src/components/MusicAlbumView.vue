@@ -43,6 +43,8 @@ const props = defineProps({
 	}
 });
 
+const musicList = ref([])
+watch(()=>props.musicList, ()=>{musicList.value=props.musicList},{immediate: true})
 const edit_title = ref("");
 const edit_description = ref("");
 const edit_cover_path = ref("");
@@ -125,6 +127,7 @@ const debounce = (fn, delay) => {
 
 onMounted(() => {
 	resizeObserver.value = new ResizeObserver(debounce(handleResize, 50));
+  musicList.value = props.musicList;
 	console.log(resizeObserver.value)
 	nextTick(() => {
 		const albumContent = document.querySelector(".album-content");
@@ -203,8 +206,8 @@ const removeAlbum = (albumId) => {
 	removePlaylist({
 		playlist_id: albumId,
 	}).then(res => {
+    location.reload()
 		ElMessage.success("删除歌单成功！");
-
 	})
 }
 
@@ -284,6 +287,7 @@ const confirmEdit = (albumId) => {
 		description: edit_description.value,
 		picPath: "",
 	}).then(() => {
+    location.reload()
 		const editDesc = document.querySelector(".edit-desc");
 		editDesc.style.visibility = "hidden";
 		ElMessage.success("修改歌单信息成功！");
@@ -312,7 +316,8 @@ const addRecommendMusic = (musicId) => {
     const selectedMusic = recMusicList.value.find(music =>  {return music.id === musicId;});
     // musicList.value.push(selectedMusic)
     recMusicList.value = recMusicList.value.filter(music => music.id !== musicId);
-
+    musicList.value.push(selectedMusic);
+    emit("update:musicList", musicList.value);
 
   }).catch((e)=>{
     ElMessage({
