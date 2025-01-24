@@ -783,6 +783,12 @@ const updateSongs = (newSongs) => {
 	songs.value = newSongs;
 	displayingSongs.value = [...newSongs];
 };
+
+const updateAlbumInfo = (id) => {
+  getPlaylistById({ playlist_id: id}).then(res => {
+    displayingPlaylist.value = res.data.result;
+  })
+}
 </script>
 
 <template>
@@ -817,6 +823,7 @@ const updateSongs = (newSongs) => {
 					                @switchToArtist="(name) => setMidComponents(5, name)"
 					                @pauseSong="pauseCurrentSong"
 					                @back="goBack"
+                          @updateAlbumInfo = "(id)=>updateAlbumInfo(id)"
 					                @openEpisodeView="(episodeName)=>{receiveDisplayingEpisodeByName(episodeName)}"
 					/>
 				</div>
@@ -833,7 +840,8 @@ const updateSongs = (newSongs) => {
                       :play-list="playlists"
                       :current-song-id="currentSongId"
                       :is-paused="isPaused"
-                      @switchSong="switchToSong"
+                      @playSong="playArtistSong"
+                      @updateSongs="updateSongs"
                       @pauseSong="pauseCurrentSong"
                       @switchToArtist="(name) => setMidComponents(5, name)"
                       @back="goBack"

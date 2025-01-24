@@ -9,7 +9,7 @@ import playButton from "../icon/playButton.vue";
 import checkMark from "../icon/checkMark.vue";
 import pauseButton from "../icon/pauseButton.vue";
 
-const emit = defineEmits(['pauseSong', 'switchSong', 'back', 'switchToArtist']);
+const emit = defineEmits(['pauseSong', 'updateSongs', 'back', 'switchToArtist', 'playSong']);
 const props = defineProps({
   songResult: {
     type: Array,
@@ -48,18 +48,29 @@ let musicHoveredIndex = ref(null);
 let musicClickedIndex = ref(null);
 let musicPlayIndex = ref(null);
 let musicPauseIndex = ref(null);
+const isFirstPlay = ref(true);
 
 const playFromId = (musicId) => {
-
-  if (musicId === null ) {
-    // 从头开始播放
-    musicPlayIndex  = props.currentSongId;
+  if (musicId === null || musicId === undefined) {
+    if (props.songResult && props.songResult.length > 0) {
+      musicPlayIndex = props.songResult[0].id;
+      if(isFirstPlay){
+        isFirstPlay.value = false;
+        emit('updateSongs', props.songResult);
+      }
+      emit('playSong', props.songResult[0]);
+    }
   } else {
-    musicPlayIndex  = musicId;
-    // console.log(musicPlayIndex)
+    musicPlayIndex = musicId;
+    const songToPlay = props.songResult.find(song => song.id === musicId);
+    if (songToPlay) {
+      if(isFirstPlay){
+        isFirstPlay.value = false;
+        emit('updateSongs', props.songResult);
+      }
+      emit('playSong', songToPlay);
+    }
   }
-  console.log(musicPlayIndex)
-  emit('switchSong', props.albumInfo, true);
   musicPauseIndex = null;
 }
 
@@ -83,7 +94,7 @@ const addToFavorite = (musicId, albumId,albumTitle) => {
       type: 'info',
       offset: 16,
       customClass: "reco-message",
-      duration: 4000,
+      duration: 1000,
     })
   })
 }
@@ -109,6 +120,22 @@ onMounted(() => {
 onUnmounted(() => {
   popovers.value = null;
 })
+
+watch(() => props.currentSongId, (newId) => {
+  if (newId) {
+    musicPlayIndex = newId;
+    musicClickedIndex = newId;
+    musicPauseIndex = props.isPaused ? newId : null;
+  }
+}, {immediate: true});
+
+watch(() => props.isPaused, (newValue) => {
+  if (newValue) {
+    musicPauseIndex = musicPlayIndex;
+  } else {
+    musicPauseIndex = null;
+  }
+});
 </script>
 
 <template>
@@ -134,8 +161,9 @@ onUnmounted(() => {
 		<div class="search-results">
 			<div v-if="currentTab === 'songs'">
         <div class="tips">
-          <p style="position:absolute; left:25px">#</p>
-          <p style="position:absolute; left:140px">标题</p>
+          <p style="position:absolute; left:31px">#</p>
+          <p style="position:absolute; left:132px">标题</p>
+          <p class="album-text" style="position:absolute; left:60%">专辑</p>
           <p style="margin-left: auto; margin-right:30px">收藏</p>
         </div>
         <div class="musicList">
@@ -246,7 +274,7 @@ onUnmounted(() => {
 			</div>
 			<ul v-if="currentTab === 'playlists'">
 				<li v-for="(playlist, index) in playlistResult" :key="playlist.id">
-					<div class="playlist-item">
+					<div class="playlist-item" @click="emit('openEpisodeView',playlist.title)">
 						<span class="song-index">{{ index + 1 }}</span>
 						<img :src="playlist.picPath" class="playlist-pic pic" alt=""/>
 						<div class="playlist-info info">

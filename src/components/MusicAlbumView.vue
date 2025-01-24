@@ -10,7 +10,8 @@ import pauseButton from "../icon/pauseButton.vue";
 import {addSongToPlaylist, modifyPlaylist, removePlaylist, removeSongFromPlaylist} from "../api/playlist";
 import {formatTime} from "@/utils/formatTime";
 import {loadSongDurations} from '../utils/loadSongDurations';
-import {getRecommendedSongs} from "../api/song";
+import {getRecommendedSongs, getSongsByPlaylist} from "../api/song";
+import {getPlaylistById} from "@/api/resolve";
 
 
 /*
@@ -43,8 +44,11 @@ const props = defineProps({
 	}
 });
 
+
 const musicList = ref([])
+// const albumInfo = ref({})
 watch(()=>props.musicList, ()=>{musicList.value=props.musicList},{immediate: true})
+// watch(()=>props.albumInfo,()=>{albumInfo.value = props.albumInfo},{immediate: true})
 const edit_title = ref("");
 const edit_description = ref("");
 const edit_cover_path = ref("");
@@ -297,6 +301,7 @@ const quitEdit = () => {
 	const editDesc = document.querySelector(".edit-desc");
 	editDesc.style.visibility = "hidden";
 }
+
 const addRecommendMusic = (musicId) => {
 	console.log(musicId);
 	//TODO:添加歌曲到指定的歌单
@@ -311,13 +316,18 @@ const addRecommendMusic = (musicId) => {
       type: 'info',
       offset: 16,
       customClass: "reco-message",
-      duration: 4000,
+      duration: 1000,
     })
     const selectedMusic = recMusicList.value.find(music =>  {return music.id === musicId;});
     // musicList.value.push(selectedMusic)
     recMusicList.value = recMusicList.value.filter(music => music.id !== musicId);
     musicList.value.push(selectedMusic);
     emit("update:musicList", musicList.value);
+    // emit("update:albumInfo", albumInfo.value);
+    emit("updateAlbumInfo", props.albumInfo.id);
+    // getPlaylistById(props.albumInfo.id).then(((res) => {
+    //   props.albumInfo = res.data.result;
+    // }))
 
   }).catch((e)=>{
     ElMessage({
