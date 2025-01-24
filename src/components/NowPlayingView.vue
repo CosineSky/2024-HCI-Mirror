@@ -344,6 +344,7 @@ p {
 
 .current-playlist {
 	padding: 0 20px;
+  overflow: scroll;
 }
 </style>
 
